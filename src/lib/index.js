@@ -89,8 +89,8 @@ export async function waitForConfirmation(NODE_URL, txid, updateProgress=((_stat
 
 export async function waitForTransactionConfirmation(NODE_URL, txid)
 {
-	process.stdout.write("Waiting for transaction to confirm.");
-	await waitForConfirmation(NODE_URL, txid, (_status)=>process.stdout.write("."), {recheckMs: 1_000});
+	console.log("Waiting for transaction to confirm.");
+	await waitForConfirmation(NODE_URL, txid, (_status)=>console.log("."), {recheckMs: 1_000});
 }
 
 export default {
