@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ckb-lumos/common-scripts": "^0.22.2",
     "@ckb-lumos/lumos": "^0.22.2",
     "@joyid/ckb": "^0.0.8",
     "@joyid/core": "^0.2.0-beta.4",

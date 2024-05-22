@@ -1,5 +1,3 @@
-"use strict";
-
 import {RPC} from "@ckb-lumos/lumos";
 
 export async function sendTransaction(NODE_URL, signedTx)
