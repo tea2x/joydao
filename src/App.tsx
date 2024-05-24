@@ -15,13 +15,10 @@ export default function App() {
   initializeConfig(TEST_NET_CONFIG as Config);
 
   const testJoyIdAddress = "ckt1qrfrwcdnvssswdwpn3s9v8fp87emat306ctjwsm3nmlkjg8qyza2cqgqqykqna7seegr0eylf9t2xtka47mxzpxam52aclq7";
-  const daoTx = buildDepositTransaction(testJoyIdAddress, BigInt(500)).then(result => {
+  const daoTx = buildDepositTransaction(testJoyIdAddress, BigInt(700)).then(result => {
     console.log(">>>daoTx: ", result);
     let jsonString = JSON.stringify(result, null, 2);
     console.log(">>>daoTx jsonString: ", jsonString)
-  })
-  .catch(error => {
-      console.error("Error:", error);
   });
 
   const onConnect = async () => {
@@ -38,9 +35,9 @@ export default function App() {
     // const daoLockerAddress = "ckt1qrfrwcdnvssswdwpn3s9v8fp87emat306ctjwsm3nmlkjg8qyza2cqgqqxzpa4nv6at3r3a2ljlyskr3nnlt07yrwucr9ck6";
 
     const daoTx:CkbTransactionRequest = {
-      from: "",
-      to: "",
-      amount: "0x0"
+      from: joyIdAddress,
+      to: joyIdAddress,
+      amount: "0x123"
     };
     const signedTx = await signTransaction(daoTx);
     // Send the transaction to the RPC node.

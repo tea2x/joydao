@@ -1,24 +1,25 @@
 import { connect, signTransaction, CKBTransaction, signRawTransaction } from '@joyid/ckb';
 import { CkbTransactionRequest, Config, Transaction } from './types';
 import { Input, Output, values, utils, OutPoint, CellDep, Script, Address, HexString, blockchain, QueryOptions, Cell} from "@ckb-lumos/base";
-import {CellCollector} from "@ckb-lumos/ckb-indexer";
+import { CellCollector } from "@ckb-lumos/ckb-indexer";
 import { NODE_URL, INDEXER_URL, DAO_TYPE_SCRIPT, JOY_DAO_CELLDEPS, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./const";
-import {addressToScript, encodeToAddress, TransactionSkeleton} from "@ckb-lumos/helpers";
+import { addressToScript, encodeToAddress, TransactionSkeleton} from "@ckb-lumos/helpers";
+import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
 import { dao }  from "@ckb-lumos/common-scripts";
-const { Indexer } = require("@ckb-lumos/ckb-indexer");
+import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';
+import { Indexer} from "@ckb-lumos/ckb-indexer";
 const { ckbHash } = utils;
 
 const indexer = new Indexer(INDEXER_URL);
+console.log(">>>indexer: ",indexer)
 
-function ckbytesToShannons(ckbytes: bigint)
-{
+function ckbytesToShannons(ckbytes: bigint) {
 	ckbytes = BigInt(ckbytes);
 
 	return ckbytes * BigInt(100_000_000);
 }
 
-function hexToInt(hex: string)
-{
+function hexToInt(hex: string) {
 	hex = String(hex);
 	if(hex.substr(0, 2) !== "0x" && hex.substr(0,3) !== "-0x")
 		throw new Error(`Invalid hex value: "${hex}"`);
@@ -35,13 +36,13 @@ function hexToInt(hex: string)
 }
 
 const collectInputs = async(
-    indexer: any, 
+    indexer: TerminableCellFetcher, 
     lockScript: Script, 
     capacityRequired: bigint
-): Promise<{ inputCells: Cell[], inputCapacity: bigint }> =>
-{
-	const query:QueryOptions = {lock: lockScript, type: "empty"};
+): Promise<{ inputCells: Cell[], inputCapacity: bigint }> => {
+	const query:CKBIndexerQueryOptions = {lock: lockScript, type: "empty"};
 	const cellCollector = new CellCollector(indexer, query);
+    console.log(">>>cellCollector: ", cellCollector)
 
 	let inputCells:Cell[] = [];
 	let inputCapacity = BigInt(0);
@@ -75,7 +76,7 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
         txSkeleton,
         joyidAddr, // will gather inputs from this address.
         joyidAddr, // will generate a dao cell with lock of this address.
-        BigInt(500*10**8),
+        BigInt(500*10**8), //TODO check this
     );
 
     // adding joyID cell deps
@@ -86,11 +87,14 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
     console.log(">>>outputCapacity: ", outputCapacity);
 
     const requiredCapacity = ckbytesToShannons(amount + BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE);
-    const collectedInputs = await collectInputs(INDEXER_URL, addressToScript(joyidAddr), requiredCapacity);
+    const collectedInputs = await collectInputs(indexer, addressToScript(joyidAddr), requiredCapacity);
     console.log(">>>collectedInputs: ", collectedInputs);
     txSkeleton = txSkeleton.update("inputs", (i)=>i.concat(collectedInputs.inputCells));
 
     // const changeCellCapacity = collectedInputs.inputCapacity - ckbytesToShannons(amount);
+
+    // let jsonString = JSON.stringify(txSkeleton, null, 2);
+    // console.log(">>>txSkeleton JSON: ", jsonString)
 
     return txSkeleton;
 }
