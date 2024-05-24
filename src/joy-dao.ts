@@ -1,11 +1,14 @@
 import { connect, signTransaction, CKBTransaction, signRawTransaction } from '@joyid/ckb';
 import { CkbTransactionRequest, Config, Transaction } from './types';
-import { Input, Output, values, utils, OutPoint, CellDep, Script, Address, HexString, blockchain, QueryOptions} from "@ckb-lumos/base";
+import { Input, Output, values, utils, OutPoint, CellDep, Script, Address, HexString, blockchain, QueryOptions, Cell} from "@ckb-lumos/base";
 import {CellCollector} from "@ckb-lumos/ckb-indexer";
-import { NODE_URL, INDEXER_URL, DAO_TYPE_SCRIPT, JOY_DAO_CELLDEPS, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY } from "./const";
-import {addressToScript, encodeToAddress} from "@ckb-lumos/helpers";
-
+import { NODE_URL, INDEXER_URL, DAO_TYPE_SCRIPT, JOY_DAO_CELLDEPS, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./const";
+import {addressToScript, encodeToAddress, TransactionSkeleton} from "@ckb-lumos/helpers";
+import { dao }  from "@ckb-lumos/common-scripts";
+const { Indexer } = require("@ckb-lumos/ckb-indexer");
 const { ckbHash } = utils;
+
+const indexer = new Indexer(INDEXER_URL);
 
 function ckbytesToShannons(ckbytes: bigint)
 {
@@ -35,20 +38,17 @@ const collectInputs = async(
     indexer: any, 
     lockScript: Script, 
     capacityRequired: bigint
-): Promise<{ inputCells: Input[], inputCapacity: bigint }> =>
+): Promise<{ inputCells: Cell[], inputCapacity: bigint }> =>
 {
 	const query:QueryOptions = {lock: lockScript, type: "empty"};
 	const cellCollector = new CellCollector(indexer, query);
 
-	let inputCells:Input[] = [];
+	let inputCells:Cell[] = [];
 	let inputCapacity = BigInt(0);
 
 	for await (const cell of cellCollector.collect())
 	{
-		inputCells.push({
-            previousOutput: cell.outPoint!,
-            since: "0x0"
-        });
+		inputCells.push(cell);
 		inputCapacity += hexToInt(cell.cellOutput.capacity);
 
 		if(inputCapacity >= capacityRequired)
@@ -65,60 +65,32 @@ const collectInputs = async(
   joyIDaddr: the joyID address
   amount: the amount to depodit to the DAO in CKB
 */
-export const buildDaoRawTransaction = async(joyidAddr: Address, amount: bigint): Promise<Transaction> => {
+export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint) => {
     if (ckbytesToShannons(amount) < DAO_MINIMUM_CAPACITY) {
         throw new Error("Mimum DAO deposit is 102 ckb.");
     }
-    const celldeps:CellDep[] = JOY_DAO_CELLDEPS as CellDep[];
+
+    let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
+    txSkeleton = await dao.deposit(
+        txSkeleton,
+        joyidAddr, // will gather inputs from this address.
+        joyidAddr, // will generate a dao cell with lock of this address.
+        BigInt(500*10**8),
+    );
+
+    // adding joyID cell deps
+    txSkeleton = txSkeleton.set('cellDeps', txSkeleton.get('cellDeps').push(JOYID_CELLDEP as CellDep));
+
+    // adding input cell
+    const outputCapacity = txSkeleton.outputs.toArray().reduce((a, c)=>a+hexToInt(c.cellOutput.capacity), BigInt(0));
+    console.log(">>>outputCapacity: ", outputCapacity);
 
     const requiredCapacity = ckbytesToShannons(amount + BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE);
-    console.log(">>>addressToScript(joyidAddr): ", addressToScript(joyidAddr))
     const collectedInputs = await collectInputs(INDEXER_URL, addressToScript(joyidAddr), requiredCapacity);
     console.log(">>>collectedInputs: ", collectedInputs);
-    const changeCellCapacity = collectedInputs.inputCapacity - ckbytesToShannons(amount);
+    txSkeleton = txSkeleton.update("inputs", (i)=>i.concat(collectedInputs.inputCells));
 
-    let datas:string[] = ["0x0000000000000000"];
+    // const changeCellCapacity = collectedInputs.inputCapacity - ckbytesToShannons(amount);
 
-    // creating DAO output cell
-    const outputCells:Output[] = [
-        {
-            capacity: amount.toString(),
-            lock: addressToScript(joyidAddr),
-            type: DAO_TYPE_SCRIPT as Script,
-        }
-    ];
-
-    // append the change cell if there is change
-    if (changeCellCapacity > 0) {
-        const changeOutput:Output = {
-            capacity: changeCellCapacity.toString(),
-            lock: addressToScript(joyidAddr)
-            // type: null
-        };
-        outputCells.push(changeOutput);
-        datas.push("0x");
-    }
-
-    let witnesses = [];
-    for (let i = 1; i < collectedInputs.inputCells.length; i++) {
-        witnesses.push("0x0");
-    }
-
-    let tx:Transaction = {
-        cellDeps: celldeps,
-        //hash?: "",
-        headerDeps: [],
-        inputs: collectedInputs.inputCells,
-        outputs: outputCells,
-        outputsData: datas,
-        version: "0x0",
-        witnesses: witnesses,
-    };
-
-    const txHash = ckbHash(blockchain.RawTransaction.pack(tx));
-    tx.hash = txHash;
-
-    console.log(">>>tx: ", tx);
-
-    return tx;
-  }
+    return txSkeleton;
+}
