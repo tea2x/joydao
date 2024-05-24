@@ -15,7 +15,7 @@ export default function App() {
   initializeConfig(TEST_NET_CONFIG as Config);
 
   const testJoyIdAddress = "ckt1qrfrwcdnvssswdwpn3s9v8fp87emat306ctjwsm3nmlkjg8qyza2cqgqqykqna7seegr0eylf9t2xtka47mxzpxam52aclq7";
-  const daoTx = buildDepositTransaction(testJoyIdAddress, BigInt(700)).then(result => {
+  const daoTx = buildDepositTransaction(testJoyIdAddress, BigInt(5000)).then(result => {
     console.log(">>>daoTx: ", result);
     let jsonString = JSON.stringify(result, null, 2);
     console.log(">>>daoTx jsonString: ", jsonString)

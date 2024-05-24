@@ -11,12 +11,25 @@ import { Indexer} from "@ckb-lumos/ckb-indexer";
 const { ckbHash } = utils;
 
 const indexer = new Indexer(INDEXER_URL);
-console.log(">>>indexer: ",indexer)
 
 function ckbytesToShannons(ckbytes: bigint) {
 	ckbytes = BigInt(ckbytes);
 
 	return ckbytes * BigInt(100_000_000);
+}
+
+function intToHex(intValue: bigint): string {
+    if (typeof intValue !== 'bigint') {
+        throw new Error('Input value must be a BigInt');
+    }
+
+    let hexString = (intValue >= 0 ? '' : '-') + intValue.toString(16);
+
+    if (intValue < 0) {
+        console.warn('Warning: A negative value was passed to intToHex()');
+    }
+
+    return "0x" + hexString;
 }
 
 function hexToInt(hex: string) {
@@ -42,7 +55,6 @@ const collectInputs = async(
 ): Promise<{ inputCells: Cell[], inputCapacity: bigint }> => {
 	const query:CKBIndexerQueryOptions = {lock: lockScript, type: "empty"};
 	const cellCollector = new CellCollector(indexer, query);
-    console.log(">>>cellCollector: ", cellCollector)
 
 	let inputCells:Cell[] = [];
 	let inputCapacity = BigInt(0);
@@ -71,30 +83,28 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
         throw new Error("Mimum DAO deposit is 102 ckb.");
     }
 
+    // generating basic dao transaction skeleton
     let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
     txSkeleton = await dao.deposit(
         txSkeleton,
         joyidAddr, // will gather inputs from this address.
         joyidAddr, // will generate a dao cell with lock of this address.
-        BigInt(500*10**8), //TODO check this
+        amount*BigInt(10**8),
     );
 
     // adding joyID cell deps
-    txSkeleton = txSkeleton.set('cellDeps', txSkeleton.get('cellDeps').push(JOYID_CELLDEP as CellDep));
+    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
 
-    // adding input cell
-    const outputCapacity = txSkeleton.outputs.toArray().reduce((a, c)=>a+hexToInt(c.cellOutput.capacity), BigInt(0));
-    console.log(">>>outputCapacity: ", outputCapacity);
-
+    // adding input capacity cells
     const requiredCapacity = ckbytesToShannons(amount + BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE);
     const collectedInputs = await collectInputs(indexer, addressToScript(joyidAddr), requiredCapacity);
-    console.log(">>>collectedInputs: ", collectedInputs);
     txSkeleton = txSkeleton.update("inputs", (i)=>i.concat(collectedInputs.inputCells));
 
-    // const changeCellCapacity = collectedInputs.inputCapacity - ckbytesToShannons(amount);
-
-    // let jsonString = JSON.stringify(txSkeleton, null, 2);
-    // console.log(">>>txSkeleton JSON: ", jsonString)
+    // calculate change and add an output cell
+    const outputCapacity = txSkeleton.outputs.toArray().reduce((a, c)=>a+hexToInt(c.cellOutput.capacity), BigInt(0));
+    const changeCellCapacity = collectedInputs.inputCapacity - outputCapacity - BigInt(TX_FEE);
+    let change:Cell = {cellOutput: {capacity: intToHex(changeCellCapacity), lock: addressToScript(joyidAddr)}, data: "0x"};
+	txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
 
     return txSkeleton;
 }
