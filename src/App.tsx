@@ -14,13 +14,6 @@ export default function App() {
   const [amount, setAmount] = React.useState('100');
   initializeConfig(TEST_NET_CONFIG as Config);
 
-  const testJoyIdAddress = "ckt1qrfrwcdnvssswdwpn3s9v8fp87emat306ctjwsm3nmlkjg8qyza2cqgqqykqna7seegr0eylf9t2xtka47mxzpxam52aclq7";
-  const daoTx = buildDepositTransaction(testJoyIdAddress, BigInt(5000)).then(result => {
-    console.log(">>>daoTx: ", result);
-    let jsonString = JSON.stringify(result, null, 2);
-    console.log(">>>daoTx jsonString: ", jsonString)
-  });
-
   const onConnect = async () => {
     try {
       const authData = await connect();
@@ -34,19 +27,37 @@ export default function App() {
     const joyIdAddress = "ckt1qrfrwcdnvssswdwpn3s9v8fp87emat306ctjwsm3nmlkjg8qyza2cqgqqykqna7seegr0eylf9t2xtka47mxzpxam52aclq7";
     // const daoLockerAddress = "ckt1qrfrwcdnvssswdwpn3s9v8fp87emat306ctjwsm3nmlkjg8qyza2cqgqqxzpa4nv6at3r3a2ljlyskr3nnlt07yrwucr9ck6";
 
-    const daoTx:CkbTransactionRequest = {
-      from: joyIdAddress,
-      to: joyIdAddress,
-      amount: "0x123"
-    };
-    const signedTx = await signTransaction(daoTx);
-    // Send the transaction to the RPC node.
-    const txid = await sendTransaction(NODE_URL, signedTx);
-    console.log(`Transaction Sent: ${txid}\n`);
+    const daoTx = await buildDepositTransaction(joyIdAddress, BigInt(5000));
+    const rawJsonDaoTx = JSON.stringify(daoTx, null, 2);
+    const jsonDao = JSON.parse(rawJsonDaoTx);
+    console.log(">>>daoTx: ", daoTx);
+    console.log(">>>rawJsonDaoTx: ", rawJsonDaoTx);
 
-    // Wait for the transaction to confirm.
-    await waitForTransactionConfirmation(NODE_URL, txid);
-    console.log("\n");
+    const transaction: CKBTransaction = {
+      cellDeps: jsonDao.cellDeps,
+      headerDeps: jsonDao.headerDeps,
+      inputs: jsonDao.inputs,
+      outputs: jsonDao.outputs,
+      outputsData: jsonDao.outputs,
+      version: "0x1",
+      witnesses: jsonDao.witnesses,
+    };
+
+    console.log(">>>transaction: ", transaction)
+
+    const signedTx = await signRawTransaction(
+      transaction,
+      joyidInfo.address
+    );
+    console.log(">>>signedTx: ", JSON.stringify(signedTx, null, 2));
+
+    // // Send the transaction to the RPC node.
+    // const txid = await sendTransaction(NODE_URL, signedTx);
+    // console.log(`Transaction Sent: ${txid}\n`);
+
+    // // Wait for the transaction to confirm.
+    // await waitForTransactionConfirmation(NODE_URL, txid);
+    // console.log("\n");
 
   }
   return (

@@ -106,5 +106,9 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
     let change:Cell = {cellOutput: {capacity: intToHex(changeCellCapacity), lock: addressToScript(joyidAddr)}, data: "0x"};
 	txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
 
+    // add witnesses
+    txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
+    txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
+
     return txSkeleton;
 }
