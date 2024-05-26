@@ -11,7 +11,7 @@ import { serializeWitnessArgs } from '@nervosnetwork/ckb-sdk-utils';
 
 const { ckbHash } = utils;
 
-const indexer = new Indexer(INDEXER_URL);
+const INDEXER = new Indexer(INDEXER_URL);
 
 function ckbytesToShannons(ckbytes: bigint) {
 	ckbytes = BigInt(ckbytes);
@@ -77,7 +77,7 @@ const collectInputs = async(
 
 export const queryBalance = async(joyidAddr: Address): Promise<bigint> => {
     const query:CKBIndexerQueryOptions = {lock: addressToScript(joyidAddr), type: "empty"};
-	const cellCollector = new CellCollector(indexer, query);
+	const cellCollector = new CellCollector(INDEXER, query);
 
 	let balance = BigInt(0);
 
@@ -98,7 +98,7 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
     }
 
     // generating basic dao transaction skeleton
-    let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
+    let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
     txSkeleton = await dao.deposit(
         txSkeleton,
         joyidAddr, // will gather inputs from this address.
@@ -111,7 +111,7 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
 
     // adding input capacity cells
     const requiredCapacity = ckbytesToShannons(amount + BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE);
-    const collectedInputs = await collectInputs(indexer, addressToScript(joyidAddr), requiredCapacity);
+    const collectedInputs = await collectInputs(INDEXER, addressToScript(joyidAddr), requiredCapacity);
     txSkeleton = txSkeleton.update("inputs", (i)=>i.concat(collectedInputs.inputCells));
 
     // calculate change and add an output cell
@@ -133,7 +133,7 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
 
 export const collectDeposits = async(joyidAddr: Address): Promise<Cell[]> => {
     let depositCells:Cell[] = [];
-    const daoDepositedCellCollector = new dao.CellCollector( joyidAddr, indexer, "deposit");
+    const daoDepositedCellCollector = new dao.CellCollector( joyidAddr, INDEXER, "deposit");
     for await (const inputCell of daoDepositedCellCollector.collect()) {
         depositCells.push(inputCell);
     }
@@ -143,7 +143,7 @@ export const collectDeposits = async(joyidAddr: Address): Promise<Cell[]> => {
 export const withdraw = async(joyidAddr: Address, daoDepositCell: Cell): Promise<CKBTransaction> => {
     console.log(">>>joyidAddr: ", joyidAddr)
     console.log(">>>daoDepositCell: ", JSON.stringify(daoDepositCell))
-    let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
+    let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
     txSkeleton = await dao.withdraw(txSkeleton, daoDepositCell);
 
     // converting skeleton to CKB transaction
