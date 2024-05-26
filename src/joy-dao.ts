@@ -96,7 +96,23 @@ export const queryBalance = async(joyidAddr: Address): Promise<bigint> => {
 
 /*
   joyIDaddr: the joyID address
+  ----
+  returns an array of Cells
+*/
+export const collectDeposits = async(joyidAddr: Address): Promise<Cell[]> => {
+    let depositCells:Cell[] = [];
+    const daoDepositedCellCollector = new dao.CellCollector( joyidAddr, INDEXER, "deposit");
+    for await (const inputCell of daoDepositedCellCollector.collect()) {
+        depositCells.push(inputCell);
+    }
+    return depositCells;
+}
+
+/*
+  joyIDaddr: the joyID address
   amount: the amount to deposit to the DAO in CKB
+  ----
+  returns a CKB raw transaction
 */
 export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint): Promise<CKBTransaction> => {
     if (amount < DAO_MINIMUM_CAPACITY) {
@@ -139,15 +155,12 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
     return daoDepositTx as CKBTransaction;
 }
 
-export const collectDeposits = async(joyidAddr: Address): Promise<Cell[]> => {
-    let depositCells:Cell[] = [];
-    const daoDepositedCellCollector = new dao.CellCollector( joyidAddr, INDEXER, "deposit");
-    for await (const inputCell of daoDepositedCellCollector.collect()) {
-        depositCells.push(inputCell);
-    }
-    return depositCells;
-}
-
+/*
+  joyIDaddr: the joyID address
+  daoDepositCell: the cell that locks the DAO deposit
+  ----
+  returns a CKB raw transaction
+*/
 export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell: Cell): Promise<CKBTransaction> => {
     let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
 

@@ -2,7 +2,7 @@ import fs from "fs";
 import * as React from 'react';
 import { Cell } from "@ckb-lumos/base";
 import { connect, signRawTransaction } from '@joyid/ckb';
-import { sendTransaction, waitForTransactionConfirmation } from './lib/index.js';
+import { sendTransaction, waitForTransactionConfirmation } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL } from "./const";
