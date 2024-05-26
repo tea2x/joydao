@@ -1,13 +1,14 @@
-import { connect, signTransaction, CKBTransaction, signRawTransaction } from '@joyid/ckb';
-import { CkbTransactionRequest, Config, Transaction } from './types';
-import { Input, Output, values, utils, OutPoint, CellDep, Script, Address, HexString, blockchain, QueryOptions, Cell} from "@ckb-lumos/base";
+import { CKBTransaction } from '@joyid/ckb';
+import { utils, CellDep, Script, Address, Cell, Transaction} from "@ckb-lumos/base";
 import { CellCollector } from "@ckb-lumos/ckb-indexer";
-import { NODE_URL, INDEXER_URL, DAO_TYPE_SCRIPT, JOY_DAO_CELLDEPS, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./const";
-import { addressToScript, encodeToAddress, TransactionSkeleton} from "@ckb-lumos/helpers";
+import { NODE_URL, INDEXER_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./const";
+import { addressToScript, encodeToAddress, TransactionSkeleton, createTransactionFromSkeleton} from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
 import { dao }  from "@ckb-lumos/common-scripts";
 import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';
 import { Indexer} from "@ckb-lumos/ckb-indexer";
+import { serializeWitnessArgs } from '@nervosnetwork/ckb-sdk-utils';
+
 const { ckbHash } = utils;
 
 const indexer = new Indexer(INDEXER_URL);
@@ -78,9 +79,9 @@ const collectInputs = async(
   joyIDaddr: the joyID address
   amount: the amount to depodit to the DAO in CKB
 */
-export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint) => {
-    if (ckbytesToShannons(amount) < DAO_MINIMUM_CAPACITY) {
-        throw new Error("Mimum DAO deposit is 102 ckb.");
+export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint): Promise<CKBTransaction> => {
+    if (amount < DAO_MINIMUM_CAPACITY) {
+        throw new Error("Mimum DAO deposit is 102 CKB.");
     }
 
     // generating basic dao transaction skeleton
@@ -89,7 +90,7 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
         txSkeleton,
         joyidAddr, // will gather inputs from this address.
         joyidAddr, // will generate a dao cell with lock of this address.
-        amount*BigInt(10**8),
+        ckbytesToShannons(amount),
     );
 
     // adding joyID cell deps
@@ -106,9 +107,13 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
     let change:Cell = {cellOutput: {capacity: intToHex(changeCellCapacity), lock: addressToScript(joyidAddr)}, data: "0x"};
 	txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
 
-    // add witnesses
-    txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
+    // add joyID witnesses
+    const emptyWitness = { lock: '', inputType: '', outputType: '' };
+    txSkeleton = txSkeleton.update("witnesses", (i)=>i.push(serializeWitnessArgs(emptyWitness)));
     txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
 
-    return txSkeleton;
+    // converting skeleton to CKB transaction
+    const daoDepositTx: Transaction = createTransactionFromSkeleton(txSkeleton);
+
+    return daoDepositTx as CKBTransaction;
 }

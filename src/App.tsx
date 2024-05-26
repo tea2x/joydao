@@ -25,39 +25,21 @@ export default function App() {
 
   const onSign = async () => {
     const joyIdAddress = "ckt1qrfrwcdnvssswdwpn3s9v8fp87emat306ctjwsm3nmlkjg8qyza2cqgqqykqna7seegr0eylf9t2xtka47mxzpxam52aclq7";
-    // const daoLockerAddress = "ckt1qrfrwcdnvssswdwpn3s9v8fp87emat306ctjwsm3nmlkjg8qyza2cqgqqxzpa4nv6at3r3a2ljlyskr3nnlt07yrwucr9ck6";
 
     const daoTx = await buildDepositTransaction(joyIdAddress, BigInt(5000));
-    const rawJsonDaoTx = JSON.stringify(daoTx, null, 2);
-    const jsonDao = JSON.parse(rawJsonDaoTx);
-    console.log(">>>daoTx: ", daoTx);
-    console.log(">>>rawJsonDaoTx: ", rawJsonDaoTx);
-
-    const transaction: CKBTransaction = {
-      cellDeps: jsonDao.cellDeps,
-      headerDeps: jsonDao.headerDeps,
-      inputs: jsonDao.inputs,
-      outputs: jsonDao.outputs,
-      outputsData: jsonDao.outputs,
-      version: "0x1",
-      witnesses: jsonDao.witnesses,
-    };
-
-    console.log(">>>transaction: ", transaction)
-
     const signedTx = await signRawTransaction(
-      transaction,
+      daoTx,
       joyidInfo.address
     );
     console.log(">>>signedTx: ", JSON.stringify(signedTx, null, 2));
 
-    // // Send the transaction to the RPC node.
-    // const txid = await sendTransaction(NODE_URL, signedTx);
-    // console.log(`Transaction Sent: ${txid}\n`);
+    // Send the transaction to the RPC node.
+    const txid = await sendTransaction(NODE_URL, signedTx);
+    console.log(`Transaction Sent: ${txid}\n`);
 
-    // // Wait for the transaction to confirm.
-    // await waitForTransactionConfirmation(NODE_URL, txid);
-    // console.log("\n");
+    // Wait for the transaction to confirm.
+    await waitForTransactionConfirmation(NODE_URL, txid);
+    console.log("\n");
 
   }
   return (

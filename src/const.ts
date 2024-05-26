@@ -9,7 +9,7 @@ export const DAO_TYPE_SCRIPT = {
 
 export const JOYID_CELLDEP = {
   outPoint: {
-    txHash: "0xbe65905ae38972e943874ef67f9d8ff1966dca37959a94be36dc37104ebf0f49",
+    txHash: "0x4dcf3f3b09efac8995d6cbee87c5345e812d310094651e0c3d9a730f32dc9263",
     index: "0x0"
   },
   depType: "depGroup"
