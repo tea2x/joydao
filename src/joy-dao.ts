@@ -1,17 +1,23 @@
 import { CKBTransaction } from '@joyid/ckb';
 import { utils, CellDep, Script, Address, Cell, Transaction} from "@ckb-lumos/base";
-import { CellCollector } from "@ckb-lumos/ckb-indexer";
 import { NODE_URL, INDEXER_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./const";
 import { addressToScript, encodeToAddress, TransactionSkeleton, createTransactionFromSkeleton} from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
 import { dao }  from "@ckb-lumos/common-scripts";
 import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';
-import { Indexer} from "@ckb-lumos/ckb-indexer";
+import { Indexer, CellCollector} from "@ckb-lumos/ckb-indexer";
+const { RPC } = require('@ckb-lumos/rpc');
 import { serializeWitnessArgs } from '@nervosnetwork/ckb-sdk-utils';
 
 const { ckbHash } = utils;
 
 const INDEXER = new Indexer(INDEXER_URL);
+
+async function getBlockHash(blockNumber: string) {
+    const rpc = new RPC(NODE_URL);
+    const blockHash = await rpc.getBlockHash(blockNumber);
+    return blockHash;
+  }
 
 function ckbytesToShannons(ckbytes: bigint) {
 	ckbytes = BigInt(ckbytes);
@@ -98,6 +104,7 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
     }
 
     // generating basic dao transaction skeleton
+    // TODO move to the end and test
     let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
     txSkeleton = await dao.deposit(
         txSkeleton,
@@ -120,6 +127,7 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
     let change:Cell = {cellOutput: {capacity: intToHex(changeCellCapacity), lock: addressToScript(joyidAddr)}, data: "0x"};
 	txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
 
+    // TODO this is following Omiga footstep. Check case there're more than 2 inputs
     // add joyID witnesses
     const emptyWitness = { lock: '', inputType: '', outputType: '' };
     txSkeleton = txSkeleton.update("witnesses", (i)=>i.push(serializeWitnessArgs(emptyWitness)));
@@ -140,13 +148,52 @@ export const collectDeposits = async(joyidAddr: Address): Promise<Cell[]> => {
     return depositCells;
 }
 
-export const withdraw = async(joyidAddr: Address, daoDepositCell: Cell): Promise<CKBTransaction> => {
-    console.log(">>>joyidAddr: ", joyidAddr)
-    console.log(">>>daoDepositCell: ", JSON.stringify(daoDepositCell))
+export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell: Cell): Promise<CKBTransaction> => {
     let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
+
+    // adding joyID cell deps
+    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
+
+    // add dao input cell
+    let clonedInputCell:Cell = daoDepositCell;
+    clonedInputCell.blockHash = await getBlockHash(daoDepositCell.blockNumber!);
+    txSkeleton = txSkeleton.update("inputs", (i)=>i.push(clonedInputCell));
+
+    // add dao output cell
+    const daoOutputCell:Cell = {
+        cellOutput: {
+            capacity: daoDepositCell.cellOutput.capacity, 
+            lock: daoDepositCell.cellOutput.lock, 
+            type: daoDepositCell.cellOutput.type
+        }, 
+        data: "0x", // dao.withdraw will fill in
+    };
+    txSkeleton = txSkeleton.update("outputs", (i)=>i.push(daoOutputCell));
+
+    // generate the dao withdraw skeleton
     txSkeleton = await dao.withdraw(txSkeleton, daoDepositCell, joyidAddr);
+
+    // add fee cell and minimal change cell. Change cell is calculated in advance because
+    // if we tend to have a change cell, its capacity must be greater than 61ckb
+    const requiredCapacity = ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE);
+    const collectedInputs = await collectInputs(INDEXER, addressToScript(joyidAddr), requiredCapacity);
+    txSkeleton = txSkeleton.update("inputs", (i)=>i.concat(collectedInputs.inputCells));
+
+    // calculate change and add an output cell
+    const inputCapacity = txSkeleton.inputs.toArray().reduce((a, c)=>a+hexToInt(c.cellOutput.capacity), BigInt(0));
+    const outputCapacity = hexToInt(daoOutputCell.cellOutput.capacity);
+    const changeCellCapacity = inputCapacity - outputCapacity - BigInt(TX_FEE);
+    let change:Cell = {cellOutput: {capacity: intToHex(changeCellCapacity), lock: addressToScript(joyidAddr)}, data: "0x"};
+	txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
+
+    // TODO this is following Omiga footstep. Check case there're more than 2 inputs
+    // add joyID witnesses
+    const emptyWitness = { lock: '', inputType: '', outputType: '' };
+    txSkeleton = txSkeleton.update("witnesses", (i)=>i.push(serializeWitnessArgs(emptyWitness)));
+    txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
 
     // converting skeleton to CKB transaction
     const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
+    console.log(">>>daoWithdrawTx: ", JSON.stringify(daoWithdrawTx))
     return daoWithdrawTx as CKBTransaction;
 }

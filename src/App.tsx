@@ -6,7 +6,7 @@ import { sendTransaction, waitForTransactionConfirmation } from './lib/index.js'
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL } from "./const";
-import { buildDepositTransaction, collectDeposits, queryBalance, withdraw } from "./joy-dao";
+import { buildDepositTransaction, buildWithdrawTransaction, collectDeposits, queryBalance } from "./joy-dao";
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
@@ -46,7 +46,20 @@ export default function App() {
   }
 
   const onWithdraw = async (cell: Cell) => {
-    await withdraw(joyidInfo.address, cell);
+    const daoTx = await buildWithdrawTransaction(joyidInfo.address, cell);
+
+    const signedTx = await signRawTransaction(
+      daoTx,
+      joyidInfo.address
+    );
+
+    // Send the transaction to the RPC node.
+    const txid = await sendTransaction(NODE_URL, signedTx);
+    console.log(`Transaction Sent: ${txid}\n`);
+
+    // Wait for the transaction to confirm.
+    await waitForTransactionConfirmation(NODE_URL, txid);
+    console.log("\n");
   }
 
   const onSignOut = async () => {
