@@ -1,37 +1,40 @@
 import fs from "fs";
 import * as React from 'react';
-import { connect, signTransaction, CKBTransaction, signRawTransaction } from '@joyid/ckb';
-import {addressToScript, encodeToAddress, TransactionSkeleton} from "@ckb-lumos/helpers";
+import { Cell } from "@ckb-lumos/base";
+import { connect, signRawTransaction } from '@joyid/ckb';
 import { sendTransaction, waitForTransactionConfirmation } from './lib/index.js';
 import { initializeConfig } from "@ckb-lumos/config-manager";
-import { CkbTransactionRequest, Config, CellDep, OutPoint } from './types';
-import { TEST_NET_CONFIG, NODE_URL, INDEXER_URL, JOYID_CELLDEP } from "./const";
-import { buildDepositTransaction} from "./joy-dao";
+import { Config } from './types';
+import { TEST_NET_CONFIG, NODE_URL } from "./const";
+import { buildDepositTransaction, collectDeposits, queryBalance, withdraw } from "./joy-dao";
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
-  const [toAddress, setToAddress] = React.useState('ckt1qrfrwcdnvssswdwpn3s9v8fp87emat306ctjwsm3nmlkjg8qyza2cqgqqxzpa4nv6at3r3a2ljlyskr3nnlt07yrwucr9ck6');
-  const [amount, setAmount] = React.useState('100');
+  const [balance, setBalance] = React.useState<bigint | null>(null);
+  const [depositCells, setDepositCells] = React.useState<Cell[]>([]);
+  const [showDropdown, setShowDropdown] = React.useState(false);
+
   initializeConfig(TEST_NET_CONFIG as Config);
 
   const onConnect = async () => {
     try {
       const authData = await connect();
       setJoyidInfo(authData);
+      const balance = await queryBalance(authData.address);
+      setBalance(balance);
+      const cells = await collectDeposits(authData.address);
+      setDepositCells(cells);
     } catch (error) {
       console.error(error);
     }
   }
 
-  const onSign = async () => {
-    const joyIdAddress = "ckt1qrfrwcdnvssswdwpn3s9v8fp87emat306ctjwsm3nmlkjg8qyza2cqgqqykqna7seegr0eylf9t2xtka47mxzpxam52aclq7";
-
-    const daoTx = await buildDepositTransaction(joyIdAddress, BigInt(5000));
+  const onDeposit = async () => {
+    const daoTx = await buildDepositTransaction(joyidInfo.address, BigInt(5000));
     const signedTx = await signRawTransaction(
       daoTx,
       joyidInfo.address
     );
-    console.log(">>>signedTx: ", JSON.stringify(signedTx, null, 2));
 
     // Send the transaction to the RPC node.
     const txid = await sendTransaction(NODE_URL, signedTx);
@@ -40,19 +43,57 @@ export default function App() {
     // Wait for the transaction to confirm.
     await waitForTransactionConfirmation(NODE_URL, txid);
     console.log("\n");
-
   }
+
+  const onWithdraw = async (cell: Cell) => {
+    await withdraw(joyidInfo.address, cell);
+  }
+
+  const onSignOut = async () => {
+    setJoyidInfo(null);
+    setBalance(null);
+    setDepositCells([]);
+    setShowDropdown(false);
+  }
+
+  const shortenAddress = (address: string) => {
+    if (!address) return '';
+    return `${address.slice(0, 7)}...${address.slice(-8)}`;
+  }
+
   return (
-    <div>
-      <h1>Hello JoyID!</h1>
-      {joyidInfo ? null : <button onClick={onConnect}>Connect JoyID</button>}
-      {joyidInfo ? (
-        <div>
-          <textarea value={toAddress} onChange={e => setToAddress(e.target.value)} />
-          <textarea value={amount} onChange={e => setAmount(e.target.value)} />
-          <button onClick={onSign}>Sign</button>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
+      <h1 style={{ fontSize: '2.5em', textShadow: '2px 2px 2px rgba(0, 0, 0, 0.2)', transform: 'rotate(-2deg)', marginBottom: '20px', color: '#00c891' }}>JoyDAO</h1>
+      <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '20px' }}>
+        {joyidInfo ? (
+          <div style={{ position: 'relative' }}>
+            <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', marginRight: '10px' }} onClick={() => setShowDropdown(!showDropdown)}>
+              {shortenAddress(joyidInfo.address)}
+            </button>
+            {showDropdown && (
+              <div style={{ position: 'absolute', backgroundColor: '#fff', border: '1px solid #00c891', padding: '10px', borderRadius: '5px', zIndex: '1', color: '#00c891' }}>
+                <p>Balance: {balance ? balance.toString() + ' CKB' : 'Loading...'}</p>
+                <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer', marginTop: '10px' }} onClick={onSignOut}>Sign Out</button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', marginRight: '10px' }} onClick={onConnect}>Connect JoyID</button>
+        )}
+        <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={onDeposit}>Deposit</button>
+      </div>
+      {joyidInfo && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80%' }}>
+          {depositCells.map((cell, index) => (
+            <div key={index} style={{ border: '1px solid #00c891', padding: '10px', marginBottom: '10px', borderRadius: '5px', width: '60%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <p style={{ color: '#00c891' }}>
+                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#00c891', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / 100_000_000} CKBytes</a>
+              </p>
+              <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => onWithdraw(cell)}>Withdraw</button>
+            </div>
+          ))}
         </div>
-      ) : null}
+      )}
     </div>
   )
 }

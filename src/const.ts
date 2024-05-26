@@ -1,12 +1,6 @@
 export const NODE_URL = "https://testnet.ckb.dev/";
 export const INDEXER_URL = "https://testnet.ckb.dev/indexer";
 
-export const DAO_TYPE_SCRIPT = {
-    codeHash: "0x82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e",
-    hashType: "type",
-    args: "0x"
-};
-
 export const JOYID_CELLDEP = {
   outPoint: {
     txHash: "0x4dcf3f3b09efac8995d6cbee87c5345e812d310094651e0c3d9a730f32dc9263",
@@ -14,23 +8,6 @@ export const JOYID_CELLDEP = {
   },
   depType: "depGroup"
 };
-
-export const JOY_DAO_CELLDEPS = [
-    {
-      outPoint: {
-        txHash: "0xbe65905ae38972e943874ef67f9d8ff1966dca37959a94be36dc37104ebf0f49",
-        index: "0x0"
-      },
-      depType: "depGroup"
-    },
-    {
-      outPoint: {
-        txHash: "0x8f8c79eb6671709633fe6a46de93c0fedc9c1b8a6527a18d3983879542635c9f",
-        index: "0x2"
-      },
-      depType: "depGroup"
-    }
-];
 
 export const TEST_NET_CONFIG = {
   PREFIX: "ckt",
