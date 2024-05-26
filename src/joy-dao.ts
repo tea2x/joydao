@@ -144,7 +144,7 @@ export const withdraw = async(joyidAddr: Address, daoDepositCell: Cell): Promise
     console.log(">>>joyidAddr: ", joyidAddr)
     console.log(">>>daoDepositCell: ", JSON.stringify(daoDepositCell))
     let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
-    txSkeleton = await dao.withdraw(txSkeleton, daoDepositCell);
+    txSkeleton = await dao.withdraw(txSkeleton, daoDepositCell, joyidAddr);
 
     // converting skeleton to CKB transaction
     const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
