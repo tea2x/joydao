@@ -49,7 +49,6 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
     }
 
     // generating basic dao transaction skeleton
-    // TODO move to the end and test
     let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
     txSkeleton = await dao.deposit(
         txSkeleton,
@@ -72,12 +71,13 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
     let change:Cell = {cellOutput: {capacity: intToHex(changeCellCapacity), lock: addressToScript(joyidAddr)}, data: "0x"};
 	txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
 
-    // TODO this is following Omiga footstep. Check case there're more than 2 inputs
     // add joyID witnesses
     const emptyWitness = { lock: '', inputType: '', outputType: '' };
     txSkeleton = txSkeleton.update("witnesses", (i)=>i.push(serializeWitnessArgs(emptyWitness)));
-    txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
-
+    for(let i = 1; i < collectedInputs.inputCells.length; i ++) {
+        txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
+    }
+    
     // converting skeleton to CKB transaction
     const daoDepositTx: Transaction = createTransactionFromSkeleton(txSkeleton);
 
@@ -128,11 +128,12 @@ export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell
     let change:Cell = {cellOutput: {capacity: intToHex(changeCellCapacity), lock: addressToScript(joyidAddr)}, data: "0x"};
 	txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
 
-    // TODO this is following Omiga footstep. Check case there're more than 2 inputs
     // add joyID witnesses
     const emptyWitness = { lock: '', inputType: '', outputType: '' };
     txSkeleton = txSkeleton.update("witnesses", (i)=>i.push(serializeWitnessArgs(emptyWitness)));
-    txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
+    for(let i = 1; i < (collectedInputs.inputCells.length + 1); i ++) {
+        txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
+    }
 
     // converting skeleton to CKB transaction
     const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
