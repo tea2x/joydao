@@ -5,7 +5,7 @@ import { sendTransaction, waitForTransactionConfirmation, queryBalance } from '.
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL } from "./const";
-import { buildDepositTransaction, buildWithdrawTransaction, collectDeposits } from "./joy-dao";
+import { buildDepositTransaction, buildWithdrawTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
@@ -18,11 +18,16 @@ export default function App() {
   const onConnect = async () => {
     try {
       const authData = await connect();
-      setJoyidInfo(authData);
       const balance = await queryBalance(authData.address);
-      setBalance(balance);
       const cells = await collectDeposits(authData.address);
+
+      setJoyidInfo(authData);
+      setBalance(balance);
       setDepositCells(cells);
+
+      localStorage.setItem('joyidInfo', JSON.stringify(authData));
+      localStorage.setItem('balance', balance.toString());
+      localStorage.setItem('depositCells', JSON.stringify(cells));
     } catch (error) {
       console.error(error);
     }
@@ -66,12 +71,32 @@ export default function App() {
     setBalance(null);
     setDepositCells([]);
     setShowDropdown(false);
+
+    localStorage.removeItem('joyidInfo');
+    localStorage.removeItem('balance');
+    localStorage.removeItem('depositCells');
   }
 
   const shortenAddress = (address: string) => {
     if (!address) return '';
     return `${address.slice(0, 7)}...${address.slice(-8)}`;
   }
+
+  // Check for existing authentication data in localStorage when component mounts
+  React.useEffect(() => {
+    const storedAuthData = localStorage.getItem('joyidInfo');
+    const storedBalance = localStorage.getItem('balance');
+    const storedDepositCells = localStorage.getItem('depositCells');
+    if (storedAuthData) {
+      setJoyidInfo(JSON.parse(storedAuthData));
+    }
+    if (storedBalance) {
+      setBalance(BigInt(storedBalance));
+    }
+    if (storedDepositCells) {
+      setDepositCells(JSON.parse(storedDepositCells));
+    }
+  }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
