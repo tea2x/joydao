@@ -70,15 +70,21 @@ export default function App() {
     console.log("\n");
   }
 
+  const onUnlock = async(cell: Cell) => {
+    //TODO
+  }
+
   const onSignOut = async () => {
     setJoyidInfo(null);
     setBalance(null);
     setDepositCells([]);
+    setWithdrawalCells([]);
     setShowDropdown(false);
 
     localStorage.removeItem('joyidInfo');
     localStorage.removeItem('balance');
     localStorage.removeItem('depositCells');
+    localStorage.removeItem('withdrawalCells');
   }
 
   const shortenAddress = (address: string) => {
@@ -91,6 +97,7 @@ export default function App() {
     const storedAuthData = localStorage.getItem('joyidInfo');
     const storedBalance = localStorage.getItem('balance');
     const storedDepositCells = localStorage.getItem('depositCells');
+    const storedWithdrawalCells = localStorage.getItem('withdrawalCells');
     if (storedAuthData) {
       setJoyidInfo(JSON.parse(storedAuthData));
     }
@@ -99,6 +106,9 @@ export default function App() {
     }
     if (storedDepositCells) {
       setDepositCells(JSON.parse(storedDepositCells));
+    }
+    if (storedWithdrawalCells) {
+      setDepositCells(JSON.parse(storedWithdrawalCells));
     }
   }, []);
 
@@ -131,6 +141,15 @@ export default function App() {
                 <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#00c891', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
               </p>
               <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => onWithdraw(cell)}>Withdraw</button>
+            </div>
+          ))}
+
+          {withdrawalCells.map((cell, index) => (
+            <div key={index} style={{ border: '1px solid #00c891', padding: '10px', marginBottom: '10px', borderRadius: '5px', width: '60%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <p style={{ color: '#00c891' }}>
+                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#00c891', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
+              </p>
+              <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => onUnlock(cell)}>Unlock</button>
             </div>
           ))}
         </div>
