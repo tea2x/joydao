@@ -44,3 +44,4 @@ export const TX_FEE = 10000; //shanon
 // so whereas the secp256r1-dao takes 102, joyid-dao takes 104
 export const DAO_MINIMUM_CAPACITY = 104;
 export const MINIMUM_CHANGE_CAPACITY = 61; //61ckb
+export const CKB_SHANNON_RATIO = 100_000_000;

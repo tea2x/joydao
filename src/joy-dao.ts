@@ -140,15 +140,23 @@ export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell
     return daoWithdrawTx as CKBTransaction;
 }
 
-// export const buildUnlockTransaction = async(joyidAddr: Address, daoDepositCell: Cell): Promise<CKBTransaction> => {
-//     let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
+/*
+  joyIDaddr: the joyID address
+  daoDepositCell: the cell that locks the DAO deposit
+  daoWithdrawalCell: the DAO withdrawal cell
+  ----
+  returns a CKB raw transaction
+*/
+export const buildUnlockTransaction = async(joyidAddr: Address, daoDepositCell: Cell, daoWithdrawalCell: Cell): Promise<CKBTransaction> => {
+    let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
 
-//     // adding joyID cell deps
-//     txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
-    
-//     txSkeleton = await dao.unlock(txSkeleton, daoDepositCell, joyidAddr);
+    // adding joyID cell deps
+    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
 
-//     // converting skeleton to CKB transaction
-//     const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-//     return daoWithdrawTx as CKBTransaction;
-// }
+    // generating dao withdrawal phase 2 skeleton
+    txSkeleton = await dao.unlock(txSkeleton, daoDepositCell, daoWithdrawalCell, joyidAddr, joyidAddr);
+
+    // converting skeleton to CKB transaction
+    const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
+    return daoWithdrawTx as CKBTransaction;
+}

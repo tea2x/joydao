@@ -1,6 +1,6 @@
 import {RPC} from "@ckb-lumos/lumos";
 import { Script, Address, Cell, Transaction} from "@ckb-lumos/base";
-import { NODE_URL, INDEXER_URL } from "../const";
+import { NODE_URL, INDEXER_URL, CKB_SHANNON_RATIO } from "../const";
 import { addressToScript } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
 import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';
@@ -17,7 +17,7 @@ export async function getBlockHash(blockNumber: string) {
 export function ckbytesToShannons(ckbytes: bigint) {
 	ckbytes = BigInt(ckbytes);
 
-	return ckbytes * BigInt(100_000_000);
+	return ckbytes * BigInt(CKB_SHANNON_RATIO);
 }
 
 export function intToHex(intValue: bigint): string {
@@ -86,7 +86,7 @@ export const queryBalance = async(joyidAddr: Address): Promise<bigint> => {
 		balance += hexToInt(cell.cellOutput.capacity);
 	}
 
-	return balance/BigInt(100_000_000);
+	return balance/BigInt(CKB_SHANNON_RATIO);
 }
 
 export async function sendTransaction(NODE_URL: string, signedTx: Transaction)

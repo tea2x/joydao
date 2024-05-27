@@ -4,13 +4,14 @@ import { connect, signRawTransaction } from '@joyid/ckb';
 import { sendTransaction, waitForTransactionConfirmation, queryBalance } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
-import { TEST_NET_CONFIG, NODE_URL } from "./const";
+import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO } from "./const";
 import { buildDepositTransaction, buildWithdrawTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
   const [balance, setBalance] = React.useState<bigint | null>(null);
   const [depositCells, setDepositCells] = React.useState<Cell[]>([]);
+  const [withdrawalCells, setWithdrawalCells] = React.useState<Cell[]>([]);
   const [showDropdown, setShowDropdown] = React.useState(false);
 
   initializeConfig(TEST_NET_CONFIG as Config);
@@ -19,15 +20,18 @@ export default function App() {
     try {
       const authData = await connect();
       const balance = await queryBalance(authData.address);
-      const cells = await collectDeposits(authData.address);
+      const deposits = await collectDeposits(authData.address);
+      const withdrawals = await collectWithdrawals(authData.address);
 
       setJoyidInfo(authData);
       setBalance(balance);
-      setDepositCells(cells);
+      setDepositCells(deposits);
+      setWithdrawalCells(withdrawals);
 
       localStorage.setItem('joyidInfo', JSON.stringify(authData));
       localStorage.setItem('balance', balance.toString());
-      localStorage.setItem('depositCells', JSON.stringify(cells));
+      localStorage.setItem('depositCells', JSON.stringify(deposits));
+      localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
     } catch (error) {
       console.error(error);
     }
@@ -124,7 +128,7 @@ export default function App() {
           {depositCells.map((cell, index) => (
             <div key={index} style={{ border: '1px solid #00c891', padding: '10px', marginBottom: '10px', borderRadius: '5px', width: '60%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <p style={{ color: '#00c891' }}>
-                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#00c891', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / 100_000_000} CKBytes</a>
+                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#00c891', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
               </p>
               <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => onWithdraw(cell)}>Withdraw</button>
             </div>
