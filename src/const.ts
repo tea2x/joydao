@@ -1,6 +1,7 @@
 export const NODE_URL = "https://testnet.ckb.dev/";
 export const INDEXER_URL = "https://testnet.ckb.dev/indexer";
 
+// testnet joyid
 export const JOYID_CELLDEP = {
   outPoint: {
     txHash: "0x4dcf3f3b09efac8995d6cbee87c5345e812d310094651e0c3d9a730f32dc9263",
@@ -39,5 +40,7 @@ export const TEST_NET_CONFIG = {
 };
 
 export const TX_FEE = 10000; //shanon
-export const DAO_MINIMUM_CAPACITY = 102; //102ckb
+// joyid lock script argument is 2 bytes longer than that of secp256k1's.
+// so whereas the secp256r1-dao takes 102, joyid-dao takes 104
+export const DAO_MINIMUM_CAPACITY = 104;
 export const MINIMUM_CHANGE_CAPACITY = 61; //61ckb

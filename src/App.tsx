@@ -1,12 +1,11 @@
-import fs from "fs";
 import * as React from 'react';
 import { Cell } from "@ckb-lumos/base";
 import { connect, signRawTransaction } from '@joyid/ckb';
-import { sendTransaction, waitForTransactionConfirmation } from './lib/helpers';
+import { sendTransaction, waitForTransactionConfirmation, queryBalance } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL } from "./const";
-import { buildDepositTransaction, buildWithdrawTransaction, collectDeposits, queryBalance } from "./joy-dao";
+import { buildDepositTransaction, buildWithdrawTransaction, collectDeposits } from "./joy-dao";
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
@@ -30,7 +29,7 @@ export default function App() {
   }
 
   const onDeposit = async () => {
-    const daoTx = await buildDepositTransaction(joyidInfo.address, BigInt(5000));
+    const daoTx = await buildDepositTransaction(joyidInfo.address, BigInt(1234));
     const signedTx = await signRawTransaction(
       daoTx,
       joyidInfo.address

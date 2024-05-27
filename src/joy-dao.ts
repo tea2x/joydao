@@ -1,98 +1,13 @@
 import { CKBTransaction } from '@joyid/ckb';
-import { utils, CellDep, Script, Address, Cell, Transaction} from "@ckb-lumos/base";
-import { NODE_URL, INDEXER_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./const";
-import { addressToScript, encodeToAddress, TransactionSkeleton, createTransactionFromSkeleton} from "@ckb-lumos/helpers";
-import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
+import { CellDep, Address, Cell, Transaction} from "@ckb-lumos/base";
+import { INDEXER_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./const";
+import { addressToScript, TransactionSkeleton, createTransactionFromSkeleton} from "@ckb-lumos/helpers";
 import { dao }  from "@ckb-lumos/common-scripts";
-import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';
-import { Indexer, CellCollector} from "@ckb-lumos/ckb-indexer";
-const { RPC } = require('@ckb-lumos/rpc');
+import { Indexer } from "@ckb-lumos/ckb-indexer";
+import { getBlockHash, ckbytesToShannons, intToHex, hexToInt, collectInputs } from './lib/helpers';
 import { serializeWitnessArgs } from '@nervosnetwork/ckb-sdk-utils';
 
-const { ckbHash } = utils;
-
 const INDEXER = new Indexer(INDEXER_URL);
-
-async function getBlockHash(blockNumber: string) {
-    const rpc = new RPC(NODE_URL);
-    const blockHash = await rpc.getBlockHash(blockNumber);
-    return blockHash;
-  }
-
-function ckbytesToShannons(ckbytes: bigint) {
-	ckbytes = BigInt(ckbytes);
-
-	return ckbytes * BigInt(100_000_000);
-}
-
-function intToHex(intValue: bigint): string {
-    if (typeof intValue !== 'bigint') {
-        throw new Error('Input value must be a BigInt');
-    }
-
-    let hexString = (intValue >= 0 ? '' : '-') + intValue.toString(16);
-
-    if (intValue < 0) {
-        console.warn('Warning: A negative value was passed to intToHex()');
-    }
-
-    return "0x" + hexString;
-}
-
-function hexToInt(hex: string) {
-	hex = String(hex);
-	if(hex.substr(0, 2) !== "0x" && hex.substr(0,3) !== "-0x")
-		throw new Error(`Invalid hex value: "${hex}"`);
-
-	const negative = (hex[0] === "-");
-	const hexValue = hex.replace("-", "");
-	let bigInt = BigInt(hexValue);
-	if(negative) bigInt *= BigInt(-1);
-
-	if(negative)
-		console.warn("Warning: A negative value was passed to hexToInt()");
-
-	return bigInt;
-}
-
-const collectInputs = async(
-    indexer: TerminableCellFetcher, 
-    lockScript: Script, 
-    capacityRequired: bigint
-): Promise<{ inputCells: Cell[], inputCapacity: bigint }> => {
-	const query:CKBIndexerQueryOptions = {lock: lockScript, type: "empty"};
-	const cellCollector = new CellCollector(indexer, query);
-
-	let inputCells:Cell[] = [];
-	let inputCapacity = BigInt(0);
-
-	for await (const cell of cellCollector.collect())
-	{
-		inputCells.push(cell);
-		inputCapacity += hexToInt(cell.cellOutput.capacity);
-
-		if(inputCapacity >= capacityRequired)
-			break;
-	}
-
-	if(inputCapacity < capacityRequired)
-		throw new Error("Insufficient balance.");
-
-	return {inputCells, inputCapacity};
-}
-
-export const queryBalance = async(joyidAddr: Address): Promise<bigint> => {
-    const query:CKBIndexerQueryOptions = {lock: addressToScript(joyidAddr), type: "empty"};
-	const cellCollector = new CellCollector(INDEXER, query);
-
-	let balance = BigInt(0);
-
-	for await (const cell of cellCollector.collect()) {
-		balance += hexToInt(cell.cellOutput.capacity);
-	}
-
-	return balance/BigInt(100_000_000);
-}
 
 /*
   joyIDaddr: the joyID address
