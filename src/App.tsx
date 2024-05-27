@@ -136,20 +136,20 @@ export default function App() {
       {joyidInfo && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80%' }}>
           {depositCells.map((cell, index) => (
-            <div key={index} style={{ border: '1px solid #00c891', padding: '10px', marginBottom: '10px', borderRadius: '5px', width: '60%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <p style={{ color: '#00c891' }}>
-                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#00c891', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
+            <div key={index} style={{ border: '1px solid #aee129', padding: '10px', marginBottom: '10px', borderRadius: '10px', width: '60%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#aee129' }}>
+              <p style={{ color: '#5c6e00' }}>
+                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#5c6e00', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
               </p>
-              <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => onWithdraw(cell)}>Withdraw</button>
+              <button style={{ backgroundColor: '#5c6e00', color: '#aee129', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => onWithdraw(cell)}>Withdraw</button>
             </div>
           ))}
 
           {withdrawalCells.map((cell, index) => (
-            <div key={index} style={{ border: '1px solid #00c891', padding: '10px', marginBottom: '10px', borderRadius: '5px', width: '60%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <p style={{ color: '#00c891' }}>
-                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#00c891', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
+            <div key={index} style={{ border: '1px solid #fe9503', padding: '10px', marginBottom: '10px', borderRadius: '10px', width: '60%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fe9503' }}>
+              <p style={{ color: '#003d66' }}>
+                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#003d66', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
               </p>
-              <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => onUnlock(cell)}>Unlock</button>
+              <button style={{ backgroundColor: '#003d66', color: '#fe9503', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => onUnlock(cell)}>Unlock</button>
             </div>
           ))}
         </div>
