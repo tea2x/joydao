@@ -108,7 +108,7 @@ export default function App() {
       setDepositCells(JSON.parse(storedDepositCells));
     }
     if (storedWithdrawalCells) {
-      setDepositCells(JSON.parse(storedWithdrawalCells));
+      setWithdrawalCells(JSON.parse(storedWithdrawalCells));
     }
   }, []);
 
