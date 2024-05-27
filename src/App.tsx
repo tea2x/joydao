@@ -13,6 +13,8 @@ export default function App() {
   const [depositCells, setDepositCells] = React.useState<Cell[]>([]);
   const [withdrawalCells, setWithdrawalCells] = React.useState<Cell[]>([]);
   const [showDropdown, setShowDropdown] = React.useState(false);
+  const [depositAmount, setDepositAmount] = React.useState('');
+  const [isDepositing, setIsDepositing] = React.useState(false);
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
@@ -38,19 +40,32 @@ export default function App() {
   }
 
   const onDeposit = async () => {
-    const daoTx = await buildDepositTransaction(joyidInfo.address, BigInt(1234));
-    const signedTx = await signRawTransaction(
-      daoTx,
-      joyidInfo.address
-    );
+    if (isDepositing) {
+      try {
+        setDepositAmount(''); // Clear the input field
+        setIsDepositing(false); // Revert back to the deposit button
 
-    // Send the transaction to the RPC node.
-    const txid = await sendTransaction(NODE_URL, signedTx);
-    console.log(`Transaction Sent: ${txid}\n`);
-
-    // Wait for the transaction to confirm.
-    await waitForTransactionConfirmation(NODE_URL, txid);
-    console.log("\n");
+        const amount = BigInt(depositAmount);
+        const daoTx = await buildDepositTransaction(joyidInfo.address, amount);
+        const signedTx = await signRawTransaction(
+          daoTx,
+          joyidInfo.address
+        );
+  
+        // Send the transaction to the RPC node.
+        const txid = await sendTransaction(NODE_URL, signedTx);
+        console.log(`Transaction Sent: ${txid}\n`);
+  
+        // Wait for the transaction to confirm.
+        await waitForTransactionConfirmation(NODE_URL, txid);
+        console.log("\n");
+  
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      setIsDepositing(true);
+    }
   }
 
   const onWithdraw = async (cell: Cell) => {
@@ -92,6 +107,12 @@ export default function App() {
     return `${address.slice(0, 7)}...${address.slice(-8)}`;
   }
 
+  const handleDepositKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      onDeposit();
+    }
+  }
+
   // Check for existing authentication data in localStorage when component mounts
   React.useEffect(() => {
     const storedAuthData = localStorage.getItem('joyidInfo');
@@ -113,12 +134,21 @@ export default function App() {
   }, []);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}
+      onClick={(e) => {
+        e.stopPropagation(); // Prevent event propagation
+        if (isDepositing && e.target === e.currentTarget) {
+          setDepositAmount('');
+          setIsDepositing(false);
+        }
+      }}
+    >
       <h1 style={{ fontSize: '2.5em', textShadow: '2px 2px 2px rgba(0, 0, 0, 0.2)', transform: 'rotate(-2deg)', marginBottom: '20px', color: '#00c891' }}>JoyDAO</h1>
       <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '20px' }}>
         {joyidInfo ? (
-          <div style={{ position: 'relative' }}>
-            <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', marginRight: '10px' }} onClick={() => setShowDropdown(!showDropdown)}>
+          <div style={{ position: 'relative', marginRight: '20px' }}>
+            <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => setShowDropdown(!showDropdown)}>
               {shortenAddress(joyidInfo.address)}
             </button>
             {showDropdown && (
@@ -131,7 +161,19 @@ export default function App() {
         ) : (
           <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', marginRight: '10px' }} onClick={onConnect}>Connect JoyID</button>
         )}
-        <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={onDeposit}>Deposit</button>
+        {joyidInfo && (
+          isDepositing ? (
+            <input
+              type="text"
+              value={depositAmount}
+              onChange={(e) => setDepositAmount(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onDeposit()}
+              style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+            />
+          ) : (
+            <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={onDeposit}>Deposit</button>
+          )
+        )}
       </div>
       {joyidInfo && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80%' }}>
@@ -143,7 +185,7 @@ export default function App() {
               <button style={{ backgroundColor: '#5c6e00', color: '#aee129', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => onWithdraw(cell)}>Withdraw</button>
             </div>
           ))}
-
+  
           {withdrawalCells.map((cell, index) => (
             <div key={index} style={{ border: '1px solid #fe9503', padding: '10px', marginBottom: '10px', borderRadius: '10px', width: '60%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fe9503' }}>
               <p style={{ color: '#003d66' }}>
@@ -156,4 +198,5 @@ export default function App() {
       )}
     </div>
   )
+  
 }
