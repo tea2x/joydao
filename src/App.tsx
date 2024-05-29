@@ -214,9 +214,24 @@ export default function App() {
             <input
               type="text"
               value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
+              placeholder="Enter CKB amount!"
+              onChange={(e) => {
+                if (e.target.value === 'Enter CKB amount!') {
+                  setDepositAmount('');
+                } else {
+                  setDepositAmount(e.target.value);
+                }
+              }}
               onKeyDown={(e) => e.key === 'Enter' && onDeposit()}
-              style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+              style={{
+                backgroundColor: '#ffffff',
+                color: '#808080',
+                padding: '10px 20px',
+                border: '2px solid #00c891',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                animation: 'blink 1s infinite'
+              }}
             />
           ) : (
             <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={onDeposit}>Deposit</button>
@@ -230,7 +245,7 @@ export default function App() {
               <p style={{ color: '#5c6e00' }}>
                 <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#5c6e00', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
               </p>
-              <button style={{ backgroundColor: '#5c6e00', color: '#aee129', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => onWithdraw(cell)}>Withdraw</button>
+              <button style={{ backgroundColor: '#5c6e00', color: '#aee129', padding: '20px 10px', border: 'none', borderRadius: '10px', cursor: 'pointer' }} onClick={() => onWithdraw(cell)}>Withdraw</button>
             </div>
           ))}
   
@@ -239,7 +254,7 @@ export default function App() {
               <p style={{ color: '#003d66' }}>
                 <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#003d66', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
               </p>
-              <button style={{ backgroundColor: '#003d66', color: '#fe9503', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => onUnlock(cell)}>Unlock</button>
+              <button style={{ backgroundColor: '#003d66', color: '#fe9503', padding: '20px 10px', border: 'none', borderRadius: '10px', cursor: 'pointer' }} onClick={() => onUnlock(cell)}>Unlock</button>
             </div>
           ))}
         </div>
