@@ -226,7 +226,7 @@ export default function App() {
       {joyidInfo && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80%' }}>
           {depositCells.map((cell, index) => (
-            <div key={index} style={{ border: '1px solid #aee129', padding: '10px', marginBottom: '10px', borderRadius: '10px', width: '60%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#aee129' }}>
+            <div key={index} style={{ border: '1px solid #aee129', padding: '10px', marginBottom: '10px', borderRadius: '10px', width: '50%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#aee129' }}>
               <p style={{ color: '#5c6e00' }}>
                 <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#5c6e00', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
               </p>
@@ -235,7 +235,7 @@ export default function App() {
           ))}
   
           {withdrawalCells.map((cell, index) => (
-            <div key={index} style={{ border: '1px solid #fe9503', padding: '10px', marginBottom: '10px', borderRadius: '10px', width: '60%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fe9503' }}>
+            <div key={index} style={{ border: '1px solid #fe9503', padding: '10px', marginBottom: '10px', borderRadius: '10px', width: '50%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fe9503' }}>
               <p style={{ color: '#003d66' }}>
                 <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#003d66', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
               </p>
