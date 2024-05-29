@@ -34,8 +34,8 @@ export default function App() {
       localStorage.setItem('balance', balance.toString());
       localStorage.setItem('depositCells', JSON.stringify(deposits));
       localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
-    } catch (error) {
-      // console.error(error);
+    } catch (error:any) {
+        alert('Error: ' + error.message);
     }
   }
 
@@ -60,8 +60,8 @@ export default function App() {
         await waitForTransactionConfirmation(txid);
         console.log("\n");
   
-      } catch (error) {
-        // console.error(error);
+      } catch (error:any) {
+        alert('Error: ' + error.message);
       }
     } else {
       setIsDepositing(true);
@@ -84,8 +84,8 @@ export default function App() {
       // Wait for the transaction to confirm.
       await waitForTransactionConfirmation(txid);
       console.log("\n");
-    } catch(error) {
-      // console.error(error);
+    } catch(error:any) {
+      alert('Error: ' + error.message);
     }
   }
 
@@ -106,8 +106,8 @@ export default function App() {
       // Wait for the transaction to confirm.
       await waitForTransactionConfirmation(txid);
       console.log("\n");
-    } catch(error) {
-      // console.error(error);
+    } catch(error:any) {
+      alert('Error: ' + error.message);
     }
   }
 
