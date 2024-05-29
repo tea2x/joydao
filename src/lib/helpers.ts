@@ -1,18 +1,20 @@
-import {RPC} from "@ckb-lumos/lumos";
-import { Script, Address, Cell, Transaction} from "@ckb-lumos/base";
+import { RPC } from "@ckb-lumos/lumos";
+import { Script, Address, Cell, Transaction, OutPoint} from "@ckb-lumos/base";
 import { NODE_URL, INDEXER_URL, CKB_SHANNON_RATIO } from "../const";
 import { addressToScript } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
 import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';
 import { CellCollector, Indexer} from "@ckb-lumos/ckb-indexer";
+import { LightClientRPC } from "@ckb-lumos/light-client";
 
 const INDEXER = new Indexer(INDEXER_URL);
+const rpc = new RPC(NODE_URL);
+const lightClientRPC = new LightClientRPC(NODE_URL);
 
 export async function getBlockHash(blockNumber: string) {
-    const rpc = new RPC(NODE_URL);
     const blockHash = await rpc.getBlockHash(blockNumber);
     return blockHash;
-  }
+}
 
 export function ckbytesToShannons(ckbytes: bigint) {
 	ckbytes = BigInt(ckbytes);
@@ -89,10 +91,34 @@ export const queryBalance = async(joyidAddr: Address): Promise<bigint> => {
 	return balance/BigInt(CKB_SHANNON_RATIO);
 }
 
-export async function sendTransaction(NODE_URL: string, signedTx: Transaction)
-{
-	const rpc = new RPC(NODE_URL);
+export interface findDepositCellResult {
+    deposit: Cell;
+    depositTrace: OutPoint;
+}
+export const findDepositCellWith = async(withdrawalCell: Cell): Promise<findDepositCellResult> => {
+    const withdrawPhase1TxRecord:any = await rpc.getTransaction(withdrawalCell.outPoint!.txHash);
+	const depositCellTrace = withdrawPhase1TxRecord.transaction.inputs[parseInt(withdrawalCell.outPoint!.index, 16)];
 
+	const depositTxRecord:any = await rpc.getTransaction(depositCellTrace.previousOutput.txHash);
+	const depositCellOutput:any = depositTxRecord.transaction.outputs[parseInt(depositCellTrace.previousOutput.index, 16)];
+
+	let retCell:Cell = {
+		cellOutput: {
+			capacity: depositCellOutput.capacity,
+			lock: depositCellOutput.lock,
+			type: depositCellOutput.type
+		},
+		data: depositTxRecord.transaction.outputsData[parseInt(depositCellTrace.previousOutput.index, 16)],
+		blockHash: depositTxRecord.txStatus.blockHash
+	};
+
+	return {
+		deposit: retCell,
+		depositTrace: depositCellTrace.previousOutput
+	};
+}
+
+export async function sendTransaction(signedTx: Transaction) {
 	let result;
 	try
 	{
@@ -126,8 +152,7 @@ export async function sendTransaction(NODE_URL: string, signedTx: Transaction)
 	return result;
 }
 
-export async function waitForConfirmation(NODE_URL: string, txid: string, updateProgress=((_status:any)=>{}), options:any)
-{
+export async function waitForConfirmation(txid: string, updateProgress=((_status:any)=>{}), options:any) {
 	const defaults = {timeoutMs: 300_000, recheckMs: 250, throwOnNotFound: true};
 	options = {...defaults, ...options};
 
@@ -135,7 +160,6 @@ export async function waitForConfirmation(NODE_URL: string, txid: string, update
 	{
 		let timedOut = false;
 		const timeoutTimer = (options.timeoutMs !== 0) ? setTimeout(()=>{timedOut = true;}, options.timeoutMs) : false;
-		const rpc = new RPC(NODE_URL);
 
 		while(true)
 		{
@@ -173,10 +197,10 @@ export async function waitForConfirmation(NODE_URL: string, txid: string, update
 	});
 }
 
-export async function waitForTransactionConfirmation(NODE_URL:string, txid: string)
+export async function waitForTransactionConfirmation(txid: string)
 {
 	console.log("Waiting for transaction to confirm.");
-	await waitForConfirmation(NODE_URL, txid, (_status)=>console.log("."), {recheckMs: 1_000});
+	await waitForConfirmation(txid, (_status)=>console.log("."), {recheckMs: 1_000});
 }
 
 export default {
@@ -187,5 +211,6 @@ export default {
 	intToHex,
 	hexToInt,
 	collectInputs,
-	queryBalance
+	queryBalance,
+	findDepositCellWith
 };

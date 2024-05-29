@@ -1,13 +1,21 @@
 import { CKBTransaction } from '@joyid/ckb';
-import { CellDep, Address, Cell, Transaction} from "@ckb-lumos/base";
-import { INDEXER_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./const";
-import { addressToScript, TransactionSkeleton, createTransactionFromSkeleton} from "@ckb-lumos/helpers";
+import { CellDep, Address, Cell, Transaction, HexString, PackedDao, PackedSince } from "@ckb-lumos/base";
+import { INDEXER_URL, NODE_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./const";
+import { addressToScript, TransactionSkeleton, createTransactionFromSkeleton, minimalCellCapacityCompatible} from "@ckb-lumos/helpers";
 import { dao }  from "@ckb-lumos/common-scripts";
 import { Indexer } from "@ckb-lumos/ckb-indexer";
-import { getBlockHash, ckbytesToShannons, intToHex, hexToInt, collectInputs } from './lib/helpers';
+import { getBlockHash, ckbytesToShannons, intToHex, hexToInt, collectInputs, findDepositCellWith, findDepositCellResult } from './lib/helpers';
 import { serializeWitnessArgs } from '@nervosnetwork/ckb-sdk-utils';
+import { number } from "@ckb-lumos/codec";
+import { getConfig, Config } from "@ckb-lumos/config-manager";
+import { BI, BIish } from "@ckb-lumos/bi";
+import { RPC } from "@ckb-lumos/rpc";
 
+const DAO_LOCK_PERIOD_EPOCHS_COMPATIBLE = BI.from(180);
+const rpc = new RPC(NODE_URL);
 const INDEXER = new Indexer(INDEXER_URL);
+
+//TODO support Lumos-common script in covering joyId lockscript
 
 /*
   joyIDaddr: the joyID address
@@ -97,6 +105,7 @@ export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell
     txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
 
     // add dao input cell
+    // TODO change block number and test the result
     let clonedInputCell:Cell = daoDepositCell;
     clonedInputCell.blockHash = await getBlockHash(daoDepositCell.blockNumber!);
     txSkeleton = txSkeleton.update("inputs", (i)=>i.push(clonedInputCell));
@@ -131,7 +140,7 @@ export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell
     // add joyID witnesses
     const emptyWitness = { lock: '', inputType: '', outputType: '' };
     txSkeleton = txSkeleton.update("witnesses", (i)=>i.push(serializeWitnessArgs(emptyWitness)));
-    for(let i = 1; i < (collectedInputs.inputCells.length + 1); i ++) {
+    for(let i = 1; i < txSkeleton.inputs.toArray().length; i ++) {
         txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
     }
 
@@ -147,16 +156,202 @@ export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell
   ----
   returns a CKB raw transaction
 */
-export const buildUnlockTransaction = async(joyidAddr: Address, daoDepositCell: Cell, daoWithdrawalCell: Cell): Promise<CKBTransaction> => {
+export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCell: Cell): Promise<CKBTransaction> => {
+    const config = getConfig();
+    _checkDaoScript(config);
+
     let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
 
-    // adding joyID cell deps
+    //  adding DAO celldeps and joyID celldeps
+    const template = config.SCRIPTS.DAO!;
+    const daoCellDep = {
+        outPoint: {
+        txHash: template.TX_HASH,
+        index: template.INDEX,
+        },
+        depType: template.DEP_TYPE,
+    }
+    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(daoCellDep as CellDep));
     txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
 
-    // generating dao withdrawal phase 2 skeleton
-    txSkeleton = await dao.unlock(txSkeleton, daoDepositCell, daoWithdrawalCell, joyidAddr, joyidAddr);
+    // find the deposit cell
+    const ret:findDepositCellResult = await findDepositCellWith(daoWithdrawalCell);
+    let daoDepositCell = ret.deposit;
+    daoDepositCell.outPoint = ret.depositTrace;
+
+    // enrich DAO withdrawal cell data with block hash info
+    daoWithdrawalCell.blockHash = await getBlockHash(daoWithdrawalCell.blockNumber!);
+
+    // calculate since & capacity (interest)
+    const depositBlockHeader = await rpc.getHeader(daoDepositCell.blockHash!);
+    const depositEpoch = parseEpochCompatible(depositBlockHeader!.epoch);
+  
+    const withdrawBlockHeader = await rpc.getHeader(daoWithdrawalCell.blockHash!);
+    const withdrawEpoch = parseEpochCompatible(withdrawBlockHeader!.epoch);
+  
+    const withdrawFraction = withdrawEpoch.index.mul(depositEpoch.length);
+    const depositFraction = depositEpoch.index.mul(withdrawEpoch.length);
+    let depositedEpochs = withdrawEpoch.number.sub(depositEpoch.number);
+  
+    if (withdrawFraction.gt(depositFraction)) {
+      depositedEpochs = depositedEpochs.add(1);
+    }
+  
+    const lockEpochs = depositedEpochs
+      .add(DAO_LOCK_PERIOD_EPOCHS_COMPATIBLE)
+      .sub(1)
+      .div(DAO_LOCK_PERIOD_EPOCHS_COMPATIBLE)
+      .mul(DAO_LOCK_PERIOD_EPOCHS_COMPATIBLE);
+    const minimalSinceEpoch = {
+      number: BI.from(depositEpoch.number.add(lockEpochs)),
+      index: BI.from(depositEpoch.index),
+      length: BI.from(depositEpoch.length),
+    };
+    const minimalSince = epochSinceCompatible(minimalSinceEpoch);
+  
+    const outputCapacity: HexString =
+      "0x" +
+      calculateMaximumWithdrawCompatible(
+        daoWithdrawalCell,
+        depositBlockHeader!.dao,
+        withdrawBlockHeader!.dao
+      ).toString(16);
+  
+    txSkeleton = txSkeleton.update("outputs", (outputs) => {
+      return outputs.push({
+        cellOutput: {
+          capacity: outputCapacity,
+          lock: addressToScript(joyidAddr),
+          type: undefined,
+        },
+        data: "0x",
+        outPoint: undefined,
+        blockHash: undefined,
+      });
+    });
+  
+    const since: PackedSince = "0x" + minimalSince.toString(16);
+
+    // add header deps
+    txSkeleton = txSkeleton.update("headerDeps", (headerDeps) => {
+        return headerDeps.push(daoDepositCell.blockHash!, daoWithdrawalCell.blockHash!);
+    });
+
+    // adding dao withdrawal cell as input
+    txSkeleton = txSkeleton.update("inputs", (i)=>i.push(daoWithdrawalCell));
+    if (since) {
+        txSkeleton = txSkeleton.update("inputSinces", (inputSinces) => {
+          return inputSinces.set(txSkeleton.get("inputs").size - 1, since);
+        });
+    }
+
+    // add joyID witnesses place holder
+    const emptyWitness = { lock: '', inputType: '0x0000000000000000', outputType: '' };
+    txSkeleton = txSkeleton.update("witnesses", (i)=>i.push(serializeWitnessArgs(emptyWitness)));
+    for(let i = 1; i < txSkeleton.inputs.toArray().length; i ++) {
+        txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
+    }
+
+    // // fix inputs / outputs / witnesses
+    // txSkeleton = txSkeleton.update("fixedEntries", (fixedEntries) => {
+    //     return fixedEntries.push(
+    //         {
+    //         field: "inputs",
+    //         index: txSkeleton.get("inputs").size - 1,
+    //         },
+    //         {
+    //         field: "outputs",
+    //         index: txSkeleton.get("outputs").size - 1,
+    //         },
+    //         {
+    //         field: "witnesses",
+    //         index: txSkeleton.get("witnesses").size - 1,
+    //         },
+    //         {
+    //         field: "headerDeps",
+    //         index: txSkeleton.get("headerDeps").size - 2,
+    //         }
+    //     );
+    // });
 
     // converting skeleton to CKB transaction
     const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
+    console.log(">>>daoWithdrawTx: ", JSON.stringify(daoWithdrawTx, null, 2))
     return daoWithdrawTx as CKBTransaction;
+}
+
+function epochSinceCompatible({
+    length,
+    index,
+    number,
+  }: {
+    length: BIish;
+    index: BIish;
+    number: BIish;
+}): BI {
+    const _length = BI.from(length);
+    const _index = BI.from(index);
+    const _number = BI.from(number);
+    return BI.from(0x20)
+      .shl(56)
+      .add(_length.shl(40))
+      .add(_index.shl(24))
+      .add(_number);
+}
+
+export function calculateMaximumWithdrawCompatible(
+    withdrawCell: Cell,
+    depositDao: PackedDao,
+    withdrawDao: PackedDao
+): BI {
+    const depositAR = BI.from(extractDaoDataCompatible(depositDao).ar);
+    const withdrawAR = BI.from(extractDaoDataCompatible(withdrawDao).ar);
+  
+    const occupiedCapacity = BI.from(minimalCellCapacityCompatible(withdrawCell));
+    const outputCapacity = BI.from(withdrawCell.cellOutput.capacity);
+    const countedCapacity = outputCapacity.sub(occupiedCapacity);
+    const withdrawCountedCapacity = countedCapacity
+      .mul(withdrawAR)
+      .div(depositAR);
+  
+    return withdrawCountedCapacity.add(occupiedCapacity);
+}
+
+export function extractDaoDataCompatible(dao: PackedDao): {
+    [key: string]: BI;
+} {
+    if (!/^(0x)?([0-9a-fA-F]){64}$/.test(dao)) {
+      throw new Error("Invalid dao format!");
+    }
+  
+    const len = 8 * 2;
+    const hex = dao.startsWith("0x") ? dao.slice(2) : dao;
+  
+    return ["c", "ar", "s", "u"]
+      .map((key, i) => {
+        return {
+          [key]: number.Uint64LE.unpack("0x" + hex.slice(len * i, len * (i + 1))),
+        };
+      })
+      .reduce((result, c) => ({ ...result, ...c }), {});
+}
+
+function _checkDaoScript(config: Config): void {
+    const DAO_SCRIPT = config.SCRIPTS.DAO;
+    if (!DAO_SCRIPT) {
+      throw new Error("Provided config does not have DAO script setup!");
+    }
+}
+
+function parseEpochCompatible(epoch: BIish): {
+    length: BI;
+    index: BI;
+    number: BI;
+} {
+    const _epoch = BI.from(epoch);
+    return {
+      length: _epoch.shr(40).and(0xfff),
+      index: _epoch.shr(24).and(0xfff),
+      number: _epoch.and(0xffffff),
+    };
 }

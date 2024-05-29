@@ -5,7 +5,7 @@ import { sendTransaction, waitForTransactionConfirmation, queryBalance } from '.
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO } from "./const";
-import { buildDepositTransaction, buildWithdrawTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
+import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
@@ -43,7 +43,7 @@ export default function App() {
     if (isDepositing) {
       try {
         setDepositAmount(''); // Clear the input field
-        setIsDepositing(false); // Revert back to the deposit button
+        setIsDepositing(false); // Revert back to the deposit button //TODO
 
         const amount = BigInt(depositAmount);
         const daoTx = await buildDepositTransaction(joyidInfo.address, amount);
@@ -53,11 +53,11 @@ export default function App() {
         );
   
         // Send the transaction to the RPC node.
-        const txid = await sendTransaction(NODE_URL, signedTx);
+        const txid = await sendTransaction(signedTx);
         console.log(`Transaction Sent: ${txid}\n`);
   
         // Wait for the transaction to confirm.
-        await waitForTransactionConfirmation(NODE_URL, txid);
+        await waitForTransactionConfirmation(txid);
         console.log("\n");
   
       } catch (error) {
@@ -77,16 +77,30 @@ export default function App() {
     );
 
     // Send the transaction to the RPC node.
-    const txid = await sendTransaction(NODE_URL, signedTx);
+    const txid = await sendTransaction(signedTx);
     console.log(`Transaction Sent: ${txid}\n`);
 
     // Wait for the transaction to confirm.
-    await waitForTransactionConfirmation(NODE_URL, txid);
+    await waitForTransactionConfirmation(txid);
     console.log("\n");
   }
 
-  const onUnlock = async(cell: Cell) => {
-    //TODO
+  const onUnlock = async(withdrawalCell: Cell) => {
+    const daoTx = await buildUnlockTransaction(joyidInfo.address, withdrawalCell);
+
+    const signedTx = await signRawTransaction(
+      daoTx,
+      joyidInfo.address
+    );
+    console.log(">>>signedTx: ", JSON.stringify(signedTx, null, 2))
+
+    // Send the transaction to the RPC node.
+    const txid = await sendTransaction(signedTx);
+    console.log(`Transaction Sent: ${txid}\n`);
+
+    // Wait for the transaction to confirm.
+    await waitForTransactionConfirmation(txid);
+    console.log("\n");
   }
 
   const onSignOut = async () => {
@@ -107,7 +121,7 @@ export default function App() {
     return `${address.slice(0, 7)}...${address.slice(-8)}`;
   }
 
-  const handleDepositKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleDepositKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => { //TODO
     if (event.key === 'Enter') {
       onDeposit();
     }
@@ -198,5 +212,4 @@ export default function App() {
       )}
     </div>
   )
-  
 }
