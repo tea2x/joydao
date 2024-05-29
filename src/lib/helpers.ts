@@ -1,6 +1,6 @@
 import { RPC } from "@ckb-lumos/lumos";
 import { Script, Address, Cell, Transaction, OutPoint} from "@ckb-lumos/base";
-import { NODE_URL, INDEXER_URL, CKB_SHANNON_RATIO } from "../const";
+import { NODE_URL, INDEXER_URL, CKB_SHANNON_RATIO } from "../config";
 import { addressToScript } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
 import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';

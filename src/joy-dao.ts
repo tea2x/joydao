@@ -1,6 +1,6 @@
 import { CKBTransaction } from '@joyid/ckb';
 import { CellDep, Address, Cell, Transaction, HexString, PackedDao, PackedSince } from "@ckb-lumos/base";
-import { INDEXER_URL, NODE_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./const";
+import { INDEXER_URL, NODE_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./config";
 import { addressToScript, TransactionSkeleton, createTransactionFromSkeleton, minimalCellCapacityCompatible} from "@ckb-lumos/helpers";
 import { dao }  from "@ckb-lumos/common-scripts";
 import { Indexer } from "@ckb-lumos/ckb-indexer";
@@ -220,7 +220,7 @@ export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCel
     txSkeleton = txSkeleton.update("outputs", (outputs) => {
       return outputs.push({
         cellOutput: {
-          capacity: outputCapacity,
+          capacity: intToHex(BigInt(parseInt(outputCapacity,16) - TX_FEE)),
           lock: addressToScript(joyidAddr),
           type: undefined,
         },
@@ -252,27 +252,27 @@ export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCel
         txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
     }
 
-    // // fix inputs / outputs / witnesses
-    // txSkeleton = txSkeleton.update("fixedEntries", (fixedEntries) => {
-    //     return fixedEntries.push(
-    //         {
-    //         field: "inputs",
-    //         index: txSkeleton.get("inputs").size - 1,
-    //         },
-    //         {
-    //         field: "outputs",
-    //         index: txSkeleton.get("outputs").size - 1,
-    //         },
-    //         {
-    //         field: "witnesses",
-    //         index: txSkeleton.get("witnesses").size - 1,
-    //         },
-    //         {
-    //         field: "headerDeps",
-    //         index: txSkeleton.get("headerDeps").size - 2,
-    //         }
-    //     );
-    // });
+    // fix inputs / outputs / witnesses
+    txSkeleton = txSkeleton.update("fixedEntries", (fixedEntries) => {
+        return fixedEntries.push(
+            {
+            field: "inputs",
+            index: txSkeleton.get("inputs").size - 1,
+            },
+            {
+            field: "outputs",
+            index: txSkeleton.get("outputs").size - 1,
+            },
+            {
+            field: "witnesses",
+            index: txSkeleton.get("witnesses").size - 1,
+            },
+            {
+            field: "headerDeps",
+            index: txSkeleton.get("headerDeps").size - 2,
+            }
+        );
+    });
 
     // converting skeleton to CKB transaction
     const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);

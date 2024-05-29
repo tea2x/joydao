@@ -4,7 +4,7 @@ import { connect, signRawTransaction } from '@joyid/ckb';
 import { sendTransaction, waitForTransactionConfirmation, queryBalance } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
-import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO } from "./const";
+import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 
 export default function App() {
