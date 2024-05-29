@@ -35,7 +35,7 @@ export default function App() {
       localStorage.setItem('depositCells', JSON.stringify(deposits));
       localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
     } catch (error) {
-      console.error(error);
+      // console.error(error);
     }
   }
 
@@ -61,7 +61,7 @@ export default function App() {
         console.log("\n");
   
       } catch (error) {
-        console.error(error);
+        // console.error(error);
       }
     } else {
       setIsDepositing(true);
@@ -69,38 +69,46 @@ export default function App() {
   }
 
   const onWithdraw = async (cell: Cell) => {
-    const daoTx = await buildWithdrawTransaction(joyidInfo.address, cell);
+    try {
+      const daoTx = await buildWithdrawTransaction(joyidInfo.address, cell);
 
-    const signedTx = await signRawTransaction(
-      daoTx,
-      joyidInfo.address
-    );
+      const signedTx = await signRawTransaction(
+        daoTx,
+        joyidInfo.address
+      );
 
-    // Send the transaction to the RPC node.
-    const txid = await sendTransaction(signedTx);
-    console.log(`Transaction Sent: ${txid}\n`);
+      // Send the transaction to the RPC node.
+      const txid = await sendTransaction(signedTx);
+      console.log(`Transaction Sent: ${txid}\n`);
 
-    // Wait for the transaction to confirm.
-    await waitForTransactionConfirmation(txid);
-    console.log("\n");
+      // Wait for the transaction to confirm.
+      await waitForTransactionConfirmation(txid);
+      console.log("\n");
+    } catch(error) {
+      // console.error(error);
+    }
   }
 
   const onUnlock = async(withdrawalCell: Cell) => {
-    const daoTx = await buildUnlockTransaction(joyidInfo.address, withdrawalCell);
+    try {
+      const daoTx = await buildUnlockTransaction(joyidInfo.address, withdrawalCell);
 
-    const signedTx = await signRawTransaction(
-      daoTx,
-      joyidInfo.address
-    );
-    console.log(">>>signedTx: ", JSON.stringify(signedTx, null, 2))
+      const signedTx = await signRawTransaction(
+        daoTx,
+        joyidInfo.address
+      );
+      console.log(">>>signedTx: ", JSON.stringify(signedTx, null, 2))
 
-    // Send the transaction to the RPC node.
-    const txid = await sendTransaction(signedTx);
-    console.log(`Transaction Sent: ${txid}\n`);
+      // Send the transaction to the RPC node.
+      const txid = await sendTransaction(signedTx);
+      console.log(`Transaction Sent: ${txid}\n`);
 
-    // Wait for the transaction to confirm.
-    await waitForTransactionConfirmation(txid);
-    console.log("\n");
+      // Wait for the transaction to confirm.
+      await waitForTransactionConfirmation(txid);
+      console.log("\n");
+    } catch(error) {
+      // console.error(error);
+    }
   }
 
   const onSignOut = async () => {
