@@ -277,7 +277,6 @@ export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCel
 
     // converting skeleton to CKB transaction
     const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-    console.log(">>>daoWithdrawTx: ", JSON.stringify(daoWithdrawTx, null, 2))
     return daoWithdrawTx as CKBTransaction;
 }
 

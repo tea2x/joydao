@@ -18,6 +18,24 @@ export default function App() {
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
+  const updateDaoList = async () => {
+    try {
+      const balance = await queryBalance(joyidInfo.address);
+      const deposits = await collectDeposits(joyidInfo.address);
+      const withdrawals = await collectWithdrawals(joyidInfo.address);
+
+      setBalance(balance);
+      setDepositCells(deposits);
+      setWithdrawalCells(withdrawals);
+
+      localStorage.setItem('balance', balance.toString());
+      localStorage.setItem('depositCells', JSON.stringify(deposits));
+      localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
+    } catch (error:any) {
+      alert('Error: ' + error.message);
+    }
+  }
+  
   const onConnect = async () => {
     try {
       const authData = await connect();
@@ -58,8 +76,10 @@ export default function App() {
   
         // Wait for the transaction to confirm.
         await waitForTransactionConfirmation(txid);
-        console.log("\n");
-  
+
+        // update deposit/withdrawal list and balance
+        await updateDaoList();
+
       } catch (error:any) {
         alert('Error: ' + error.message);
       }
@@ -83,7 +103,10 @@ export default function App() {
 
       // Wait for the transaction to confirm.
       await waitForTransactionConfirmation(txid);
-      console.log("\n");
+
+      // update deposit/withdrawal list and balance
+      await updateDaoList();
+
     } catch(error:any) {
       alert('Error: ' + error.message);
     }
@@ -105,7 +128,10 @@ export default function App() {
 
       // Wait for the transaction to confirm.
       await waitForTransactionConfirmation(txid);
-      console.log("\n");
+
+      // update deposit/withdrawal list and balance
+      await updateDaoList();
+      
     } catch(error:any) {
       alert('Error: ' + error.message);
     }
