@@ -1,0 +1,60 @@
+.container {
+    width: 80%;
+    height: 500px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+  
+.box-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-gap: 1px;
+    padding: 20px;
+}
+
+.box {
+    background-color: #aee129;
+    border: 1px solid #5c6e00;
+    border-radius: 2px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 150px;
+    height: 150px;
+  }
+
+.box.withdrawal {
+    background-color: #fe9503;
+    border-color: #003d66;
+}
+
+.box-amount {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #5c6e00;
+}
+
+.box.withdrawal .box-amount {
+color: #003d66;
+}
+
+.box-button {
+    background-color: #5c6e00;
+    color: #aee129;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.box.withdrawal .box-button {
+    background-color: #003d66;
+    color: #fe9503;
+}

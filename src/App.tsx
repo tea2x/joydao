@@ -6,6 +6,7 @@ import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
+import './styles.css';
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
@@ -192,6 +193,11 @@ export default function App() {
         }
       }}
     >
+      <head>
+        {/* Other head elements */}
+        <link rel="stylesheet" href="styles.css" />
+      </head>
+
       <h1 style={{ fontSize: '2.5em', textShadow: '2px 2px 2px rgba(0, 0, 0, 0.2)', transform: 'rotate(-2deg)', marginBottom: '20px', color: '#00c891' }}>JoyDAO</h1>
       <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '20px' }}>
         {joyidInfo ? (
@@ -238,27 +244,22 @@ export default function App() {
           )
         )}
       </div>
-      {joyidInfo && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80%' }}>
-          {depositCells.map((cell, index) => (
-            <div key={index} style={{ border: '1px solid #aee129', padding: '10px', marginBottom: '10px', borderRadius: '10px', width: '50%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#aee129' }}>
-              <p style={{ color: '#5c6e00' }}>
-                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#5c6e00', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
-              </p>
-              <button style={{ backgroundColor: '#5c6e00', color: '#aee129', padding: '20px 10px', border: 'none', borderRadius: '10px', cursor: 'pointer' }} onClick={() => onWithdraw(cell)}>Withdraw</button>
-            </div>
-          ))}
-  
-          {withdrawalCells.map((cell, index) => (
-            <div key={index} style={{ border: '1px solid #fe9503', padding: '10px', marginBottom: '10px', borderRadius: '10px', width: '50%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fe9503' }}>
-              <p style={{ color: '#003d66' }}>
-                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#003d66', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
-              </p>
-              <button style={{ backgroundColor: '#003d66', color: '#fe9503', padding: '20px 10px', border: 'none', borderRadius: '10px', cursor: 'pointer' }} onClick={() => onUnlock(cell)}>Unlock</button>
-            </div>
-          ))}
+        <div className="container">
+          <div className="box-container">
+            {depositCells.map((cell, index) => (
+              <div key={index} className="box">
+                <p className="box-amount">{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</p>
+                <button className="box-button" onClick={() => onWithdraw(cell)}>Withdraw</button>
+              </div>
+            ))}
+            {withdrawalCells.map((cell, index) => (
+              <div key={index} className="box withdrawal">
+                <p className="box-amount">{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</p>
+                <button className="box-button" onClick={() => onUnlock(cell)}>Unlock</button>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
     </div>
   )
 }
