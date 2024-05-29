@@ -194,71 +194,61 @@ export default function App() {
     >
       <h1 style={{ fontSize: '2.5em', textShadow: '2px 2px 2px rgba(0, 0, 0, 0.2)', transform: 'rotate(-2deg)', marginBottom: '20px', color: '#00c891' }}>JoyDAO</h1>
       <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '20px' }}>
-        {joyidInfo ? (
-          <div style={{ position: 'relative', marginRight: '20px' }}>
-            <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => setShowDropdown(!showDropdown)}>
-              {shortenAddress(joyidInfo.address)}
-            </button>
-            {showDropdown && (
-              <div style={{ position: 'absolute', backgroundColor: '#fff', border: '1px solid #00c891', padding: '10px', borderRadius: '5px', zIndex: '1', color: '#00c891' }}>
-                <p>Balance: {balance ? balance.toString() + ' CKB' : 'Loading...'}</p>
-                <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer', marginTop: '10px' }} onClick={onSignOut}>Sign Out</button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', marginRight: '10px' }} onClick={onConnect}>Connect JoyID</button>
-        )}
-        {joyidInfo && (
-          isDepositing ? (
-            <input
-              type="text"
-              value={depositAmount}
-              placeholder="Enter CKB amount!"
-              onChange={(e) => {
-                if (e.target.value === 'Enter CKB amount!') {
-                  setDepositAmount('');
-                } else {
-                  setDepositAmount(e.target.value);
-                }
-              }}
-              onKeyDown={(e) => e.key === 'Enter' && onDeposit()}
-              style={{
-                backgroundColor: '#ffffff',
-                color: '#808080',
-                padding: '10px 20px',
-                border: '2px solid #00c891',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                animation: 'blink 1s infinite'
-              }}
-            />
-          ) : (
-            <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={onDeposit}>Deposit</button>
-          )
-        )}
+        {/* ... */}
       </div>
       {joyidInfo && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80%' }}>
-          {depositCells.map((cell, index) => (
-            <div key={index} style={{ border: '1px solid #aee129', padding: '10px', marginBottom: '10px', borderRadius: '10px', width: '50%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#aee129' }}>
-              <p style={{ color: '#5c6e00' }}>
-                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#5c6e00', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
-              </p>
-              <button style={{ backgroundColor: '#5c6e00', color: '#aee129', padding: '20px 10px', border: 'none', borderRadius: '10px', cursor: 'pointer' }} onClick={() => onWithdraw(cell)}>Withdraw</button>
-            </div>
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', maxWidth: '80%' }}>
+            {[...depositCells, ...withdrawalCells].sort((a, b) => parseInt(b.cellOutput.capacity, 16) - parseInt(a.cellOutput.capacity, 16)).map((cell, index) => {
+              const capacity = parseInt(cell.cellOutput.capacity, 16);
+              const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
+              const boxSize = Math.max(50, (capacity / totalCapacity) * 300);
+              const isDeposit = depositCells.some(c => c.outPoint?.txHash === cell.outPoint?.txHash);
+              const backgroundColor = isDeposit ? '#aee129' : '#fe9503';
+              const textColor = isDeposit ? '#5c6e00' : '#003d66';
+              const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
+              const buttonTextColor = isDeposit ? '#aee129' : '#fe9503';
   
-          {withdrawalCells.map((cell, index) => (
-            <div key={index} style={{ border: '1px solid #fe9503', padding: '10px', marginBottom: '10px', borderRadius: '10px', width: '50%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fe9503' }}>
-              <p style={{ color: '#003d66' }}>
-                <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: '#003d66', textDecoration: 'none' }}>{parseInt(cell.cellOutput.capacity, 16) / CKB_SHANNON_RATIO} CKBytes</a>
-              </p>
-              <button style={{ backgroundColor: '#003d66', color: '#fe9503', padding: '20px 10px', border: 'none', borderRadius: '10px', cursor: 'pointer' }} onClick={() => onUnlock(cell)}>Unlock</button>
-            </div>
-          ))}
+              return (
+                <div
+                  key={index}
+                  style={{
+                    border: `1px solid ${backgroundColor}`,
+                    padding: '10px',
+                    margin: '10px',
+                    borderRadius: '10px',
+                    width: `${boxSize}px`,
+                    height: `${boxSize}px`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: backgroundColor
+                  }}
+                >
+                  <p style={{ color: textColor, fontSize: '0.8em' }}>
+                    <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: textColor, textDecoration: 'none' }}>{(capacity / CKB_SHANNON_RATIO).toFixed(2)} CKBytes</a>
+                  </p>
+                  <button
+                    style={{
+                      backgroundColor: buttonColor,
+                      color: buttonTextColor,
+                      padding: '10px',
+                      border: 'none',
+                      borderRadius: '10px',
+                      cursor: 'pointer',
+                      fontSize: '0.8em'
+                    }}
+                    onClick={() => isDeposit ? onWithdraw(cell) : onUnlock(cell)}
+                  >
+                    {isDeposit ? 'Withdraw' : 'Unlock'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
-  )
+  );
 }
