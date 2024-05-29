@@ -245,7 +245,8 @@ export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCel
         });
     }
 
-    // add joyID witnesses place holder
+    // add joyID witnesses place holder; inputType is 64-bit unsigned little-endian integer format 
+    // of the deposit cell header index in header_deps, which is 0x0000000000000000 for index 0
     const emptyWitness = { lock: '', inputType: '0x0000000000000000', outputType: '' };
     txSkeleton = txSkeleton.update("witnesses", (i)=>i.push(serializeWitnessArgs(emptyWitness)));
     for(let i = 1; i < txSkeleton.inputs.toArray().length; i ++) {

@@ -39,7 +39,7 @@ export const TEST_NET_CONFIG = {
   }
 };
 
-export const TX_FEE = 10000; //shanon
+export const TX_FEE = 10_000; //shanon
 // joyid lock script argument is 2 bytes longer than that of secp256k1's.
 // so whereas the secp256r1-dao takes 102, joyid-dao takes 104
 export const DAO_MINIMUM_CAPACITY = 104;
