@@ -6,6 +6,7 @@ import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
+import "./styles.css";
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
@@ -182,13 +183,7 @@ export default function App() {
   }, []);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '20px',
-      }}
+    <div className='container'
       onClick={(e) => {
         e.stopPropagation(); // Prevent event propagation
         if (isDepositing && e.target === e.currentTarget) {
@@ -197,91 +192,32 @@ export default function App() {
         }
       }}
     >
-      <h1
-        style={{
-          fontSize: '2.5em',
-          textShadow: '2px 2px 2px rgba(0, 0, 0, 0.2)',
-          transform: 'rotate(-2deg)',
-          marginBottom: '20px',
-          color: '#00c891',
-        }}
-      >
+      <h1 className='title'>
         JoyDAO
       </h1>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          width: '100%',
-          marginBottom: '20px',
-        }}
-      >
+
+      <div className='signin-account-deposit-button-area'>
         {joyidInfo ? (
-          <div
-            style={{
-              position: 'relative',
-              marginRight: '20px',
-            }}
-          >
-            <button
-              style={{
-                backgroundColor: '#00c891',
-                color: '#fff',
-                padding: '10px 20px',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-              }}
-              onClick={() => setShowDropdown(!showDropdown)}
-            >
+          <div className='account-button'>
+            <button className='dropdown-button' onClick={() => setShowDropdown(!showDropdown)}>
               {shortenAddress(joyidInfo.address)}
             </button>
+
             {showDropdown && (
-              <div
-                style={{
-                  position: 'absolute',
-                  backgroundColor: '#fff',
-                  border: '1px solid #00c891',
-                  padding: '10px',
-                  borderRadius: '5px',
-                  zIndex: '1',
-                  color: '#00c891',
-                }}
-              >
+              <div className='dropdown-menu'>
                 <p>Balance: {balance ? balance.toString() + ' CKB' : 'Loading...'}</p>
-                <button
-                  style={{
-                    backgroundColor: '#00c891',
-                    color: '#fff',
-                    padding: '5px 10px',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    marginTop: '10px',
-                  }}
-                  onClick={onSignOut}
-                >
+                <button className='signout-button' onClick={onSignOut}>
                   Sign Out
                 </button>
               </div>
             )}
           </div>
         ) : (
-          <button
-            style={{
-              backgroundColor: '#00c891',
-              color: '#fff',
-              padding: '10px 20px',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              marginRight: '10px',
-            }}
-            onClick={onConnect}
-          >
+          <button className='connect-button' onClick={onConnect}>
             Connect JoyID
           </button>
         )}
+
         {joyidInfo && (
           isDepositing ? (
             <input
@@ -296,51 +232,19 @@ export default function App() {
                 }
               }}
               onKeyDown={(e) => e.key === 'Enter' && onDeposit()}
-              style={{
-                backgroundColor: '#ffffff',
-                color: '#808080',
-                padding: '10px 20px',
-                border: '2px solid #00c891',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                animation: 'blink 1s infinite',
-              }}
+              className='deposit-textbox'
             />
           ) : (
-            <button
-              style={{
-                backgroundColor: '#00c891',
-                color: '#fff',
-                padding: '10px 20px',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-              }}
-              onClick={onDeposit}
-            >
+            <button className='deposit-button' onClick={onDeposit}>
               Deposit
             </button>
           )
         )}
       </div>
+      
       {joyidInfo && (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              alignItems: 'center',
-              maxWidth: '80%',
-            }}
-          >
+        <div className='dao-cell-area'>
+          <div className='cell-grid'>
             {[...depositCells, ...withdrawalCells].sort(() => Math.random() - 0.5).map((cell, index) => {
               const capacity = parseInt(cell.cellOutput.capacity, 16);
               const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
@@ -357,7 +261,6 @@ export default function App() {
               const textColor = isDeposit ? '#5c6e00' : '#003d66';
               const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
               const buttonTextColor = isDeposit ? '#aee129' : '#fe9503';
-  
               return (
                 <div
                   key={index}
@@ -381,17 +284,18 @@ export default function App() {
                       fontSize: '0.8em',
                     }}
                   >
-                    <a
-                      href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        color: textColor,
-                        textDecoration: 'none',
-                      }}
-                    >
-                      {(capacity / CKB_SHANNON_RATIO).toFixed(2)} CKBytes
-                    </a>
+                  <a
+                    href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      color: textColor,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    {(capacity / CKB_SHANNON_RATIO).toFixed(2)} CKBytes
+                  </a>
+                  
                   </p>
                   <button
                     style={{

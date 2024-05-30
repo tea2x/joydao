@@ -1,0 +1,161 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .container:active {
+    cursor: pointer;
+  }
+  
+  .title {
+    font-size: 2.5em;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+    transform: rotate(-2deg);
+    margin-bottom: 20px;
+    color: #00c891;
+  }
+  
+  .signin-account-deposit-button-area {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .account-button {
+    position: relative;
+    margin-right: 20px;
+  }
+  
+  .connect-button {
+    background-color: #00c891;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  
+  .dropdown {
+    position: relative;
+  }
+  
+  .dropdown-button {
+    background-color: #00c891;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .signout-button {
+    background-color: #00c891;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #00c891;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1;
+    color: #00c891;
+  }
+  
+  .deposit-button {
+    background-color: #00c891;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .deposit-textbox {
+    background-color: #ffffff;
+    color: #808080;
+    padding: 10px 20px;
+    border: 2px solid #00c891;
+    border-radius: 5px;
+    cursor: pointer;
+    animation: blink 1s infinite;
+  }
+  
+  .dao-cell-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .cell-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    max-width: 80%;
+  }
+  
+  .cell {
+    border: 1px solid var(--background-color);
+    padding: 10px;
+    margin: 10px;
+    border-radius: 10px;
+    width: var(--box-size);
+    height: var(--box-size);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background-color);
+  }
+  
+  
+  .cell-link {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  .cell-button {
+    background-color: inherit;
+    color: inherit;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.8em;
+  }
+
+  .withdraw-unlock-button {
+    background-color: var(--button-color);
+    color: var(--button-text-color);
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.8em;
+  }
+  
+  
+  @keyframes blink {
+    0% {
+      border-color: #00c891;
+    }
+    50% {
+      border-color: #ffffff;
+    }
+    100% {
+      border-color: #00c891;
+    }
+  }
+  
