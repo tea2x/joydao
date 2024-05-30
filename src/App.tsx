@@ -183,7 +183,12 @@ export default function App() {
 
   return (
     <div
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '20px',
+      }}
       onClick={(e) => {
         e.stopPropagation(); // Prevent event propagation
         if (isDepositing && e.target === e.currentTarget) {
@@ -192,22 +197,90 @@ export default function App() {
         }
       }}
     >
-      <h1 style={{ fontSize: '2.5em', textShadow: '2px 2px 2px rgba(0, 0, 0, 0.2)', transform: 'rotate(-2deg)', marginBottom: '20px', color: '#00c891' }}>JoyDAO</h1>
-      <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '20px' }}>
+      <h1
+        style={{
+          fontSize: '2.5em',
+          textShadow: '2px 2px 2px rgba(0, 0, 0, 0.2)',
+          transform: 'rotate(-2deg)',
+          marginBottom: '20px',
+          color: '#00c891',
+        }}
+      >
+        JoyDAO
+      </h1>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          width: '100%',
+          marginBottom: '20px',
+        }}
+      >
         {joyidInfo ? (
-          <div style={{ position: 'relative', marginRight: '20px' }}>
-            <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={() => setShowDropdown(!showDropdown)}>
+          <div
+            style={{
+              position: 'relative',
+              marginRight: '20px',
+            }}
+          >
+            <button
+              style={{
+                backgroundColor: '#00c891',
+                color: '#fff',
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+              }}
+              onClick={() => setShowDropdown(!showDropdown)}
+            >
               {shortenAddress(joyidInfo.address)}
             </button>
             {showDropdown && (
-              <div style={{ position: 'absolute', backgroundColor: '#fff', border: '1px solid #00c891', padding: '10px', borderRadius: '5px', zIndex: '1', color: '#00c891' }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  backgroundColor: '#fff',
+                  border: '1px solid #00c891',
+                  padding: '10px',
+                  borderRadius: '5px',
+                  zIndex: '1',
+                  color: '#00c891',
+                }}
+              >
                 <p>Balance: {balance ? balance.toString() + ' CKB' : 'Loading...'}</p>
-                <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '5px 10px', border: 'none', borderRadius: '5px', cursor: 'pointer', marginTop: '10px' }} onClick={onSignOut}>Sign Out</button>
+                <button
+                  style={{
+                    backgroundColor: '#00c891',
+                    color: '#fff',
+                    padding: '5px 10px',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    marginTop: '10px',
+                  }}
+                  onClick={onSignOut}
+                >
+                  Sign Out
+                </button>
               </div>
             )}
           </div>
         ) : (
-          <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', marginRight: '10px' }} onClick={onConnect}>Connect JoyID</button>
+          <button
+            style={{
+              backgroundColor: '#00c891',
+              color: '#fff',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              marginRight: '10px',
+            }}
+            onClick={onConnect}
+          >
+            Connect JoyID
+          </button>
         )}
         {joyidInfo && (
           isDepositing ? (
@@ -216,7 +289,7 @@ export default function App() {
               value={depositAmount}
               placeholder="Enter CKB amount!"
               onChange={(e) => {
-                if (e.target.value === 'Enter CKB amount!') {
+                if (e.target.value === 'Enter CKB amount') {
                   setDepositAmount('');
                 } else {
                   setDepositAmount(e.target.value);
@@ -230,18 +303,45 @@ export default function App() {
                 border: '2px solid #00c891',
                 borderRadius: '5px',
                 cursor: 'pointer',
-                animation: 'blink 1s infinite'
+                animation: 'blink 1s infinite',
               }}
             />
           ) : (
-            <button style={{ backgroundColor: '#00c891', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={onDeposit}>Deposit</button>
+            <button
+              style={{
+                backgroundColor: '#00c891',
+                color: '#fff',
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+              }}
+              onClick={onDeposit}
+            >
+              Deposit
+            </button>
           )
         )}
-     </div>
+      </div>
       {joyidInfo && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', maxWidth: '80%' }}>
-            {[...depositCells, ...withdrawalCells].sort((a, b) => parseInt(b.cellOutput.capacity, 16) - parseInt(a.cellOutput.capacity, 16)).map((cell, index) => {
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              alignItems: 'center',
+              maxWidth: '80%',
+            }}
+          >
+            {[...depositCells, ...withdrawalCells].sort(() => Math.random() - 0.5).map((cell, index) => {
               const capacity = parseInt(cell.cellOutput.capacity, 16);
               const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
               const minBoxSize = 70;
@@ -252,7 +352,6 @@ export default function App() {
               let scaleFactor = (capacity < threshold) ? scaleFactorSmall : scaleFactorLarge;
               const logScaledBoxSize = (Math.log(capacity + constant) / Math.log(totalCapacity + constant)) * scaleFactor;
               const boxSize = Math.max(minBoxSize, logScaledBoxSize);
-              console.log(">>>minBoxSize: ", minBoxSize, " >>>right side: ", logScaledBoxSize)
               const isDeposit = depositCells.some(c => c.outPoint?.txHash === cell.outPoint?.txHash);
               const backgroundColor = isDeposit ? '#aee129' : '#fe9503';
               const textColor = isDeposit ? '#5c6e00' : '#003d66';
@@ -273,11 +372,26 @@ export default function App() {
                     flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    backgroundColor: backgroundColor
+                    backgroundColor: backgroundColor,
                   }}
                 >
-                  <p style={{ color: textColor, fontSize: '0.8em' }}>
-                    <a href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`} target="_blank" rel="noreferrer" style={{ color: textColor, textDecoration: 'none' }}>{(capacity / CKB_SHANNON_RATIO).toFixed(2)} CKBytes</a>
+                  <p
+                    style={{
+                      color: textColor,
+                      fontSize: '0.8em',
+                    }}
+                  >
+                    <a
+                      href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        color: textColor,
+                        textDecoration: 'none',
+                      }}
+                    >
+                      {(capacity / CKB_SHANNON_RATIO).toFixed(2)} CKBytes
+                    </a>
                   </p>
                   <button
                     style={{
@@ -287,7 +401,7 @@ export default function App() {
                       border: 'none',
                       borderRadius: '10px',
                       cursor: 'pointer',
-                      fontSize: '0.8em'
+                      fontSize: '0.8em',
                     }}
                     onClick={() => isDeposit ? onWithdraw(cell) : onUnlock(cell)}
                   >
@@ -300,5 +414,6 @@ export default function App() {
         </div>
       )}
     </div>
-  );
+  )
+  
 }
