@@ -244,7 +244,15 @@ export default function App() {
             {[...depositCells, ...withdrawalCells].sort((a, b) => parseInt(b.cellOutput.capacity, 16) - parseInt(a.cellOutput.capacity, 16)).map((cell, index) => {
               const capacity = parseInt(cell.cellOutput.capacity, 16);
               const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
-              const boxSize = Math.max(50, (capacity / totalCapacity) * 300);
+              const minBoxSize = 70;
+              const scaleFactorSmall = 50;
+              const scaleFactorLarge = 150;
+              const constant = 1; // ensures the argument of the logarithm is always > 1
+              const threshold = 100000 * CKB_SHANNON_RATIO; // 100_000 CKB
+              let scaleFactor = (capacity < threshold) ? scaleFactorSmall : scaleFactorLarge;
+              const logScaledBoxSize = (Math.log(capacity + constant) / Math.log(totalCapacity + constant)) * scaleFactor;
+              const boxSize = Math.max(minBoxSize, logScaledBoxSize);
+              console.log(">>>minBoxSize: ", minBoxSize, " >>>right side: ", logScaledBoxSize)
               const isDeposit = depositCells.some(c => c.outPoint?.txHash === cell.outPoint?.txHash);
               const backgroundColor = isDeposit ? '#aee129' : '#fe9503';
               const textColor = isDeposit ? '#5c6e00' : '#003d66';
