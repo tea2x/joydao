@@ -91,11 +91,11 @@ export const queryBalance = async(joyidAddr: Address): Promise<bigint> => {
 	return balance/BigInt(CKB_SHANNON_RATIO);
 }
 
-export interface findDepositCellResult {
+export interface FindDepositCellResult {
     deposit: Cell;
     depositTrace: OutPoint;
 }
-export const findDepositCellWith = async(withdrawalCell: Cell): Promise<findDepositCellResult> => {
+export const findDepositCellWith = async(withdrawalCell: Cell): Promise<FindDepositCellResult> => {
     const withdrawPhase1TxRecord:any = await rpc.getTransaction(withdrawalCell.outPoint!.txHash);
 	const depositCellTrace = withdrawPhase1TxRecord.transaction.inputs[parseInt(withdrawalCell.outPoint!.index, 16)];
 
