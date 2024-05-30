@@ -245,7 +245,13 @@ export default function App() {
       {joyidInfo && (
         <div className='dao-cell-area'>
           <div className='cell-grid'>
-            {[...depositCells, ...withdrawalCells].sort(() => Math.random() - 0.5).map((cell, index) => {
+            {[...depositCells, ...withdrawalCells]
+            .sort((a, b) => {
+              const aBlkNum = parseInt(a.blockNumber!, 16);
+              const bBlkNum = parseInt(b.blockNumber!, 16);
+              return bBlkNum - aBlkNum;
+            })
+            .map((cell, index) => {
               const capacity = parseInt(cell.cellOutput.capacity, 16);
               const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
               const minBoxSize = 70;
