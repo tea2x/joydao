@@ -247,83 +247,84 @@ export default function App() {
         <div className='dao-cell-area'>
           <div className='cell-grid'>
             {[...depositCells, ...withdrawalCells]
-            .sort((a, b) => {
-              const aBlkNum = parseInt(a.blockNumber!, 16);
-              const bBlkNum = parseInt(b.blockNumber!, 16);
-              return bBlkNum - aBlkNum;
-            })
-            .map((cell, index) => {
-              const capacity = parseInt(cell.cellOutput.capacity, 16);
-              const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
-              const daoCellNumberThreshold1 = 3;
-              const daoCellNumberThreshold2 = 6;
-              const daoCellNum = [...depositCells, ...withdrawalCells].length;
-              const minBoxSize = 80;
-              const scaleFactorSmall = (daoCellNum >= daoCellNumberThreshold2) ? 100 : (daoCellNum >= daoCellNumberThreshold1) ? 150 : 250;
-              const scaleFactorLarge = (daoCellNum >= daoCellNumberThreshold2) ? 150 : (daoCellNum >= daoCellNumberThreshold1) ? 250 : 300;
-              const constant = 1; // ensures the argument of the logarithm is always > 1
-              const threshold = 100_000 * CKB_SHANNON_RATIO; // 100_000 CKB
-              let scaleFactor = (capacity < threshold) ? scaleFactorSmall : scaleFactorLarge;
-              const logScaledBoxSize = (Math.log(capacity + constant) / Math.log(totalCapacity + constant)) * scaleFactor;
-              const boxSize = Math.max(minBoxSize, logScaledBoxSize);
-              const isDeposit = depositCells.some(c => c.outPoint?.txHash === cell.outPoint?.txHash);
-              const backgroundColor = isDeposit ? '#aee129' : '#fe9503';
-              const textColor = isDeposit ? '#5c6e00' : '#003d66';
-              const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
-              const buttonTextColor = isDeposit ? '#aee129' : '#fe9503';
-              return (
-                <div
-                  key={index}
-                  style={{
-                    border: `1px solid ${backgroundColor}`,
-                    padding: '10px',
-                    margin: '10px',
-                    borderRadius: '10px',
-                    width: `${boxSize}px`,
-                    height: `${boxSize}px`,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: backgroundColor,
-                  }}
-                >
-                  <p
+              .sort((a, b) => {
+                const aBlkNum = parseInt(a.blockNumber!, 16);
+                const bBlkNum = parseInt(b.blockNumber!, 16);
+                return bBlkNum - aBlkNum;
+              })
+              .map((cell, index) => {
+                const capacity = parseInt(cell.cellOutput.capacity, 16);
+                const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
+                const daoCellNumberThreshold1 = 3;
+                const daoCellNumberThreshold2 = 6;
+                const daoCellNum = [...depositCells, ...withdrawalCells].length;
+                const minBoxSize = 80;
+                const scaleFactorSmall = (daoCellNum >= daoCellNumberThreshold2) ? 100 : (daoCellNum >= daoCellNumberThreshold1) ? 150 : 250;
+                const scaleFactorLarge = (daoCellNum >= daoCellNumberThreshold2) ? 150 : (daoCellNum >= daoCellNumberThreshold1) ? 250 : 300;
+                const constant = 1; // ensures the argument of the logarithm is always > 1
+                const threshold = 100_000 * CKB_SHANNON_RATIO; // 100_000 CKB
+                let scaleFactor = (capacity < threshold) ? scaleFactorSmall : scaleFactorLarge;
+                const logScaledBoxSize = (Math.log(capacity + constant) / Math.log(totalCapacity + constant)) * scaleFactor;
+                const boxSize = Math.max(minBoxSize, logScaledBoxSize);
+                const isDeposit = depositCells.some(c => c.outPoint?.txHash === cell.outPoint?.txHash);
+                const backgroundColor = isDeposit ? '#aee129' : '#fe9503';
+                const textColor = isDeposit ? '#5c6e00' : '#003d66';
+                const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
+                const buttonTextColor = isDeposit ? '#aee129' : '#fe9503';
+                return (
+                  <div
+                    key={index}
                     style={{
-                      color: textColor,
-                      fontSize: '0.8em',
+                      border: `1px solid ${backgroundColor}`,
+                      padding: '10px',
+                      margin: '10px',
+                      borderRadius: '10px',
+                      width: `${boxSize}px`,
+                      height: `${boxSize}px`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: backgroundColor,
                     }}
                   >
-                    <a
-                      href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
-                      target="_blank"
-                      rel="noreferrer"
+                    <p
                       style={{
                         color: textColor,
-                        textDecoration: 'none',
+                        fontSize: '0.8em',
                       }}
                     >
-                      {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, "_")} CKB
-                    </a>
-                  
-                  </p>
-                  <button
-                    style={{
-                      backgroundColor: buttonColor,
-                      color: buttonTextColor,
-                      padding: '10px',
-                      border: 'none',
-                      borderRadius: '10px',
-                      cursor: 'pointer',
-                      fontSize: '0.8em',
-                    }}
-                    onClick={() => isDeposit ? onWithdraw(cell) : onUnlock(cell)}
-                  >
-                    {isDeposit ? 'Withdraw' : 'Unlock'}
-                  </button>
-                </div>
-              );
-            })}
+                      <a
+                        href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          color: textColor,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, "_")} CKB
+                      </a>
+                    
+                    </p>
+                    <button
+                      style={{
+                        backgroundColor: buttonColor,
+                        color: buttonTextColor,
+                        padding: '10px',
+                        border: 'none',
+                        borderRadius: '10px',
+                        cursor: 'pointer',
+                        fontSize: '0.8em',
+                      }}
+                      onClick={() => isDeposit ? onWithdraw(cell) : onUnlock(cell)}
+                    >
+                      {isDeposit ? 'Withdraw' : 'Unlock'}
+                    </button>
+                  </div>
+                );
+              })
+            }
           </div>
         </div>
       )}
