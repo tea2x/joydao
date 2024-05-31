@@ -274,54 +274,54 @@ export default function App() {
                 const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
                 const buttonTextColor = isDeposit ? '#aee129' : '#e58603';
                 return (
-                  <div
-                    key={index}
+                  <a
+                    href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
+                    target="_blank"
+                    rel="noreferrer"
                     style={{
-                      border: `1px solid ${backgroundColor}`,
-                      padding: '10px',
-                      margin: '10px',
-                      borderRadius: '10px',
-                      width: `${boxSize}px`,
-                      height: `${boxSize}px`,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: backgroundColor,
-                      boxShadow: '0px 0px 10px rgba(0,0,0,0.2)',
-                      transform: 'perspective(1000px) rotateY(1deg)',
-                      backfaceVisibility: 'hidden',
-                      transition: 'transform 0.5s ease-in-out'
+                      color: textColor,
+                      textDecoration: 'none',
                     }}
                   >
-                    <p className='dao-link'>
-                      <a
-                        href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          color: textColor,
-                          textDecoration: 'none',
-                        }}
-                      >
-                        {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
-                      </a>
-                    </p>
-                    <button
+                    <div
+                      key={index}
                       style={{
-                        backgroundColor: buttonColor,
-                        color: buttonTextColor,
+                        border: `1px solid ${backgroundColor}`,
                         padding: '10px',
-                        border: 'none',
+                        margin: '10px',
                         borderRadius: '10px',
-                        cursor: 'pointer',
-                        fontSize: '0.8em',
+                        width: `${boxSize}px`,
+                        height: `${boxSize}px`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: backgroundColor,
+                        boxShadow: '0px 0px 10px rgba(0,0,0,0.2)',
+                        transform: 'perspective(1000px) rotateY(1deg)',
+                        backfaceVisibility: 'hidden',
+                        transition: 'transform 0.5s ease-in-out'
                       }}
-                      onClick={() => isDeposit ? onWithdraw(cell) : onUnlock(cell)}
                     >
-                      {isDeposit ? 'Withdraw' : 'Unlock'}
-                    </button>
-                  </div>
+                      <p className='dao-link'>
+                        {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
+                      </p>
+                      <button
+                        style={{
+                          backgroundColor: buttonColor,
+                          color: buttonTextColor,
+                          padding: '10px',
+                          border: 'none',
+                          borderRadius: '10px',
+                          cursor: 'pointer',
+                          fontSize: '0.8em',
+                        }}
+                        onClick={() => isDeposit ? onWithdraw(cell) : onUnlock(cell)}
+                      >
+                        {isDeposit ? 'Withdraw' : 'Unlock'}
+                      </button>
+                    </div>
+                  </a>
                 );
               })
             }
