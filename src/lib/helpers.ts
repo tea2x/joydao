@@ -6,6 +6,7 @@ import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
 import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';
 import { CellCollector, Indexer} from "@ckb-lumos/ckb-indexer";
 import { LightClientRPC } from "@ckb-lumos/light-client";
+import { getConfig } from "@ckb-lumos/config-manager";
 
 const INDEXER = new Indexer(INDEXER_URL);
 const rpc = new RPC(NODE_URL);
@@ -78,17 +79,46 @@ export const collectInputs = async(
 	return {inputCells, inputCapacity};
 }
 
-export const queryBalance = async(joyidAddr: Address): Promise<bigint> => {
-    const query:CKBIndexerQueryOptions = {lock: addressToScript(joyidAddr), type: "empty"};
+export interface Balance {
+	available: string,
+	occupied: string
+}
+export const queryBalance = async(joyidAddr: Address): Promise<Balance> => {
+	const ret:Balance = {available: "", occupied: ""};
+
+	// query available balance
+    let query:CKBIndexerQueryOptions = {lock: addressToScript(joyidAddr), type: "empty"};
 	const cellCollector = new CellCollector(INDEXER, query);
-
 	let balance = BigInt(0);
-
 	for await (const cell of cellCollector.collect()) {
 		balance += hexToInt(cell.cellOutput.capacity);
 	}
+	ret.available = (balance/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "_");
 
-	return balance/BigInt(CKB_SHANNON_RATIO);
+	// query dao capacity locked in
+	const config = getConfig();
+	const DAO_SCRIPT = config.SCRIPTS.DAO;
+	if (!DAO_SCRIPT) {
+		throw new Error("Provided config does not have DAO script setup!");
+	}
+	const daoQuery:CKBIndexerQueryOptions = {
+		lock: addressToScript(joyidAddr),
+		type: {
+			codeHash: DAO_SCRIPT.CODE_HASH,
+			hashType: DAO_SCRIPT.HASH_TYPE,
+			args: "0x",
+	  	}
+	};
+
+	const daoCellCollector = new CellCollector(INDEXER, daoQuery);
+
+	balance = BigInt(0);
+	for await (const cell of daoCellCollector.collect()) {
+		balance += hexToInt(cell.cellOutput.capacity);
+	}
+	ret.occupied = (balance/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "_");
+
+	return ret;
 }
 
 export interface FindDepositCellResult {

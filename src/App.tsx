@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Cell } from "@ckb-lumos/base";
 import { connect, signRawTransaction } from '@joyid/ckb';
-import { sendTransaction, waitForTransactionConfirmation, queryBalance } from './lib/helpers';
+import { sendTransaction, waitForTransactionConfirmation, queryBalance, Balance } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO } from "./config";
@@ -10,7 +10,7 @@ import "./styles.css";
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
-  const [balance, setBalance] = React.useState<bigint | null>(null);
+  const [balance, setBalance] = React.useState<Balance | null>(null);
   const [depositCells, setDepositCells] = React.useState<Cell[]>([]);
   const [withdrawalCells, setWithdrawalCells] = React.useState<Cell[]>([]);
   const [showDropdown, setShowDropdown] = React.useState(false);
@@ -29,7 +29,7 @@ export default function App() {
       setDepositCells(deposits);
       setWithdrawalCells(withdrawals);
 
-      localStorage.setItem('balance', balance.toString());
+      localStorage.setItem('balance', JSON.stringify(balance));
       localStorage.setItem('depositCells', JSON.stringify(deposits));
       localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
     } catch (error:any) {
@@ -50,7 +50,7 @@ export default function App() {
       setWithdrawalCells(withdrawals);
 
       localStorage.setItem('joyidInfo', JSON.stringify(authData));
-      localStorage.setItem('balance', balance.toString());
+      localStorage.setItem('balance', JSON.stringify(balance));
       localStorage.setItem('depositCells', JSON.stringify(deposits));
       localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
     } catch (error:any) {
@@ -172,7 +172,7 @@ export default function App() {
       setJoyidInfo(JSON.parse(storedAuthData));
     }
     if (storedBalance) {
-      setBalance(BigInt(storedBalance));
+      setBalance(JSON.parse(storedBalance));
     }
     if (storedDepositCells) {
       setDepositCells(JSON.parse(storedDepositCells));
@@ -205,7 +205,8 @@ export default function App() {
 
             {showDropdown && (
               <div className='dropdown-menu'>
-                <p>Balance: {balance ? balance.toString() + ' CKB' : 'Loading...'}</p>
+                <p>Available: {balance ? balance.available.toString() + ' CKB' : 'Loading...'}</p>
+                <p>Locked in DAO: {balance ? balance.occupied.toString() + ' CKB' : 'Loading...'}</p>
                 <button className='signout-button' onClick={onSignOut}>
                   Sign Out
                 </button>
