@@ -1,0 +1,193 @@
+body {
+    background-color: #f2f2f2; /* A light gray color */
+    color: #333333; /* Adjust the text color if needed */
+    font-family: Arial, sans-serif; /* Set your desired font */
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.container:active {
+    cursor: pointer;
+}
+
+.title {
+    font-size: 3em;
+    font-weight: bold;
+    text-shadow: 
+        1px 1px 0 #353f2d,
+        2px 2px 0 #353f2d,
+        3px 3px 0 #353f2d,
+        4px 4px 0 #353f2d,
+        5px 5px 0 #353f2d,
+        6px 6px 0 #353f2d,
+        7px 7px 0 #353f2d,
+        8px 8px 0 #353f2d,
+        9px 9px 0 #353f2d,
+        10px 10px 0 #353f2d;
+    transform: rotate(-2deg);
+    margin-bottom: 30px;
+    color: #ace129;
+    cursor: pointer;
+}
+
+.signin-account-deposit-button-area {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.dropdown-area {
+    position: relative;
+    margin-right: 20px;
+}
+
+.signin-button {
+    background-color: #7da31d;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.account-button {
+    background-color: #597415;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.account-button:hover {
+    transform: scale(1.1);
+}
+
+.account-button:active {
+    transform: scale(0.9);
+}
+
+.signout-button {
+    background-color: #597415;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 5px;
+    transition: transform 0.2s ease;
+}
+
+.signout-button:hover {
+    transform: scale(1.1);
+}
+
+.signout-button:active {
+    transform: scale(0.9);
+}
+
+.dropdown-menu {
+    position: absolute;
+    background-color: #f9f9f9;
+    border: 1px solid #00c891;
+    padding: 2px;
+    border-radius: 5px;
+    z-index: 1;
+    color: #2e2f22;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    animation: dropdownFadeIn 0.5s ease-in-out;
+    width: 220px;
+    left: -10px;
+}
+
+@keyframes dropdownFadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.deposit-button {
+    background-color: #597415;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.deposit-button:hover {
+    transform: scale(1.1);
+}
+
+.deposit-button:active {
+    transform: scale(0.9);
+}
+
+.deposit-textbox {
+    background-color: #ffffff;
+    color: #808080;
+    padding: 10px 20px;
+    border: 2px solid #35a50c;
+    border-radius: 5px;
+    cursor: pointer;
+    animation: blink 1s infinite;
+}
+
+.dao-cell-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80%;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    margin: 20px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+}
+
+.dao-link {
+    color: textColor;
+    font-size: '0.8em';
+}
+
+.cell-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    max-width: 80%;
+}
+
+@keyframes blink {
+    0% {
+        border-color: #bd491398;
+    }
+    50% {
+        border-color: #ffffff;
+    }
+    100% {
+        border-color: #00c891;
+    }
+}
