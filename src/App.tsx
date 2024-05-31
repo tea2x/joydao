@@ -290,17 +290,17 @@ export default function App() {
                       fontSize: '0.8em',
                     }}
                   >
-                  <a
-                    href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      color: textColor,
-                      textDecoration: 'none',
-                    }}
-                  >
-                    {(capacity / CKB_SHANNON_RATIO).toFixed(2)} CKBytes
-                  </a>
+                    <a
+                      href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        color: textColor,
+                        textDecoration: 'none',
+                      }}
+                    >
+                      {(capacity / CKB_SHANNON_RATIO).toFixed(2)} CKBytes
+                    </a>
                   
                   </p>
                   <button
