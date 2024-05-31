@@ -198,14 +198,14 @@ export default function App() {
       <h1 className='title' onClick={() => window.location.reload()}>
         JoyDAO
       </h1>
-
+  
       <div className='signin-account-deposit-button-area' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {joyidInfo ? (
           <div className='dropdown-area'>
             <button className='account-button' onClick={() => setShowDropdown(!showDropdown)}>
               {shortenAddress(joyidInfo.address)}
             </button>
-
+  
             {showDropdown && (
               <div className='dropdown-menu'>
                 <p>Available: {balance ? balance.available.toString() + ' CKB' : 'Loading...'}</p>
@@ -221,7 +221,7 @@ export default function App() {
             Connect JoyID
           </button>
         )}
-
+  
         {joyidInfo && (
           isDepositing ? (
             <input
@@ -248,84 +248,90 @@ export default function App() {
       
       {joyidInfo && (
         <div className='dao-cell-area' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
-          <div className='cell-grid'>
-            {[...depositCells, ...withdrawalCells]
-              .sort((a, b) => {
-                const aBlkNum = parseInt(a.blockNumber!, 16);
-                const bBlkNum = parseInt(b.blockNumber!, 16);
-                return bBlkNum - aBlkNum;
-              })
-              .map((cell, index) => {
-                const capacity = parseInt(cell.cellOutput.capacity, 16);
-                const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
-                const cellScalingStep = 3;
-                const daoCellNum = [...depositCells, ...withdrawalCells].length;
-                const minBoxSize = 80;
-                const scaleFactorSmall = (daoCellNum >= cellScalingStep * 3) ? 100 : (daoCellNum >= cellScalingStep * 2) ? 150 : (daoCellNum >= cellScalingStep) ? 250 : 300;
-                const scaleFactorLarge = (daoCellNum >= cellScalingStep * 3) ? 150 : (daoCellNum >= cellScalingStep * 2) ? 250 : (daoCellNum >= cellScalingStep) ? 300 : 350;
-                const constant = 1; // ensures the argument of the logarithm is always > 1
-                const threshold = 100_000 * CKB_SHANNON_RATIO; // 100_000 CKB
-                let scaleFactor = (capacity < threshold) ? scaleFactorSmall : scaleFactorLarge;
-                const logScaledBoxSize = (Math.log(capacity + constant) / Math.log(totalCapacity + constant)) * scaleFactor;
-                const boxSize = Math.max(minBoxSize, logScaledBoxSize);
-                const isDeposit = depositCells.some(c => c.outPoint?.txHash === cell.outPoint?.txHash);
-                const backgroundColor = isDeposit ? '#aee129' : '#e58603';
-                const textColor = isDeposit ? '#5c6e00' : '#003d66';
-                const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
-                const buttonTextColor = isDeposit ? '#aee129' : '#e58603';
-                return (
-                  <a
-                    href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      color: textColor,
-                      textDecoration: 'none',
-                    }}
-                  >
-                    <div
-                      key={index}
+          {[...depositCells, ...withdrawalCells].length === 0 ? (
+            <div className='no-deposit-message'>
+              <h2>Whoops, it’s a ghost town in here! 👻</h2>
+            </div>
+          ) : (
+            <div className='cell-grid'>
+              {[...depositCells, ...withdrawalCells]
+                .sort((a, b) => {
+                  const aBlkNum = parseInt(a.blockNumber!, 16);
+                  const bBlkNum = parseInt(b.blockNumber!, 16);
+                  return bBlkNum - aBlkNum;
+                })
+                .map((cell, index) => {
+                  const capacity = parseInt(cell.cellOutput.capacity, 16);
+                  const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
+                  const cellScalingStep = 3;
+                  const daoCellNum = [...depositCells, ...withdrawalCells].length;
+                  const minBoxSize = 80;
+                  const scaleFactorSmall = (daoCellNum >= cellScalingStep * 3) ? 100 : (daoCellNum >= cellScalingStep * 2) ? 150 : (daoCellNum >= cellScalingStep) ? 250 : 300;
+                  const scaleFactorLarge = (daoCellNum >= cellScalingStep * 3) ? 150 : (daoCellNum >= cellScalingStep * 2) ? 250 : (daoCellNum >= cellScalingStep) ? 300 : 350;
+                  const constant = 1; // ensures the argument of the logarithm is always > 1
+                  const threshold = 100_000 * CKB_SHANNON_RATIO; // 100_000 CKB
+                  let scaleFactor = (capacity < threshold) ? scaleFactorSmall : scaleFactorLarge;
+                  const logScaledBoxSize = (Math.log(capacity + constant) / Math.log(totalCapacity + constant)) * scaleFactor;
+                  const boxSize = Math.max(minBoxSize, logScaledBoxSize);
+                  const isDeposit = depositCells.some(c => c.outPoint?.txHash === cell.outPoint?.txHash);
+                  const backgroundColor = isDeposit ? '#aee129' : '#e58603';
+                  const textColor = isDeposit ? '#5c6e00' : '#003d66';
+                  const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
+                  const buttonTextColor = isDeposit ? '#aee129' : '#e58603';
+                  return (
+                    <a
+                      href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
+                      target="_blank"
+                      rel="noreferrer"
                       style={{
-                        border: `1px solid ${backgroundColor}`,
-                        padding: '10px',
-                        margin: '10px',
-                        borderRadius: '10px',
-                        width: `${boxSize}px`,
-                        height: `${boxSize}px`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: backgroundColor,
-                        boxShadow: '0px 0px 10px rgba(0,0,0,0.2)',
-                        transform: 'perspective(1000px) rotateY(1deg)',
-                        backfaceVisibility: 'hidden',
-                        transition: 'transform 0.5s ease-in-out'
+                        color: textColor,
+                        textDecoration: 'none',
                       }}
                     >
-                      <p className='dao-link'>
-                        {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
-                      </p>
-                      <button
+                      <div
+                        key={index}
                         style={{
-                          backgroundColor: buttonColor,
-                          color: buttonTextColor,
+                          border: `1px solid ${backgroundColor}`,
                           padding: '10px',
-                          border: 'none',
+                          margin: '10px',
                           borderRadius: '10px',
-                          cursor: 'pointer',
-                          fontSize: '0.8em',
+                          width: `${boxSize}px`,
+                          height: `${boxSize}px`,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          backgroundColor: backgroundColor,
+                          boxShadow: '0px 0px 10px rgba(0,0,0,0.2)',
+                          transform: 'perspective(1000px) rotateY(1deg)',
+                          backfaceVisibility: 'hidden',
+                          transition: 'transform 0.5s ease-in-out'
                         }}
-                        onClick={() => isDeposit ? onWithdraw(cell) : onUnlock(cell)}
                       >
-                        {isDeposit ? 'Withdraw' : 'Unlock'}
-                      </button>
-                    </div>
-                  </a>
-                );
-              })
-            }
-          </div>
+                        <p className='dao-link'>
+                          {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
+                        </p>
+                        <button
+                          style={{
+                            backgroundColor: buttonColor,
+                            color: buttonTextColor,
+                            padding: '10px',
+                            border: 'none',
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            fontSize: '0.8em',
+                          }}
+                          onClick={() => isDeposit ? onWithdraw(cell) : onUnlock(cell)}
+                        >
+                          {isDeposit ? 'Withdraw' : 'Unlock'}
+                        </button>
+                      </div>
+                    </a>
+                  );
+                })
+              }
+            </div>
+          )}
         </div>
       )}
     </div>

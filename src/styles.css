@@ -67,14 +67,18 @@ body {
     border-radius: 5px;
     cursor: pointer;
     transition: transform 0.2s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(2px);
 }
 
 .account-button:hover {
-    transform: scale(1.1);
+    transform: scale(1.1) translateY(1px);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .account-button:active {
-    transform: scale(0.9);
+    transform: scale(0.9) translateY(2px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .signout-button {
@@ -86,14 +90,18 @@ body {
     cursor: pointer;
     margin-top: 5px;
     transition: transform 0.2s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(2px);
 }
 
 .signout-button:hover {
-    transform: scale(1.1);
+    transform: scale(1.1) translateY(1px);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .signout-button:active {
-    transform: scale(0.9);
+    transform: scale(0.9) translateY(2px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .dropdown-menu {
@@ -129,14 +137,18 @@ body {
     border-radius: 5px;
     cursor: pointer;
     transition: transform 0.2s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(2px);
 }
 
 .deposit-button:hover {
-    transform: scale(1.1);
+    transform: scale(1.1) translateY(1px);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .deposit-button:active {
-    transform: scale(0.9);
+    transform: scale(0.9) translateY(2px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .deposit-textbox {
@@ -185,5 +197,42 @@ body {
     }
     100% {
         border-color: #00c891;
+    }
+}
+
+.no-deposit-message {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #73951c;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    animation: bounce 1s ease-in-out infinite;
+}
+  
+.no-deposit-message h2 {
+    margin-bottom: 10px;
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.no-deposit-message p {
+    font-size: 0.8em;
+    color: #666;
+    text-align: center;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
     }
 }
