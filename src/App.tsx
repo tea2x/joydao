@@ -198,8 +198,8 @@ export default function App() {
 
       <div className='signin-account-deposit-button-area'>
         {joyidInfo ? (
-          <div className='account-button'>
-            <button className='dropdown-button' onClick={() => setShowDropdown(!showDropdown)}>
+          <div className='dropdown-area'>
+            <button className='account-button' onClick={() => setShowDropdown(!showDropdown)}>
               {shortenAddress(joyidInfo.address)}
             </button>
 

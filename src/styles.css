@@ -32,7 +32,7 @@ body {
     margin-bottom: 60px;
 }
 
-.account-button {
+.dropdown-area {
     position: relative;
     margin-right: 20px;
 }
@@ -51,7 +51,7 @@ body {
     position: relative;
 }
 
-.dropdown-button {
+.account-button {
     background-color: #00c891;
     color: #fff;
     padding: 10px 20px;
@@ -80,6 +80,7 @@ body {
     color: #00c891;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
     animation: dropdownFadeIn 0.5s ease-in-out;
+    width: 220px;
 }
 
 @keyframes dropdownFadeIn {
