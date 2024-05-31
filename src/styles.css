@@ -1,3 +1,11 @@
+body {
+    background-color: #f2f2f2; /* A light gray color */
+    color: #333333; /* Adjust the text color if needed */
+    font-family: Arial, sans-serif; /* Set your desired font */
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+}
+
 .container {
     display: flex;
     flex-direction: column;
@@ -21,7 +29,7 @@
     display: flex;
     justify-content: center;
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 60px;
 }
 
 .account-button {
@@ -64,12 +72,25 @@
 
 .dropdown-menu {
     position: absolute;
-    background-color: #fff;
+    background-color: #f9f9f9;
     border: 1px solid #00c891;
     padding: 10px;
     border-radius: 5px;
     z-index: 1;
     color: #00c891;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    animation: dropdownFadeIn 0.5s ease-in-out;
+}
+
+@keyframes dropdownFadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .deposit-button {
@@ -96,7 +117,18 @@
     flex-direction: column;
     align-items: center;
     width: 80%;
-    border: 1px solid #00c891;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    margin: 20px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+}
+
+.dao-link {
+    color: textColor;
+    font-size: '0.8em';
 }
 
 .cell-grid {

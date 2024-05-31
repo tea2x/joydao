@@ -93,7 +93,7 @@ export const queryBalance = async(joyidAddr: Address): Promise<Balance> => {
 	for await (const cell of cellCollector.collect()) {
 		balance += hexToInt(cell.cellOutput.capacity);
 	}
-	ret.available = (balance/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "_");
+	ret.available = (balance/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
 	// query dao capacity locked in
 	const config = getConfig();
@@ -116,7 +116,7 @@ export const queryBalance = async(joyidAddr: Address): Promise<Balance> => {
 	for await (const cell of daoCellCollector.collect()) {
 		balance += hexToInt(cell.cellOutput.capacity);
 	}
-	ret.occupied = (balance/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "_");
+	ret.occupied = (balance/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
 	return ret;
 }

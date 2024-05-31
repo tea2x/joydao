@@ -153,7 +153,7 @@ export default function App() {
 
   const shortenAddress = (address: string) => {
     if (!address) return '';
-    return `${address.slice(0, 7)}...${address.slice(-8)}`;
+    return `${address.slice(0, 10)}...${address.slice(-10)}`;
   }
 
   const handleDepositKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => { //TODO
@@ -255,22 +255,21 @@ export default function App() {
               .map((cell, index) => {
                 const capacity = parseInt(cell.cellOutput.capacity, 16);
                 const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
-                const daoCellNumberThreshold1 = 3;
-                const daoCellNumberThreshold2 = 6;
+                const cellScalingStep = 3;
                 const daoCellNum = [...depositCells, ...withdrawalCells].length;
                 const minBoxSize = 80;
-                const scaleFactorSmall = (daoCellNum >= daoCellNumberThreshold2) ? 100 : (daoCellNum >= daoCellNumberThreshold1) ? 150 : 250;
-                const scaleFactorLarge = (daoCellNum >= daoCellNumberThreshold2) ? 150 : (daoCellNum >= daoCellNumberThreshold1) ? 250 : 300;
+                const scaleFactorSmall = (daoCellNum >= cellScalingStep * 3) ? 100 : (daoCellNum >= cellScalingStep * 2) ? 150 : (daoCellNum >= cellScalingStep) ? 250 : 300;
+                const scaleFactorLarge = (daoCellNum >= cellScalingStep * 3) ? 150 : (daoCellNum >= cellScalingStep * 2) ? 250 : (daoCellNum >= cellScalingStep) ? 300 : 350;
                 const constant = 1; // ensures the argument of the logarithm is always > 1
                 const threshold = 100_000 * CKB_SHANNON_RATIO; // 100_000 CKB
                 let scaleFactor = (capacity < threshold) ? scaleFactorSmall : scaleFactorLarge;
                 const logScaledBoxSize = (Math.log(capacity + constant) / Math.log(totalCapacity + constant)) * scaleFactor;
                 const boxSize = Math.max(minBoxSize, logScaledBoxSize);
                 const isDeposit = depositCells.some(c => c.outPoint?.txHash === cell.outPoint?.txHash);
-                const backgroundColor = isDeposit ? '#aee129' : '#fe9503';
+                const backgroundColor = isDeposit ? '#aee129' : '#e58603';
                 const textColor = isDeposit ? '#5c6e00' : '#003d66';
                 const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
-                const buttonTextColor = isDeposit ? '#aee129' : '#fe9503';
+                const buttonTextColor = isDeposit ? '#aee129' : '#e58603';
                 return (
                   <div
                     key={index}
@@ -286,14 +285,14 @@ export default function App() {
                       justifyContent: 'center',
                       alignItems: 'center',
                       backgroundColor: backgroundColor,
+                      boxShadow: '0px 0px 10px rgba(0,0,0,0.2)',
+                      transform: 'perspective(1000px) rotateY(1deg)',
+                      backfaceVisibility: 'hidden',
+                      transition: 'transform 0.5s ease-in-out'
                     }}
+                    
                   >
-                    <p
-                      style={{
-                        color: textColor,
-                        fontSize: '0.8em',
-                      }}
-                    >
+                    <p className='dao-link'>
                       <a
                         href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
                         target="_blank"
@@ -303,9 +302,8 @@ export default function App() {
                           textDecoration: 'none',
                         }}
                       >
-                        {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, "_")} CKB
+                        {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
                       </a>
-                    
                     </p>
                     <button
                       style={{
