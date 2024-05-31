@@ -19,7 +19,18 @@ body {
 
 .title {
     font-size: 3em;
-    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+    text-shadow: 
+        1px 1px 0 #353f2d,
+        2px 2px 0 #353f2d,
+        3px 3px 0 #353f2d,
+        4px 4px 0 #353f2d,
+        5px 5px 0 #353f2d,
+        6px 6px 0 #353f2d,
+        7px 7px 0 #353f2d,
+        8px 8px 0 #353f2d,
+        9px 9px 0 #353f2d,
+        10px 10px 0 #353f2d;
     transform: rotate(-2deg);
     margin-bottom: 30px;
     color: #ace129;
@@ -53,7 +64,7 @@ body {
 }
 
 .account-button {
-    background-color: #7da31d;
+    background-color: #597415;
     color: #fff;
     padding: 10px 20px;
     border: none;
@@ -71,13 +82,13 @@ body {
 }
 
 .signout-button {
-    background-color: #7da31d;
+    background-color: #597415;
     color: #fff;
     padding: 5px 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 5px;
     transition: transform 0.2s ease;
 }
 
@@ -93,13 +104,14 @@ body {
     position: absolute;
     background-color: #f9f9f9;
     border: 1px solid #00c891;
-    padding: 10px;
+    padding: 2px;
     border-radius: 5px;
     z-index: 1;
-    color: #00c891;
+    color: #2e2f22;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
     animation: dropdownFadeIn 0.5s ease-in-out;
     width: 220px;
+    left: -10px;
 }
 
 @keyframes dropdownFadeIn {
@@ -114,7 +126,7 @@ body {
 }
 
 .deposit-button {
-    background-color: #7da31d;
+    background-color: #597415;
     color: #fff;
     padding: 10px 20px;
     border: none;

@@ -209,7 +209,7 @@ export default function App() {
             {showDropdown && (
               <div className='dropdown-menu'>
                 <p>Available: {balance ? balance.available.toString() + ' CKB' : 'Loading...'}</p>
-                <p>Locked in DAO: {balance ? balance.occupied.toString() + ' CKB' : 'Loading...'}</p>
+                <p>Deposited: {balance ? balance.occupied.toString() + ' CKB' : 'Loading...'}</p>
                 <button className='signout-button' onClick={onSignOut}>
                   Sign Out
                 </button>
