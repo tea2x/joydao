@@ -23,6 +23,7 @@ body {
     transform: rotate(-2deg);
     margin-bottom: 20px;
     color: #00c891;
+    cursor: pointer;
 }
 
 .signin-account-deposit-button-area {

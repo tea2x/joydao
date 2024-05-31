@@ -162,6 +162,17 @@ export default function App() {
     }
   }
 
+  const hideDepositTextBoxAndDropDown = (e:any) => {
+    e.stopPropagation(); // Prevent event propagation
+    if (isDepositing && e.target === e.currentTarget) {
+      setDepositAmount('');
+      setIsDepositing(false);
+    }
+    if (showDropdown && e.target === e.currentTarget) {
+      setShowDropdown(false);
+    }
+  }
+
   // Check for existing authentication data in localStorage when component mounts
   React.useEffect(() => {
     const storedAuthData = localStorage.getItem('joyidInfo');
@@ -183,20 +194,12 @@ export default function App() {
   }, []);
 
   return (
-    <div className='container'
-      onClick={(e) => {
-        e.stopPropagation(); // Prevent event propagation
-        if (isDepositing && e.target === e.currentTarget) {
-          setDepositAmount('');
-          setIsDepositing(false);
-        }
-      }}
-    >
-      <h1 className='title'>
+    <div className='container' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+      <h1 className='title' onClick={() => window.location.reload()}>
         JoyDAO
       </h1>
 
-      <div className='signin-account-deposit-button-area'>
+      <div className='signin-account-deposit-button-area' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {joyidInfo ? (
           <div className='dropdown-area'>
             <button className='account-button' onClick={() => setShowDropdown(!showDropdown)}>
@@ -244,7 +247,7 @@ export default function App() {
       </div>
       
       {joyidInfo && (
-        <div className='dao-cell-area'>
+        <div className='dao-cell-area' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
           <div className='cell-grid'>
             {[...depositCells, ...withdrawalCells]
               .sort((a, b) => {
