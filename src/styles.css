@@ -1,9 +1,9 @@
 body {
-    background-color: #f2f2f2; /* A light gray color */
-    color: #333333; /* Adjust the text color if needed */
-    font-family: Arial, sans-serif; /* Set your desired font */
-    margin: 0; /* Remove default margin */
-    padding: 0; /* Remove default padding */
+    background-color: #f2f2f2;
+    color: #333333;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
 .container {
@@ -57,10 +57,6 @@ body {
     border-radius: 50px;
     cursor: pointer;
     margin-right: 10px;
-}
-
-.dropdown {
-    position: relative;
 }
 
 .account-button {
@@ -157,7 +153,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 80%;
+    width: 66%;
     background-color: #ffffff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
     padding: 20px;
