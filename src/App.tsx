@@ -254,7 +254,7 @@ export default function App() {
             .map((cell, index) => {
               const capacity = parseInt(cell.cellOutput.capacity, 16);
               const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
-              const minBoxSize = 70;
+              const minBoxSize = 80;
               const scaleFactorSmall = 50;
               const scaleFactorLarge = 150;
               const constant = 1; // ensures the argument of the logarithm is always > 1
@@ -299,7 +299,7 @@ export default function App() {
                         textDecoration: 'none',
                       }}
                     >
-                      {(capacity / CKB_SHANNON_RATIO).toFixed(2)} CKBytes
+                      {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, "_")} CKB
                     </a>
                   
                   </p>
