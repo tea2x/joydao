@@ -13,6 +13,19 @@ body {
     padding: 20px;
 }
 
+.container.no-user {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+  
+.container.no-user .title,
+.container.no-user .signin-button {
+    margin: 10px 0;
+}
+
 .container:active {
     cursor: pointer;
 }

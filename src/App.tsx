@@ -194,7 +194,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className='container' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+    <div className={`container ${joyidInfo ? '' : 'no-user'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
       <h1 className='title' onClick={() => window.location.reload()}>
         JoyDAO
       </h1>
@@ -245,7 +245,7 @@ export default function App() {
           )
         )}
       </div>
-      
+  
       {joyidInfo && (
         <div className='dao-cell-area' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
           {[...depositCells, ...withdrawalCells].length === 0 ? (
