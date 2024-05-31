@@ -255,11 +255,14 @@ export default function App() {
             .map((cell, index) => {
               const capacity = parseInt(cell.cellOutput.capacity, 16);
               const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
+              const daoCellNumberThreshold1 = 3;
+              const daoCellNumberThreshold2 = 6;
+              const daoCellNum = [...depositCells, ...withdrawalCells].length;
               const minBoxSize = 80;
-              const scaleFactorSmall = 50;
-              const scaleFactorLarge = 150;
+              const scaleFactorSmall = (daoCellNum >= daoCellNumberThreshold2) ? 100 : (daoCellNum >= daoCellNumberThreshold1) ? 150 : 250;
+              const scaleFactorLarge = (daoCellNum >= daoCellNumberThreshold2) ? 150 : (daoCellNum >= daoCellNumberThreshold1) ? 250 : 300;
               const constant = 1; // ensures the argument of the logarithm is always > 1
-              const threshold = 100000 * CKB_SHANNON_RATIO; // 100_000 CKB
+              const threshold = 100_000 * CKB_SHANNON_RATIO; // 100_000 CKB
               let scaleFactor = (capacity < threshold) ? scaleFactorSmall : scaleFactorLarge;
               const logScaledBoxSize = (Math.log(capacity + constant) / Math.log(totalCapacity + constant)) * scaleFactor;
               const boxSize = Math.max(minBoxSize, logScaledBoxSize);
