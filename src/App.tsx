@@ -217,7 +217,7 @@ export default function App() {
             )}
           </div>
         ) : (
-          <button className='connect-button' onClick={onConnect}>
+          <button className='signin-button' onClick={onConnect}>
             Connect JoyID
           </button>
         )}
@@ -293,7 +293,6 @@ export default function App() {
                       backfaceVisibility: 'hidden',
                       transition: 'transform 0.5s ease-in-out'
                     }}
-                    
                   >
                     <p className='dao-link'>
                       <a

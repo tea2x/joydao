@@ -18,11 +18,11 @@ body {
 }
 
 .title {
-    font-size: 2.5em;
+    font-size: 3em;
     text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
     transform: rotate(-2deg);
-    margin-bottom: 20px;
-    color: #00c891;
+    margin-bottom: 30px;
+    color: #ace129;
     cursor: pointer;
 }
 
@@ -30,7 +30,7 @@ body {
     display: flex;
     justify-content: center;
     width: 100%;
-    margin-bottom: 60px;
+    margin-bottom: 30px;
 }
 
 .dropdown-area {
@@ -38,8 +38,8 @@ body {
     margin-right: 20px;
 }
 
-.connect-button {
-    background-color: #00c891;
+.signin-button {
+    background-color: #7da31d;
     color: #fff;
     padding: 10px 20px;
     border: none;
@@ -53,22 +53,40 @@ body {
 }
 
 .account-button {
-    background-color: #00c891;
+    background-color: #7da31d;
     color: #fff;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.account-button:hover {
+    transform: scale(1.1);
+}
+
+.account-button:active {
+    transform: scale(0.9);
 }
 
 .signout-button {
-    background-color: #00c891;
+    background-color: #7da31d;
     color: #fff;
     padding: 5px 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     margin-top: 10px;
+    transition: transform 0.2s ease;
+}
+
+.signout-button:hover {
+    transform: scale(1.1);
+}
+
+.signout-button:active {
+    transform: scale(0.9);
 }
 
 .dropdown-menu {
@@ -96,12 +114,21 @@ body {
 }
 
 .deposit-button {
-    background-color: #00c891;
+    background-color: #7da31d;
     color: #fff;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.deposit-button:hover {
+    transform: scale(1.1);
+}
+
+.deposit-button:active {
+    transform: scale(0.9);
 }
 
 .deposit-textbox {
