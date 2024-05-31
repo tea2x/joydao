@@ -85,7 +85,7 @@
     background-color: #ffffff;
     color: #808080;
     padding: 10px 20px;
-    border: 2px solid #00c891;
+    border: 2px solid #35a50c;
     border-radius: 5px;
     cursor: pointer;
     animation: blink 1s infinite;
@@ -105,47 +105,6 @@
     align-items: center;
     max-width: 80%;
 }
-
-.cell {
-    border: 1px solid var(--background-color);
-    padding: 10px;
-    margin: 10px;
-    border-radius: 10px;
-    width: var(--box-size);
-    height: var(--box-size);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--background-color);
-}
-
-
-.cell-link {
-    color: inherit;
-    text-decoration: none;
-}
-
-.cell-button {
-    background-color: inherit;
-    color: inherit;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 0.8em;
-}
-
-.withdraw-unlock-button {
-    background-color: var(--button-color);
-    color: var(--button-text-color);
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 0.8em;
-}
-
 
 @keyframes blink {
     0% {
