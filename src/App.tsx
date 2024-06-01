@@ -198,7 +198,9 @@ export default function App() {
       <h1 className='title' onClick={() => window.location.reload()}>
         JoyDAO
       </h1>
-  
+
+      <p className='description'>Use Nervos DAO with JoyID Passkeys</p>
+
       <div className='signin-account-deposit-button-area' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {joyidInfo ? (
           <div className='dropdown-area'>
@@ -331,6 +333,5 @@ export default function App() {
         </div>
       )}
     </div>
-  )  
-  
+  )
 }

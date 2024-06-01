@@ -22,18 +22,32 @@ body {
     display: flex;
     flex-direction: column;
     height: 80vh;
-    width: 60%;
+    width: 30%;
     background-color: #ffffff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
     padding: 20px;
-    margin: 20px;
+    margin: 0px;
     border: none;
     border-radius: 10px;
     transition: transform 0.5s ease-in-out;
+    background-image: url('safe.svg');
+    background-size: 300px;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .container.no-user .title {
     animation: wiggle 0.5s infinite alternate;
+    position: relative;
+    top: -80px
+}
+
+.container.no-user .description {
+    font-family: 'Open Sans', sans-serif;
+    color: #666666;
+    font-size: 16px;
+    position: relative;
+    top: -80px;
 }
 
 @keyframes wiggle {
@@ -46,10 +60,6 @@ body {
     100% {
         transform: rotate(-2deg);
     }
-}
-
-.container.no-user .signin-button {
-    margin: 30px 0;
 }
 
 .container:active {
@@ -107,6 +117,7 @@ body {
     background-size: 25px;
     background-position: right 15px center;
     background-repeat: no-repeat;
+    margin-top: 220px;
 }
   
 .signin-button:hover {
