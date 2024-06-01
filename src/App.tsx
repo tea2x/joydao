@@ -250,7 +250,7 @@ export default function App() {
         <div className='dao-cell-area' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
           {[...depositCells, ...withdrawalCells].length === 0 ? (
             <div className='no-deposit-message'>
-              <h2>Whoops, it’s a ghost town in here! 👻</h2>
+              <h2>Whoops, no deposits found!</h2>
             </div>
           ) : (
             <div className='cell-grid'>
@@ -279,62 +279,58 @@ export default function App() {
                   const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
                   const buttonTextColor = isDeposit ? '#aee129' : '#e58603';
                   return (
-                    <a
-                      href={`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`}
-                      target="_blank"
-                      rel="noreferrer"
+                    <div
+                      key={index}
                       style={{
-                        color: textColor,
-                        textDecoration: 'none',
+                        border: `1px solid ${backgroundColor}`,
+                        padding: '10px',
+                        margin: '10px',
+                        borderRadius: '10px',
+                        width: `${boxSize}px`,
+                        height: `${boxSize}px`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: backgroundColor,
+                        boxShadow: '0px 0px 10px rgba(0,0,0,0.2)',
+                        transform: 'perspective(1000px) rotateY(1deg)',
+                        backfaceVisibility: 'hidden',
+                        transition: 'transform 0.5s ease-in-out'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`, '_blank', 'noreferrer');
                       }}
                     >
-                      <div
-                        key={index}
+                      <p className='dao-link'>
+                        {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
+                      </p>
+                      <button
                         style={{
-                          border: `1px solid ${backgroundColor}`,
+                          backgroundColor: buttonColor,
+                          color: buttonTextColor,
                           padding: '10px',
-                          margin: '10px',
+                          border: 'none',
                           borderRadius: '10px',
-                          width: `${boxSize}px`,
-                          height: `${boxSize}px`,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          backgroundColor: backgroundColor,
-                          boxShadow: '0px 0px 10px rgba(0,0,0,0.2)',
-                          transform: 'perspective(1000px) rotateY(1deg)',
-                          backfaceVisibility: 'hidden',
-                          transition: 'transform 0.5s ease-in-out'
+                          cursor: 'pointer',
+                          fontSize: '0.8em'
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          isDeposit ? onWithdraw(cell) : onUnlock(cell);
                         }}
                       >
-                        <p className='dao-link'>
-                          {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
-                        </p>
-                        <button
-                          style={{
-                            backgroundColor: buttonColor,
-                            color: buttonTextColor,
-                            padding: '10px',
-                            border: 'none',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            fontSize: '0.8em',
-                          }}
-                          onClick={() => isDeposit ? onWithdraw(cell) : onUnlock(cell)}
-                        >
-                          {isDeposit ? 'Withdraw' : 'Unlock'}
-                        </button>
-                      </div>
-                    </a>
+                        {isDeposit ? 'Withdraw' : 'Unlock'}
+                      </button>
+                    </div>
                   );
-                })
-              }
+                })}
             </div>
           )}
         </div>
       )}
     </div>
-  )
+  )  
   
 }
