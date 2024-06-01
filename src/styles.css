@@ -29,6 +29,7 @@ body {
     margin: 20px;
     border: none;
     border-radius: 10px;
+    transition: transform 0.5s ease-in-out;
 }
 
 .container.no-user .title {
@@ -90,11 +91,34 @@ body {
 .signin-button {
     background-color: #7da31d;
     color: #fff;
-    padding: 10px 20px;
+    padding: 10px 40px 10px 20px;
     border: none;
-    border-radius: 50px;
+    border-radius: 10px;
     cursor: pointer;
     margin-right: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    height: 40px;
+    background-image: url('joyid-logo.png');
+    background-size: 25px;
+    background-position: right 15px center;
+    background-repeat: no-repeat;
+}
+  
+.signin-button:hover {
+    background-color: #000;
+    color: #A8E72F;
+}
+  
+.signin-button img {
+    height: 20px;
+    object-fit: scale-down;
+    object-position: left;
+    margin-right: 8px;
 }
 
 .account-button {
@@ -102,21 +126,26 @@ body {
     color: #fff;
     padding: 10px 20px;
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
     transition: transform 0.2s ease;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     transform: translateY(2px);
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 40px;
+    background-size: 25px;
+    background-position: right 10px center;
+    background-repeat: no-repeat;
 }
 
 .account-button:hover {
-    transform: scale(1.1) translateY(1px);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-.account-button:active {
-    transform: scale(0.9) translateY(2px);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background-color: #000;
+    color: #A8E72F;
 }
 
 .signout-button {
@@ -124,28 +153,31 @@ body {
     color: #fff;
     padding: 5px 10px;
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
     margin-top: 5px;
     transition: transform 0.2s ease;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     transform: translateY(2px);
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 25px;
+    background-position: right 10px center;
+    background-repeat: no-repeat;
 }
 
 .signout-button:hover {
-    transform: scale(1.1) translateY(1px);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-.signout-button:active {
-    transform: scale(0.9) translateY(2px);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background-color: #000;
+    color: #A8E72F;
 }
 
 .dropdown-menu {
     position: absolute;
     background-color: #f9f9f9;
-    border: 1px solid #00c891;
+    border: 1px solid #f2f2f2;
     padding: 2px;
     border-radius: 5px;
     z-index: 1;
@@ -172,21 +204,24 @@ body {
     color: #fff;
     padding: 10px 20px;
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
     transition: transform 0.2s ease;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     transform: translateY(2px);
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 25px;
+    background-position: right 10px center;
+    background-repeat: no-repeat;
 }
-
+  
 .deposit-button:hover {
-    transform: scale(1.1) translateY(1px);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-.deposit-button:active {
-    transform: scale(0.9) translateY(2px);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    background-color: #000;
+    color: #A8E72F;
 }
 
 .deposit-textbox {
@@ -210,6 +245,7 @@ body {
     border: none;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+    transition: transform 0.5s ease-in-out;
 }
 
 .dao-link {

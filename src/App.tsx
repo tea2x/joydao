@@ -218,7 +218,7 @@ export default function App() {
           </div>
         ) : (
           <button className='signin-button' onClick={onConnect}>
-            Connect JoyID
+            Connect
           </button>
         )}
   
@@ -296,7 +296,8 @@ export default function App() {
                         boxShadow: '0px 0px 10px rgba(0,0,0,0.2)',
                         transform: 'perspective(1000px) rotateY(1deg)',
                         backfaceVisibility: 'hidden',
-                        transition: 'transform 0.5s ease-in-out'
+                        transition: 'transform 0.5s ease-in-out',
+                        animation: 'dropdownFadeIn 0.5s ease-in-out',
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
