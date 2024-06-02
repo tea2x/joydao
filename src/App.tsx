@@ -17,6 +17,7 @@ export default function App() {
   const [depositAmount, setDepositAmount] = React.useState('');
   const [isDepositing, setIsDepositing] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isWaitingTxConfirm, setIsWaitingTxConfirm] = React.useState(false);
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
@@ -84,12 +85,14 @@ export default function App() {
         const txid = await sendTransaction(signedTx);
         alert(`Transaction Sent: ${txid}\n`);
   
+        setIsWaitingTxConfirm(true);
         setIsLoading(true);
 
         // Wait for the transaction to confirm.
         await waitForTransactionConfirmation(txid);
 
         // update deposit/withdrawal list and balance
+        setIsWaitingTxConfirm(false);
         await updateDaoList();
 
       } catch (error:any) {
@@ -113,12 +116,14 @@ export default function App() {
       const txid = await sendTransaction(signedTx);
       alert(`Transaction Sent: ${txid}\n`);
 
+      setIsWaitingTxConfirm(true);
       setIsLoading(true);
 
       // Wait for the transaction to confirm.
       await waitForTransactionConfirmation(txid);
 
       // update deposit/withdrawal list and balance
+      setIsWaitingTxConfirm(false);
       await updateDaoList();
 
     } catch(error:any) {
@@ -140,12 +145,14 @@ export default function App() {
       const txid = await sendTransaction(signedTx);
       alert(`Transaction Sent: ${txid}\n`);
 
+      setIsWaitingTxConfirm(true);
       setIsLoading(true);
 
       // Wait for the transaction to confirm.
       await waitForTransactionConfirmation(txid);
 
       // update deposit/withdrawal list and balance
+      setIsWaitingTxConfirm(false);
       await updateDaoList();
       
     } catch(error:any) {
@@ -217,7 +224,14 @@ export default function App() {
     <div className={`container ${joyidInfo ? '' : 'no-user'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
       {isLoading && (
         <div className="loading-overlay">
-          <div className="loading-circle"></div>
+          <div className="loading-circle-container">
+            <div className="loading-circle"></div>
+            {isWaitingTxConfirm && (
+              <p className="tx-confirmation-message">
+                Your tx can take up to a few minutes to process. Please wait!
+              </p>
+            )}
+          </div>
         </div>
       )}
   
