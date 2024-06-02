@@ -53,7 +53,7 @@ export const collectWithdrawals = async(joyidAddr: Address): Promise<Cell[]> => 
 */
 export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint): Promise<CKBTransaction> => {
     if (amount < DAO_MINIMUM_CAPACITY) {
-        throw new Error("Mimum DAO deposit is 102 CKB.");
+        throw new Error("Mimum DAO deposit is 104 CKB.");
     }
 
     // generating basic dao transaction skeleton

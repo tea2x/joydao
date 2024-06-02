@@ -4,7 +4,7 @@ import { connect, signRawTransaction } from '@joyid/ckb';
 import { sendTransaction, waitForTransactionConfirmation, queryBalance, Balance } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
-import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO } from "./config";
+import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import "./styles.css";
 
@@ -16,28 +16,36 @@ export default function App() {
   const [showDropdown, setShowDropdown] = React.useState(false);
   const [depositAmount, setDepositAmount] = React.useState('');
   const [isDepositing, setIsDepositing] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
   const updateDaoList = async () => {
-    try {
-      const balance = await queryBalance(joyidInfo.address);
-      const deposits = await collectDeposits(joyidInfo.address);
-      const withdrawals = await collectWithdrawals(joyidInfo.address);
+    const storedAuthData = localStorage.getItem('joyidInfo');
+    if (storedAuthData) {
+      try {
+        const authInfo = JSON.parse(storedAuthData);
 
-      setBalance(balance);
-      setDepositCells(deposits);
-      setWithdrawalCells(withdrawals);
-
-      localStorage.setItem('balance', JSON.stringify(balance));
-      localStorage.setItem('depositCells', JSON.stringify(deposits));
-      localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
-    } catch (error:any) {
-      alert('Error: ' + error.message);
+        const balance = await queryBalance(authInfo.address);
+        const deposits = await collectDeposits(authInfo.address);
+        const withdrawals = await collectWithdrawals(authInfo.address);
+  
+        setBalance(balance);
+        setDepositCells(deposits);
+        setWithdrawalCells(withdrawals);
+        setIsLoading(false);
+  
+        localStorage.setItem('balance', JSON.stringify(balance));
+        localStorage.setItem('depositCells', JSON.stringify(deposits));
+        localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
+      } catch (error:any) {
+        alert('Error: ' + error.message);
+      }
     }
   }
   
   const onConnect = async () => {
+    setIsLoading(true);
     try {
       const authData = await connect();
       const balance = await queryBalance(authData.address);
@@ -48,6 +56,7 @@ export default function App() {
       setBalance(balance);
       setDepositCells(deposits);
       setWithdrawalCells(withdrawals);
+      setIsLoading(false);
 
       localStorage.setItem('joyidInfo', JSON.stringify(authData));
       localStorage.setItem('balance', JSON.stringify(balance));
@@ -73,8 +82,10 @@ export default function App() {
   
         // Send the transaction to the RPC node.
         const txid = await sendTransaction(signedTx);
-        console.log(`Transaction Sent: ${txid}\n`);
+        alert(`Transaction Sent: ${txid}\n`);
   
+        setIsLoading(true);
+
         // Wait for the transaction to confirm.
         await waitForTransactionConfirmation(txid);
 
@@ -100,7 +111,9 @@ export default function App() {
 
       // Send the transaction to the RPC node.
       const txid = await sendTransaction(signedTx);
-      console.log(`Transaction Sent: ${txid}\n`);
+      alert(`Transaction Sent: ${txid}\n`);
+
+      setIsLoading(true);
 
       // Wait for the transaction to confirm.
       await waitForTransactionConfirmation(txid);
@@ -121,11 +134,13 @@ export default function App() {
         daoTx,
         joyidInfo.address
       );
-      console.log(">>>signedTx: ", JSON.stringify(signedTx, null, 2))
+      // console.log(">>>signedTx: ", JSON.stringify(signedTx, null, 2))
 
       // Send the transaction to the RPC node.
       const txid = await sendTransaction(signedTx);
-      console.log(`Transaction Sent: ${txid}\n`);
+      alert(`Transaction Sent: ${txid}\n`);
+
+      setIsLoading(true);
 
       // Wait for the transaction to confirm.
       await waitForTransactionConfirmation(txid);
@@ -144,6 +159,7 @@ export default function App() {
     setDepositCells([]);
     setWithdrawalCells([]);
     setShowDropdown(false);
+    setIsLoading(false);
 
     localStorage.removeItem('joyidInfo');
     localStorage.removeItem('balance');
@@ -173,7 +189,6 @@ export default function App() {
     }
   }
 
-  // Check for existing authentication data in localStorage when component mounts
   React.useEffect(() => {
     const storedAuthData = localStorage.getItem('joyidInfo');
     const storedBalance = localStorage.getItem('balance');
@@ -191,16 +206,34 @@ export default function App() {
     if (storedWithdrawalCells) {
       setWithdrawalCells(JSON.parse(storedWithdrawalCells));
     }
+
+    (async () => {
+      await updateDaoList();
+    })();  
+
   }, []);
 
   return (
     <div className={`container ${joyidInfo ? '' : 'no-user'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
-      <h1 className='title' onClick={() => window.location.reload()}>
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-circle"></div>
+        </div>
+      )}
+  
+      <h1 className='title' onClick={async () => {
+        await updateDaoList();
+        window.location.reload();
+      }}>
         JoyDAO
       </h1>
-
-      <p className='description'>Use Nervos DAO with JoyID Passkeys</p>
-
+  
+      {!joyidInfo && (
+        <div className='description'>
+          <p>Use Nervos DAO with JoyID Passkeys</p>
+        </div>
+      )}
+  
       <div className='signin-account-deposit-button-area' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {joyidInfo ? (
           <div className='dropdown-area'>
@@ -249,7 +282,10 @@ export default function App() {
       </div>
   
       {joyidInfo && (
-        <div className='dao-cell-area' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+        <div
+          className={`dao-cell-area ${isLoading ? 'faded' : ''}`}
+          onClick={(e) => hideDepositTextBoxAndDropDown(e)}
+        >
           {[...depositCells, ...withdrawalCells].length === 0 ? (
             <div className='no-deposit-message'>
               <h2>Whoops, no deposits found!</h2>
@@ -282,6 +318,7 @@ export default function App() {
                   return (
                     <div
                       key={index}
+                      className={`dao-cell ${isLoading ? 'faded' : ''}`}
                       style={{
                         border: `1px solid ${backgroundColor}`,
                         padding: '10px',
@@ -302,13 +339,14 @@ export default function App() {
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(`https://pudge.explorer.nervos.org/transaction/${cell.outPoint?.txHash}`, '_blank', 'noreferrer');
+                        window.open(TESTNET_EXPLORER_PREFIX + `${cell.outPoint?.txHash}`, '_blank', 'noreferrer');
                       }}
                     >
                       <p className='dao-link'>
                         {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
                       </p>
                       <button
+                        className={`withdraw-button ${isLoading ? 'faded' : ''}`}
                         style={{
                           backgroundColor: buttonColor,
                           color: buttonTextColor,

@@ -39,7 +39,7 @@ body {
 .container.no-user .title {
     animation: wiggle 0.5s infinite alternate;
     position: relative;
-    top: -80px
+    top: -80px;
 }
 
 .container.no-user .description {
@@ -321,3 +321,35 @@ body {
         transform: translateY(-10px);
     }
 }
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .loading-circle {
+    border: 4px solid #333;
+    border-top-color: transparent;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  .faded {
+    opacity: 0.5;
+    pointer-events: none;
+  }
