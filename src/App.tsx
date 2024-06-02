@@ -176,7 +176,7 @@ export default function App() {
 
   const shortenAddress = (address: string) => {
     if (!address) return '';
-    return `${address.slice(0, 10)}...${address.slice(-10)}`;
+    return `${address.slice(0, 5)}...${address.slice(-7)}`;
   }
 
   const handleDepositKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => { //TODO
@@ -333,23 +333,11 @@ export default function App() {
                     <div
                       key={index}
                       className={`dao-cell ${isLoading ? 'faded' : ''}`}
-                      style={{
-                        border: `1px solid ${backgroundColor}`,
-                        padding: '10px',
-                        margin: '10px',
-                        borderRadius: '10px',
-                        width: `${boxSize}px`,
-                        height: `${boxSize}px`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: backgroundColor,
-                        boxShadow: '0px 0px 10px rgba(0,0,0,0.2)',
-                        transform: 'perspective(1000px) rotateY(1deg)',
-                        backfaceVisibility: 'hidden',
-                        transition: 'transform 0.5s ease-in-out',
-                        animation: 'dropdownFadeIn 0.5s ease-in-out',
+                      ref={el => {
+                        if (el) {
+                          el.style.setProperty('--boxSize', `${boxSize}px`);
+                          el.style.setProperty('--backgroundColor', backgroundColor);
+                        }
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -360,15 +348,12 @@ export default function App() {
                         {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
                       </p>
                       <button
-                        className={`withdraw-button ${isLoading ? 'faded' : ''}`}
-                        style={{
-                          backgroundColor: buttonColor,
-                          color: buttonTextColor,
-                          padding: '10px',
-                          border: 'none',
-                          borderRadius: '10px',
-                          cursor: 'pointer',
-                          fontSize: '0.8em'
+                        className={`dao-cell-button ${isLoading ? 'faded' : ''}`}
+                        ref={el => {
+                          if (el) {
+                            el.style.setProperty('--buttonColor', buttonColor);
+                            el.style.setProperty('--buttonTextColor', buttonTextColor);
+                          }
                         }}
                         onClick={(e) => {
                           e.stopPropagation();

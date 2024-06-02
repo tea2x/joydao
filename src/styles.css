@@ -379,3 +379,84 @@ body {
         opacity: 1;
     }
 }
+
+.dao-cell {
+    border: 1px solid var(--backgroundColor);
+    padding: 10px;
+    margin: 10px;
+    border-radius: 10px;
+    width: var(--boxSize);
+    height: var(--boxSize);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--backgroundColor);
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+    transform: perspective(1000px) rotateY(1deg);
+    backface-visibility: hidden;
+    transition: transform 0.5s ease-in-out;
+    animation: dropdownFadeIn 0.5s ease-in-out;
+}
+
+.dao-cell-button {
+    background-color: var(--buttonColor);
+    color: var(--buttonTextColor);
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+
+@media only screen and (max-width: 768px) {
+    .container.no-user {
+        width: 90%;
+        background-size: 200px;
+    }
+
+    .title {
+        font-size: 2.5em;
+    }
+
+    .signin-button, .account-button, .signout-button, .deposit-button {
+        width: 130px;
+        height: 30px;
+        padding: 5px 20px 5px 10px;
+        font-size: 14px;
+    }
+
+    .signin-button {
+        margin-top: 180px;
+        background-position: right 10px center;
+        padding-left: 2px;
+    }
+
+    .dao-cell-area {
+        width: 90%;
+    }
+
+    .cell-grid {
+        max-width: 90%;
+    }
+
+    .deposit-textbox {
+        padding: 5px 10px;
+    }
+
+    .no-deposit-message {
+        font-size: 1em;
+    }
+
+    .no-deposit-message h2 {
+        font-size: 1.2em;
+    }
+
+    .no-deposit-message p {
+        font-size: 0.7em;
+    }
+
+    .tx-confirmation-message {
+        font-size: 14px;
+    }
+}
