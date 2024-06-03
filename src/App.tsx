@@ -249,14 +249,14 @@ export default function App() {
 
       {!joyidInfo && (
         <div className='description'>
-          <p>Nervos DAO + JoyID Passkeys</p>
+          <p>Nervos DAO with JoyID Passkeys</p>
         </div>
       )}
 
       <div className='button-manager' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {joyidInfo ? (
           <div className='dropdown-area'>
-            <button className='account-button' onClick={() => setShowDropdown(!showDropdown)}>
+            <button className='account-button' onClick={(e) => {setShowDropdown(!showDropdown); hideDepositTextBoxAndDropDown(e)}}>
               {shortenAddress(joyidInfo.address)}
             </button>
 
@@ -293,7 +293,7 @@ export default function App() {
               className='deposit-textbox'
             />
           ) : (
-            <button className='deposit-button' onClick={onDeposit}>
+            <button className='deposit-button' onClick={(e) => { onDeposit(); hideDepositTextBoxAndDropDown(e); }}>
               Deposit
             </button>
           )
@@ -301,11 +301,11 @@ export default function App() {
       </div>
 
       {joyidInfo && [...depositCells, ...withdrawalCells].length === 0 ? (
-        <div className='no-deposit-message'>
+        <div className='no-deposit-message' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
           <h2>Whoops, no deposits found!</h2>
         </div>
       ) : (
-        <div className='cell-grid'>
+        <div className='cell-grid' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
           {[...depositCells, ...withdrawalCells].sort((a, b) => {
               const aBlkNum = parseInt(a.blockNumber!, 16);
               const bBlkNum = parseInt(b.blockNumber!, 16);
@@ -313,7 +313,7 @@ export default function App() {
             }).map((cell, index) => {
               const scalingStep = 3;
               const daoCellNum = [...depositCells, ...withdrawalCells].length;
-              const minBoxSize = windowWidth <= 768 ? 60 : 80;
+              const minBoxSize = windowWidth <= 768 ? 60 : 100;
 
               let scaleFactorSmall;
               if (daoCellNum >= scalingStep * 3) {
@@ -352,7 +352,7 @@ export default function App() {
 
               let boxSize:any;
               if (windowWidth <= 768)
-                boxSize = Math.max(minBoxSize, logScaledBoxSize)
+                boxSize = Math.max(minBoxSize, logScaledBoxSize)*1.1
               else
                 boxSize = Math.max(minBoxSize, logScaledBoxSize);
 

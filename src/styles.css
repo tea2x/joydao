@@ -48,7 +48,7 @@ body {
     display: flex;
     justify-content: center;
     width: 100%;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .dropdown-area {
@@ -110,6 +110,7 @@ body {
     background-size: 25px;
     background-position: right 10px center;
     background-repeat: no-repeat;
+    font-weight: bold;
 }
 
 .account-button:hover {
@@ -146,7 +147,7 @@ body {
 .dropdown-menu {
     position: absolute;
     background-color: #f9f9f9;
-    border: 1px solid #f2f2f2;
+    border: 1px solid #5b5b5b;
     padding: 2px;
     border-radius: 5px;
     z-index: 1;
@@ -187,6 +188,7 @@ body {
     background-size: 25px;
     background-position: right 10px center;
     background-repeat: no-repeat;
+    font-weight: bold;
 }
   
 .deposit-button:hover {
@@ -376,6 +378,7 @@ body {
     backface-visibility: hidden;
     transition: transform 0.5s ease-in-out;
     animation: dropdownFadeIn 0.5s ease-in-out;
+    font-size: 1.2em;
 }
 
 .dao-cell-button {
@@ -394,23 +397,31 @@ body {
     background-position: center;
     background-repeat: no-repeat;
 }
-
+  
 @media only screen and (max-width: 768px) {
     .title {
-        font-size: 2.5em;
+        font-size: 3.5em;
+        margin-top: 10px;
     }
 
     .signin-button, .account-button, .signout-button, .deposit-button {
-        width: 130px;
-        height: 30px;
+        width: 150px;
+        height: 45px;
         padding: 5px 20px 5px 10px;
         font-size: 14px;
+        margin-bottom: 30px;
+        font-weight: bold;
     }
 
     .signin-button {
-        margin-top: 180px;
+        margin-top: 400px;
         background-position: right 10px center;
+        background-size: 35px;
         padding-left: 2px;
+        width: 180px;
+        height: 50px;
+        font-size: 1.5em;
+        font-weight: bold;
     }
 
     .container {
@@ -426,10 +437,17 @@ body {
     .dao-cell {
         padding: 1.5px;
         margin: 1.5px;
+        font-size: 16px;
+    }
+
+    .dao-cell-button {
+        font-size: 1em;
     }
 
     .deposit-textbox {
         padding: 5px 10px;
+        width: 150px;
+        height: 35px;
     }
 
     .no-deposit-message {
@@ -450,14 +468,19 @@ body {
 
     .description {
         margin-top: -20px;
-        font-size: 13.4px;
-        color: #cfcece;
+        font-size: 18px;
+        color: #262626;
     }
 
     .background-image {
         background-image: url('dao-safe.jpg');
-        background-size: 300px;
-        background-position: center;
+        background-size: 400px;
+        background-position: top 180px center;
         background-repeat: no-repeat;
+    }
+
+    .dropdown-menu {
+        margin-top: -27px;
+        height: 130px;
     }
 }
