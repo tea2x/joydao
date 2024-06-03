@@ -18,6 +18,7 @@ export default function App() {
   const [isDepositing, setIsDepositing] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isWaitingTxConfirm, setIsWaitingTxConfirm] = React.useState(false);
+  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
@@ -197,6 +198,9 @@ export default function App() {
   }
 
   React.useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+
     const storedAuthData = localStorage.getItem('joyidInfo');
     const storedBalance = localStorage.getItem('balance');
     const storedDepositCells = localStorage.getItem('depositCells');
@@ -218,6 +222,7 @@ export default function App() {
       await updateDaoList();
     })();  
 
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
@@ -228,7 +233,7 @@ export default function App() {
             <div className="loading-circle"></div>
             {isWaitingTxConfirm && (
               <p className="tx-confirmation-message">
-                Your tx can take up to a few minutes to process. Please wait!
+                Your tx can take up a few minutes to process. Please wait!
               </p>
             )}
           </div>
@@ -313,19 +318,55 @@ export default function App() {
                   return bBlkNum - aBlkNum;
                 })
                 .map((cell, index) => {
-                  const capacity = parseInt(cell.cellOutput.capacity, 16);
-                  const totalCapacity = [...depositCells, ...withdrawalCells].reduce((sum, c) => sum + parseInt(c.cellOutput.capacity, 16), 0);
-                  const cellScalingStep = 3;
+                  const scalingStep = 3;
                   const daoCellNum = [...depositCells, ...withdrawalCells].length;
-                  const minBoxSize = 80;
-                  const scaleFactorSmall = (daoCellNum >= cellScalingStep * 3) ? 100 : (daoCellNum >= cellScalingStep * 2) ? 150 : (daoCellNum >= cellScalingStep) ? 250 : 300;
-                  const scaleFactorLarge = (daoCellNum >= cellScalingStep * 3) ? 150 : (daoCellNum >= cellScalingStep * 2) ? 250 : (daoCellNum >= cellScalingStep) ? 300 : 350;
-                  const constant = 1; // ensures the argument of the logarithm is always > 1
-                  const threshold = 100_000 * CKB_SHANNON_RATIO; // 100_000 CKB
-                  let scaleFactor = (capacity < threshold) ? scaleFactorSmall : scaleFactorLarge;
-                  const logScaledBoxSize = (Math.log(capacity + constant) / Math.log(totalCapacity + constant)) * scaleFactor;
-                  const boxSize = Math.max(minBoxSize, logScaledBoxSize);
-                  const isDeposit = depositCells.some(c => c.outPoint?.txHash === cell.outPoint?.txHash);
+                  const minBoxSize = windowWidth <= 768 ? 150 : 80;
+
+                  let scaleFactorSmall;
+                  if (daoCellNum >= scalingStep * 3) {
+                      scaleFactorSmall = 100;
+                  } else if (daoCellNum >= scalingStep * 2) {
+                      scaleFactorSmall = 150;
+                  } else if (daoCellNum >= scalingStep) {
+                      scaleFactorSmall = 250;
+                  } else {
+                      scaleFactorSmall = 300;
+                  }
+
+                  let scaleFactorLarge;
+                  if (daoCellNum >= scalingStep * 3) {
+                      scaleFactorLarge = 150;
+                  } else if (daoCellNum >= scalingStep * 2) {
+                      scaleFactorLarge = 250;
+                  } else if (daoCellNum >= scalingStep) {
+                      scaleFactorLarge = 300;
+                  } else {
+                      scaleFactorLarge = 350;
+                  }
+                  
+                  const capacity = parseInt(cell.cellOutput.capacity, 16);
+                  const totalCapacity = [...depositCells, ...withdrawalCells].reduce(
+                    (sum, c) => sum + parseInt(c.cellOutput.capacity, 16),
+                    0
+                  );
+                  let scaleFactor
+                  if (capacity < 100_000 * CKB_SHANNON_RATIO)
+                    scaleFactor = scaleFactorSmall
+                  else
+                    scaleFactor = scaleFactorLarge;
+
+                  const logScaledBoxSize = (Math.log(capacity + 1) / Math.log(totalCapacity + 1)) * scaleFactor;
+
+                  let boxSize:any;
+                  if (windowWidth <= 768)
+                    boxSize = Math.max(minBoxSize, logScaledBoxSize)/2
+                  else
+                    boxSize = Math.max(minBoxSize, logScaledBoxSize);
+
+                  const isDeposit = depositCells.some(
+                    c => c.outPoint?.txHash === cell.outPoint?.txHash
+                  );
+                  
                   const backgroundColor = isDeposit ? '#aee129' : '#e58603';
                   const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
                   const buttonTextColor = isDeposit ? '#aee129' : '#e58603';

@@ -433,11 +433,17 @@ body {
     }
 
     .dao-cell-area {
-        width: 90%;
+        width: 100%;
     }
 
     .cell-grid {
         max-width: 90%;
+        grid-gap: 0px;
+    }
+
+    .dao-cell {
+        padding: 5px;
+        margin: 5px;
     }
 
     .deposit-textbox {
