@@ -325,11 +325,6 @@ body {
     to { transform: rotate(360deg); }
 }
 
-.faded {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
 .loading-circle-container {
     display: flex;
     flex-direction: column;
@@ -341,6 +336,14 @@ body {
     font-size: 16px;
     font-weight: bold;
     color: #333;
+    animation: blink 1s infinite;
+}
+
+.description {
+    margin-top: -10px;
+    font-size: 16px;
+    color: #cfcece;
+    font-weight: bold;
     animation: blink 1s infinite;
 }
 
@@ -385,53 +388,13 @@ body {
     font-size: 0.8em;
 }
 
-.safe {
-    width: 200px;
-    height: 140px;
-    background-color: #505050;
-    border: 10px solid #303030;
-    border-radius: 10px;
-    position: relative;
-  }
-  
-  .safe::before {
-    content: '';
-    position: absolute;
-    top: 20px;
-    left: 10px;
-    right: 10px;
-    bottom: 20px;
-    background-color: #303030;
-    border: 3px solid #202020;
-  }
-  
-  .safe::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 20px;
-    background-color: #202020;
-    border: 3px solid #101010;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-  }
-  
-  .safe .line {
-    position: absolute;
-    left: 10px;
-    right: 10px;
-    height: 3px;
-    background-color: #202020;
-  }
-  
-  .safe .line:nth-child(1) { top: 50px; }
-  .safe .line:nth-child(2) { top: 70px; }
-  .safe .line:nth-child(3) { top: 90px; }
-  .safe .line:nth-child(4) { top: 110px; }
+.background-image {
+    background-image: url('dao-safe.jpg');
+    background-size: 350px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
 
-  
 @media only screen and (max-width: 768px) {
     .title {
         font-size: 2.5em;
@@ -482,5 +445,18 @@ body {
 
     .tx-confirmation-message {
         font-size: 14px;
+    }
+
+    .description {
+        margin-top: -20px;
+        font-size: 13.4px;
+        color: #cfcece;
+    }
+
+    .background-image {
+        background-image: url('dao-safe.jpg');
+        background-size: 300px;
+        background-position: center;
+        background-repeat: no-repeat;
     }
 }

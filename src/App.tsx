@@ -226,7 +226,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className={`container ${isLoading ? 'faded' : ''}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+    <div className={`container ${joyidInfo ? '' : 'background-image'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
       {isLoading && (
         <div className="loading-overlay">
           <div className="loading-circle-container">
@@ -249,7 +249,7 @@ export default function App() {
 
       {!joyidInfo && (
         <div className='description'>
-          <p>Use Nervos DAO with JoyID Passkeys</p>
+          <p>Nervos DAO + JoyID Passkeys</p>
         </div>
       )}
 
@@ -299,7 +299,6 @@ export default function App() {
           )
         )}
       </div>
-
 
       {joyidInfo && [...depositCells, ...withdrawalCells].length === 0 ? (
         <div className='no-deposit-message'>
@@ -367,7 +366,7 @@ export default function App() {
               return (
                 <div
                   key={index}
-                  className={`dao-cell ${isLoading ? 'faded' : ''}`}
+                  className='dao-cell'
                   ref={el => {
                     if (el) {
                       el.style.setProperty('--boxSize', `${boxSize}px`);
@@ -383,7 +382,7 @@ export default function App() {
                     {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
                   </p>
                   <button
-                    className={`dao-cell-button ${isLoading ? 'faded' : ''}`}
+                    className='dao-cell-button'
                     ref={el => {
                       if (el) {
                         el.style.setProperty('--buttonColor', buttonColor);
