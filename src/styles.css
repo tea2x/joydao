@@ -6,12 +6,6 @@ body {
     padding: 0;
 }
 
-.container.no-user .title {
-    animation: wiggle 0.5s infinite alternate;
-    position: relative;
-    top: -80px;
-}
-
 @keyframes wiggle {
     0% {
         transform: rotate(-2deg);
@@ -342,8 +336,8 @@ body {
 }
 
 .description {
-    margin-top: -10px;
-    font-size: 16px;
+    margin-top: -5px;
+    font-size: 15px;
     color: #cfcece;
     font-weight: bold;
     animation: blink 1s infinite;
@@ -401,7 +395,7 @@ body {
 @media only screen and (max-width: 768px) {
     .title {
         font-size: 3.5em;
-        margin-top: 10px;
+        margin-top: 20px;
     }
 
     .signin-button, .account-button, .signout-button, .deposit-button {
@@ -427,6 +421,8 @@ body {
     .container {
         width: 100%;
         min-height: 800px;
+        padding: 0px;
+        margin-top: 0px;
     }
 
     .cell-grid {

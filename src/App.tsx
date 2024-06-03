@@ -313,7 +313,7 @@ export default function App() {
             }).map((cell, index) => {
               const scalingStep = 3;
               const daoCellNum = [...depositCells, ...withdrawalCells].length;
-              const minBoxSize = windowWidth <= 768 ? 60 : 100;
+              const minBoxSize = windowWidth <= 768 ? 80 : 100;
 
               let scaleFactorSmall;
               if (daoCellNum >= scalingStep * 3) {
