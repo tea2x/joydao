@@ -226,40 +226,40 @@ export default function App() {
   }, []);
 
   return (
-    <div className={`container ${joyidInfo ? '' : 'no-user'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+    <div className={`container ${isLoading ? 'faded' : ''}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
       {isLoading && (
         <div className="loading-overlay">
           <div className="loading-circle-container">
             <div className="loading-circle"></div>
             {isWaitingTxConfirm && (
               <p className="tx-confirmation-message">
-                Your tx can take up a few minutes to process. Please wait!
+                Your tx can take up a few minutes to process!
               </p>
             )}
           </div>
         </div>
       )}
-  
+
       <h1 className='title' onClick={async () => {
         await updateDaoList();
         window.location.reload();
       }}>
         JoyDAO
       </h1>
-  
+
       {!joyidInfo && (
         <div className='description'>
           <p>Use Nervos DAO with JoyID Passkeys</p>
         </div>
       )}
-  
-      <div className='signin-account-deposit-button-area' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+
+      <div className='button-manager' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {joyidInfo ? (
           <div className='dropdown-area'>
             <button className='account-button' onClick={() => setShowDropdown(!showDropdown)}>
               {shortenAddress(joyidInfo.address)}
             </button>
-  
+
             {showDropdown && (
               <div className='dropdown-menu'>
                 <p>Available: {balance ? balance.available.toString() + ' CKB' : 'Loading...'}</p>
@@ -275,7 +275,7 @@ export default function App() {
             Connect
           </button>
         )}
-  
+
         {joyidInfo && (
           isDepositing ? (
             <input
@@ -299,115 +299,107 @@ export default function App() {
           )
         )}
       </div>
-  
-      {joyidInfo && (
-        <div
-          className={`dao-cell-area ${isLoading ? 'faded' : ''}`}
-          onClick={(e) => hideDepositTextBoxAndDropDown(e)}
-        >
-          {[...depositCells, ...withdrawalCells].length === 0 ? (
-            <div className='no-deposit-message'>
-              <h2>Whoops, no deposits found!</h2>
-            </div>
-          ) : (
-            <div className='cell-grid'>
-              {[...depositCells, ...withdrawalCells]
-                .sort((a, b) => {
-                  const aBlkNum = parseInt(a.blockNumber!, 16);
-                  const bBlkNum = parseInt(b.blockNumber!, 16);
-                  return bBlkNum - aBlkNum;
-                })
-                .map((cell, index) => {
-                  const scalingStep = 3;
-                  const daoCellNum = [...depositCells, ...withdrawalCells].length;
-                  const minBoxSize = windowWidth <= 768 ? 150 : 80;
 
-                  let scaleFactorSmall;
-                  if (daoCellNum >= scalingStep * 3) {
-                      scaleFactorSmall = 100;
-                  } else if (daoCellNum >= scalingStep * 2) {
-                      scaleFactorSmall = 150;
-                  } else if (daoCellNum >= scalingStep) {
-                      scaleFactorSmall = 250;
-                  } else {
-                      scaleFactorSmall = 300;
-                  }
 
-                  let scaleFactorLarge;
-                  if (daoCellNum >= scalingStep * 3) {
-                      scaleFactorLarge = 150;
-                  } else if (daoCellNum >= scalingStep * 2) {
-                      scaleFactorLarge = 250;
-                  } else if (daoCellNum >= scalingStep) {
-                      scaleFactorLarge = 300;
-                  } else {
-                      scaleFactorLarge = 350;
-                  }
-                  
-                  const capacity = parseInt(cell.cellOutput.capacity, 16);
-                  const totalCapacity = [...depositCells, ...withdrawalCells].reduce(
-                    (sum, c) => sum + parseInt(c.cellOutput.capacity, 16),
-                    0
-                  );
-                  let scaleFactor
-                  if (capacity < 100_000 * CKB_SHANNON_RATIO)
-                    scaleFactor = scaleFactorSmall
-                  else
-                    scaleFactor = scaleFactorLarge;
+      {joyidInfo && [...depositCells, ...withdrawalCells].length === 0 ? (
+        <div className='no-deposit-message'>
+          <h2>Whoops, no deposits found!</h2>
+        </div>
+      ) : (
+        <div className='cell-grid'>
+          {[...depositCells, ...withdrawalCells].sort((a, b) => {
+              const aBlkNum = parseInt(a.blockNumber!, 16);
+              const bBlkNum = parseInt(b.blockNumber!, 16);
+              return bBlkNum - aBlkNum;
+            }).map((cell, index) => {
+              const scalingStep = 3;
+              const daoCellNum = [...depositCells, ...withdrawalCells].length;
+              const minBoxSize = windowWidth <= 768 ? 150 : 80;
 
-                  const logScaledBoxSize = (Math.log(capacity + 1) / Math.log(totalCapacity + 1)) * scaleFactor;
+              let scaleFactorSmall;
+              if (daoCellNum >= scalingStep * 3) {
+                  scaleFactorSmall = 100;
+              } else if (daoCellNum >= scalingStep * 2) {
+                  scaleFactorSmall = 150;
+              } else if (daoCellNum >= scalingStep) {
+                  scaleFactorSmall = 250;
+              } else {
+                  scaleFactorSmall = 300;
+              }
 
-                  let boxSize:any;
-                  if (windowWidth <= 768)
-                    boxSize = Math.max(minBoxSize, logScaledBoxSize)/2
-                  else
-                    boxSize = Math.max(minBoxSize, logScaledBoxSize);
+              let scaleFactorLarge;
+              if (daoCellNum >= scalingStep * 3) {
+                  scaleFactorLarge = 150;
+              } else if (daoCellNum >= scalingStep * 2) {
+                  scaleFactorLarge = 250;
+              } else if (daoCellNum >= scalingStep) {
+                  scaleFactorLarge = 300;
+              } else {
+                  scaleFactorLarge = 350;
+              }
+              
+              const capacity = parseInt(cell.cellOutput.capacity, 16);
+              const totalCapacity = [...depositCells, ...withdrawalCells].reduce(
+                (sum, c) => sum + parseInt(c.cellOutput.capacity, 16),
+                0
+              );
+              let scaleFactor
+              if (capacity < 100_000 * CKB_SHANNON_RATIO)
+                scaleFactor = scaleFactorSmall
+              else
+                scaleFactor = scaleFactorLarge;
 
-                  const isDeposit = depositCells.some(
-                    c => c.outPoint?.txHash === cell.outPoint?.txHash
-                  );
-                  
-                  const backgroundColor = isDeposit ? '#aee129' : '#e58603';
-                  const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
-                  const buttonTextColor = isDeposit ? '#aee129' : '#e58603';
-                  return (
-                    <div
-                      key={index}
-                      className={`dao-cell ${isLoading ? 'faded' : ''}`}
-                      ref={el => {
-                        if (el) {
-                          el.style.setProperty('--boxSize', `${boxSize}px`);
-                          el.style.setProperty('--backgroundColor', backgroundColor);
-                        }
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(TESTNET_EXPLORER_PREFIX + `${cell.outPoint?.txHash}`, '_blank', 'noreferrer');
-                      }}
-                    >
-                      <p className='dao-link'>
-                        {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
-                      </p>
-                      <button
-                        className={`dao-cell-button ${isLoading ? 'faded' : ''}`}
-                        ref={el => {
-                          if (el) {
-                            el.style.setProperty('--buttonColor', buttonColor);
-                            el.style.setProperty('--buttonTextColor', buttonTextColor);
-                          }
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          isDeposit ? onWithdraw(cell) : onUnlock(cell);
-                        }}
-                      >
-                        {isDeposit ? 'Withdraw' : 'Unlock'}
-                      </button>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
+              const logScaledBoxSize = (Math.log(capacity + 1) / Math.log(totalCapacity + 1)) * scaleFactor;
+
+              let boxSize:any;
+              if (windowWidth <= 768)
+                boxSize = Math.max(minBoxSize, logScaledBoxSize)/2
+              else
+                boxSize = Math.max(minBoxSize, logScaledBoxSize);
+
+              const isDeposit = depositCells.some(
+                c => c.outPoint?.txHash === cell.outPoint?.txHash
+              );
+              
+              const backgroundColor = isDeposit ? '#aee129' : '#e58603';
+              const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
+              const buttonTextColor = isDeposit ? '#aee129' : '#e58603';
+              return (
+                <div
+                  key={index}
+                  className={`dao-cell ${isLoading ? 'faded' : ''}`}
+                  ref={el => {
+                    if (el) {
+                      el.style.setProperty('--boxSize', `${boxSize}px`);
+                      el.style.setProperty('--backgroundColor', backgroundColor);
+                    }
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(TESTNET_EXPLORER_PREFIX + `${cell.outPoint?.txHash}`, '_blank', 'noreferrer');
+                  }}
+                >
+                  <p className='dao-link'>
+                    {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
+                  </p>
+                  <button
+                    className={`dao-cell-button ${isLoading ? 'faded' : ''}`}
+                    ref={el => {
+                      if (el) {
+                        el.style.setProperty('--buttonColor', buttonColor);
+                        el.style.setProperty('--buttonTextColor', buttonTextColor);
+                      }
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      isDeposit ? onWithdraw(cell) : onUnlock(cell);
+                    }}
+                  >
+                    {isDeposit ? 'Withdraw' : 'Unlock'}
+                  </button>
+                </div>
+              );
+            })}
         </div>
       )}
     </div>

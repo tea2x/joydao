@@ -6,46 +6,8 @@ body {
     padding: 0;
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-}
-
-.container.no-user {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    justify-content: center;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    height: 80vh;
-    width: 30%;
-    background-color: #ffffff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
-    padding: 20px;
-    margin: 0px;
-    border: none;
-    border-radius: 10px;
-    transition: transform 0.5s ease-in-out;
-    background-image: url('safe.svg');
-    background-size: 300px;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
 .container.no-user .title {
     animation: wiggle 0.5s infinite alternate;
-    position: relative;
-    top: -80px;
-}
-
-.container.no-user .description {
-    font-family: 'Open Sans', sans-serif;
-    color: #666666;
-    font-size: 16px;
     position: relative;
     top: -80px;
 }
@@ -60,10 +22,6 @@ body {
     100% {
         transform: rotate(-2deg);
     }
-}
-
-.container:active {
-    cursor: pointer;
 }
 
 .title {
@@ -86,7 +44,7 @@ body {
     cursor: pointer;
 }
 
-.signin-account-deposit-button-area {
+.button-manager {
     display: flex;
     justify-content: center;
     width: 100%;
@@ -246,18 +204,36 @@ body {
     animation: blink 1s infinite;
 }
 
-.dao-cell-area {
+.container {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 60%;
     background-color: #ffffff;
     padding: 20px;
-    margin: 20px;
+    margin: 20px auto;
     border: none;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
     transition: transform 0.5s ease-in-out;
+}
+
+.container-entry {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 60%;
+    background-color: #ffffff;
+    padding: 20px;
+    margin: 20px auto;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+    transition: transform 0.5s ease-in-out;
+    background-image: url('dao-safe.jpg');
+    background-size: 250px;
+    background-position: right 15px center;
+    background-repeat: no-repeat;
 }
 
 .dao-link {
@@ -409,12 +385,54 @@ body {
     font-size: 0.8em;
 }
 
-@media only screen and (max-width: 768px) {
-    .container.no-user {
-        width: 90%;
-        background-size: 200px;
-    }
+.safe {
+    width: 200px;
+    height: 140px;
+    background-color: #505050;
+    border: 10px solid #303030;
+    border-radius: 10px;
+    position: relative;
+  }
+  
+  .safe::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 10px;
+    right: 10px;
+    bottom: 20px;
+    background-color: #303030;
+    border: 3px solid #202020;
+  }
+  
+  .safe::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background-color: #202020;
+    border: 3px solid #101010;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .safe .line {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    height: 3px;
+    background-color: #202020;
+  }
+  
+  .safe .line:nth-child(1) { top: 50px; }
+  .safe .line:nth-child(2) { top: 70px; }
+  .safe .line:nth-child(3) { top: 90px; }
+  .safe .line:nth-child(4) { top: 110px; }
 
+  
+@media only screen and (max-width: 768px) {
     .title {
         font-size: 2.5em;
     }
@@ -432,7 +450,7 @@ body {
         padding-left: 2px;
     }
 
-    .dao-cell-area {
+    .container {
         width: 100%;
     }
 
