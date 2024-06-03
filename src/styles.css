@@ -415,16 +415,17 @@ body {
 
     .container {
         width: 100%;
+        min-height: 800px;
     }
 
     .cell-grid {
-        max-width: 90%;
+        max-width: 100%;
         grid-gap: 0px;
     }
 
     .dao-cell {
-        padding: 5px;
-        margin: 5px;
+        padding: 1px;
+        margin: 1px;
     }
 
     .deposit-textbox {

@@ -313,7 +313,7 @@ export default function App() {
             }).map((cell, index) => {
               const scalingStep = 3;
               const daoCellNum = [...depositCells, ...withdrawalCells].length;
-              const minBoxSize = windowWidth <= 768 ? 150 : 80;
+              const minBoxSize = windowWidth <= 768 ? 60 : 80;
 
               let scaleFactorSmall;
               if (daoCellNum >= scalingStep * 3) {
@@ -352,7 +352,7 @@ export default function App() {
 
               let boxSize:any;
               if (windowWidth <= 768)
-                boxSize = Math.max(minBoxSize, logScaledBoxSize)/2
+                boxSize = Math.max(minBoxSize, logScaledBoxSize)
               else
                 boxSize = Math.max(minBoxSize, logScaledBoxSize);
 
