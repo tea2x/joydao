@@ -65,7 +65,7 @@ body {
     justify-content: center;
     width: 150px;
     height: 40px;
-    background-image: url('joyid-logo.png');
+    background-image: url('./images/joyid-logo.png');
     background-size: 25px;
     background-position: right 15px center;
     background-repeat: no-repeat;
@@ -226,7 +226,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
     transition: transform 0.5s ease-in-out;
-    background-image: url('dao-safe.jpg');
+    background-image: url('./images/dao-safe.jpg');
     background-size: 250px;
     background-position: right 15px center;
     background-repeat: no-repeat;
@@ -386,7 +386,7 @@ body {
 }
 
 .background-image {
-    background-image: url('dao-safe.jpg');
+    background-image: url('./images/dao-safe.jpg');
     background-size: 350px;
     background-position: center;
     background-repeat: no-repeat;
@@ -469,7 +469,7 @@ body {
     }
 
     .background-image {
-        background-image: url('dao-safe.jpg');
+        background-image: url('./images/dao-safe.jpg');
         background-size: 400px;
         background-position: top 165px center;
         background-repeat: no-repeat;
