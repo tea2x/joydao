@@ -364,9 +364,7 @@ export default function App() {
               const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
               const buttonTextColor = isDeposit ? '#aee129' : '#e58603';
               return (
-                <div
-                  key={index}
-                  className='dao-cell'
+                <div key={index} className='dao-cell'
                   ref={el => {
                     if (el) {
                       el.style.setProperty('--boxSize', `${boxSize}px`);
@@ -381,8 +379,7 @@ export default function App() {
                   <p className='dao-link'>
                     {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
                   </p>
-                  <button
-                    className='dao-cell-button'
+                  <button className='dao-cell-button'
                     ref={el => {
                       if (el) {
                         el.style.setProperty('--buttonColor', buttonColor);

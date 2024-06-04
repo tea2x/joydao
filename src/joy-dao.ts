@@ -46,6 +46,8 @@ export const collectWithdrawals = async(joyidAddr: Address): Promise<Cell[]> => 
 }
 
 /*
+  Buid DAO deposit raw transaction
+  ----
   joyIDaddr: the joyID address
   amount: the amount to deposit to the DAO in CKB
   ----
@@ -93,6 +95,8 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
 }
 
 /*
+  Buid DAO withdraw raw transaction
+  ----
   joyIDaddr: the joyID address
   daoDepositCell: the cell that locks the DAO deposit
   ----
@@ -105,7 +109,6 @@ export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell
     txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
 
     // add dao input cell
-    // TODO change block number and test the result
     let clonedInputCell:Cell = daoDepositCell;
     clonedInputCell.blockHash = await getBlockHash(daoDepositCell.blockNumber!);
     txSkeleton = txSkeleton.update("inputs", (i)=>i.push(clonedInputCell));
@@ -150,6 +153,8 @@ export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell
 }
 
 /*
+  Buid DAO unlock raw transaction
+  ----
   joyIDaddr: the joyID address
   daoDepositCell: the cell that locks the DAO deposit
   daoWithdrawalCell: the DAO withdrawal cell
