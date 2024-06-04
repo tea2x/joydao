@@ -359,7 +359,7 @@ body {
     border: 1px solid var(--backgroundColor);
     padding: 10px;
     margin: 10px;
-    border-radius: 10px;
+    border-radius: 5px;
     width: var(--boxSize);
     height: var(--boxSize);
     display: flex;
@@ -390,6 +390,46 @@ body {
     background-size: 350px;
     background-position: center;
     background-repeat: no-repeat;
+}
+  
+.ReactModal__Content {
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+    transition: transform 0.5s ease-in-out;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-around;
+}
+
+button.proceed, button.cancel {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button.proceed {
+    background-color: #448635; /* Green */
+    color: white;
+}
+
+button.cancel {
+    background-color: #b6382f; /* Red */
+    color: white;
 }
   
 @media only screen and (max-width: 768px) {
@@ -478,5 +518,17 @@ body {
     .dropdown-menu {
         margin-top: -27px;
         height: 130px;
+    }
+
+    .ReactModal__Content {
+        width: 90%;
+        max-width: 265px;
+        margin: 70px auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+        transition: transform 0.5s ease-in-out;
     }
 }

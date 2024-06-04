@@ -7,6 +7,8 @@ import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import "./styles.css";
+import useModal from 'react-modal';
+import Modal from 'react-modal';
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
@@ -19,6 +21,10 @@ export default function App() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isWaitingTxConfirm, setIsWaitingTxConfirm] = React.useState(false);
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
+  const [modalIsOpen, setModalIsOpen] = React.useState(false);
+  const [currentCell, setCurrentCell] = React.useState<Cell | null>(null);
+  const [withdrawClicked, setWithdrawClicked] = React.useState(false);
+
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
@@ -104,7 +110,16 @@ export default function App() {
     }
   }
 
-  const onWithdraw = async (cell: Cell) => {
+  const onWithdraw = (cell:Cell) => {
+    // to differentiate with unlock Click
+    setWithdrawClicked(true);
+    // Open the modal
+    setModalIsOpen(true);
+    // Save the cell for later
+    setCurrentCell(cell);
+  };
+  
+  const _onWithdraw = async (cell: Cell) => {
     try {
       const daoTx = await buildWithdrawTransaction(joyidInfo.address, cell);
 
@@ -132,7 +147,13 @@ export default function App() {
     }
   }
 
-  const onUnlock = async(withdrawalCell: Cell) => {
+  const onUnlock = (cell:Cell) => {
+    // Open the modal
+    setModalIsOpen(true);
+    // Save the cell for later
+    setCurrentCell(cell);
+  };
+  const _onUnlock = async(withdrawalCell: Cell) => {
     try {
       const daoTx = await buildUnlockTransaction(joyidInfo.address, withdrawalCell);
 
@@ -398,6 +419,42 @@ export default function App() {
             })}
         </div>
       )}
+
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={() => setModalIsOpen(false)}
+      >
+        <h2>Information</h2>
+        <div className='button'>
+          <button
+            className='proceed'
+            onClick={() => {
+              if (currentCell) {
+                if (withdrawClicked) {
+                  _onWithdraw(currentCell);
+                } else {
+                  _onUnlock(currentCell);
+                }
+              }
+              setWithdrawClicked(false);
+              setModalIsOpen(false);
+            }}
+          >
+            Proceed
+          </button>
+
+          <button
+            className='cancel'
+            onClick={() => {
+              setModalIsOpen(false);
+              setWithdrawClicked(false)
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </Modal>
+
     </div>
   )
 }
