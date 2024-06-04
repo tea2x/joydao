@@ -274,7 +274,7 @@ export default function App() {
         </div>
       )}
 
-      <div className='button-manager' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+      <div className='account-deposit-buttons' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {joyidInfo ? (
           <div className='dropdown-area'>
             <button className='account-button' onClick={(e) => {setShowDropdown(!showDropdown); hideDepositTextBoxAndDropDown(e)}}>
@@ -349,13 +349,13 @@ export default function App() {
 
               let scaleFactorLarge;
               if (daoCellNum >= scalingStep * 3) {
-                  scaleFactorLarge = 200;
-              } else if (daoCellNum >= scalingStep * 2) {
                   scaleFactorLarge = 300;
-              } else if (daoCellNum >= scalingStep) {
+              } else if (daoCellNum >= scalingStep * 2) {
                   scaleFactorLarge = 400;
-              } else {
+              } else if (daoCellNum >= scalingStep) {
                   scaleFactorLarge = 500;
+              } else {
+                  scaleFactorLarge = 600;
               }
               
               const capacity = parseInt(cell.cellOutput.capacity, 16);
@@ -364,10 +364,13 @@ export default function App() {
                 0
               );
               let scaleFactor
-              if (capacity < 100_000 * CKB_SHANNON_RATIO)
+              if (capacity < 100_000 * CKB_SHANNON_RATIO) {
                 scaleFactor = scaleFactorSmall
-              else
+              } else {
                 scaleFactor = scaleFactorLarge;
+              }
+
+              scaleFactor = windowWidth <= 768 ? scaleFactor*0.8 : scaleFactor;
 
               const logScaledBoxSize = (Math.log(capacity + 1) / Math.log(totalCapacity + 1)) * scaleFactor;
 

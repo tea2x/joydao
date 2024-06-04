@@ -38,7 +38,7 @@ body {
     cursor: pointer;
 }
 
-.button-manager {
+.account-deposit-buttons {
     display: flex;
     justify-content: center;
     width: 100%;
@@ -57,7 +57,6 @@ body {
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    margin-right: 10px;
     font-size: 16px;
     font-weight: 600;
     display: flex;
@@ -69,19 +68,11 @@ body {
     background-size: 25px;
     background-position: right 15px center;
     background-repeat: no-repeat;
-    margin-top: 220px;
 }
   
 .signin-button:hover {
     background-color: #000;
     color: #A8E72F;
-}
-  
-.signin-button img {
-    height: 20px;
-    object-fit: scale-down;
-    object-position: left;
-    margin-right: 8px;
 }
 
 .account-button {
@@ -245,7 +236,8 @@ body {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    max-width: 80%;
+    max-width: 100%;
+    grid-gap: 0px;
 }
 
 @keyframes blink {
@@ -360,8 +352,8 @@ body {
 
 .dao-cell {
     border: 1px solid var(--backgroundColor);
-    padding: 2px;
-    margin: 2px;
+    padding: 3px;
+    margin: 3px;
     border-radius: 5px;
     width: var(--boxSize);
     height: 100px;
@@ -476,11 +468,6 @@ button.cancel {
         min-height: 800px;
         padding: 0px;
         margin-top: 0px;
-    }
-
-    .cell-grid {
-        max-width: 100%;
-        grid-gap: 0px;
     }
 
     .dao-cell {
