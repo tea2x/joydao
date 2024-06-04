@@ -274,8 +274,14 @@ export default function App() {
         </div>
       )}
 
+      {!joyidInfo && (
+        <button className='signin-button' onClick={onConnect}>
+          Connect
+        </button>
+      )}
+
       <div className='account-deposit-buttons' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
-        {joyidInfo ? (
+        {joyidInfo && (
           <div className='dropdown-area'>
             <button className='account-button' onClick={(e) => {setShowDropdown(!showDropdown); hideDepositTextBoxAndDropDown(e)}}>
               {shortenAddress(joyidInfo.address)}
@@ -291,10 +297,6 @@ export default function App() {
               </div>
             )}
           </div>
-        ) : (
-          <button className='signin-button' onClick={onConnect}>
-            Connect
-          </button>
         )}
 
         {joyidInfo && (

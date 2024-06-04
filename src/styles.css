@@ -68,6 +68,7 @@ body {
     background-size: 25px;
     background-position: right 15px center;
     background-repeat: no-repeat;
+    margin-top: 500px;
 }
   
 .signin-button:hover {
@@ -204,24 +205,6 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
     transition: transform 0.5s ease-in-out;
     min-height: 800px;
-}
-
-.container-entry {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 60%;
-    background-color: #ffffff;
-    padding: 20px;
-    margin: 20px auto;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
-    transition: transform 0.5s ease-in-out;
-    background-image: url('./images/dao-safe.jpg');
-    background-size: 250px;
-    background-position: right 15px center;
-    background-repeat: no-repeat;
 }
 
 .dao-link {
