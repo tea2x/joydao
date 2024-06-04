@@ -340,22 +340,22 @@ export default function App() {
               if (daoCellNum >= scalingStep * 3) {
                   scaleFactorSmall = 100;
               } else if (daoCellNum >= scalingStep * 2) {
-                  scaleFactorSmall = 150;
+                  scaleFactorSmall = 200;
               } else if (daoCellNum >= scalingStep) {
-                  scaleFactorSmall = 250;
-              } else {
                   scaleFactorSmall = 300;
+              } else {
+                  scaleFactorSmall = 400;
               }
 
               let scaleFactorLarge;
               if (daoCellNum >= scalingStep * 3) {
-                  scaleFactorLarge = 150;
+                  scaleFactorLarge = 200;
               } else if (daoCellNum >= scalingStep * 2) {
-                  scaleFactorLarge = 250;
-              } else if (daoCellNum >= scalingStep) {
                   scaleFactorLarge = 300;
+              } else if (daoCellNum >= scalingStep) {
+                  scaleFactorLarge = 400;
               } else {
-                  scaleFactorLarge = 350;
+                  scaleFactorLarge = 500;
               }
               
               const capacity = parseInt(cell.cellOutput.capacity, 16);
@@ -371,12 +371,8 @@ export default function App() {
 
               const logScaledBoxSize = (Math.log(capacity + 1) / Math.log(totalCapacity + 1)) * scaleFactor;
 
-              let boxSize:any;
-              if (windowWidth <= 768)
-                boxSize = Math.max(minBoxSize, logScaledBoxSize)*1.1
-              else
-                boxSize = Math.max(minBoxSize, logScaledBoxSize);
-
+              let boxSize = Math.max(minBoxSize, logScaledBoxSize);
+              
               const isDeposit = depositCells.some(
                 c => c.outPoint?.txHash === cell.outPoint?.txHash
               );
