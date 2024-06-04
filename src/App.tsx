@@ -377,9 +377,9 @@ export default function App() {
                 c => c.outPoint?.txHash === cell.outPoint?.txHash
               );
               
-              const backgroundColor = isDeposit ? '#aee129' : '#e58603';
+              const backgroundColor = isDeposit ? '#99c824' : '#e58603';
               const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
-              const buttonTextColor = isDeposit ? '#aee129' : '#e58603';
+              const buttonTextColor = isDeposit ? '#99c824' : '#e58603';
               return (
                 <div key={index} className='dao-cell'
                   ref={el => {
