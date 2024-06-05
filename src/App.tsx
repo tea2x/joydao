@@ -8,7 +8,6 @@ import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX }
 import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import "./styles.css";
 import Modal from 'react-modal';
-const appElement = document.getElementById('root');
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
@@ -28,7 +27,6 @@ export default function App() {
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
-  console.log(">>>currentCell: ", currentCell)
   const updateDaoList = async () => {
     const storedAuthData = localStorage.getItem('joyidInfo');
     if (storedAuthData) {
@@ -115,7 +113,6 @@ export default function App() {
     // to differentiate with unlock Click
     setWithdrawClicked(true);
     // Open the modal and disable dao-cell hoverring effect
-    document.body.classList.add('modal-open');
     setModalIsOpen(true);
 
     // enrich the deposit dao cell info
@@ -155,7 +152,6 @@ export default function App() {
 
   const onUnlock = async (cell:DaoCell) => {
     // Open the modal and disable dao-cell hoverring effect
-    document.body.classList.add('modal-open');
     setModalIsOpen(true);
 
     // enrich the withdrawal dao cell info
@@ -434,12 +430,10 @@ export default function App() {
       )}
 
       <Modal
-        appElement={appElement || undefined}
         isOpen={modalIsOpen}
         onRequestClose={() => {
           // close the modal and reenable dao-cell hoverring effect
           setModalIsOpen(false); 
-          document.body.classList.remove('modal-open');
         }}
       >
         <h2>Information</h2>
@@ -460,7 +454,6 @@ export default function App() {
               }
               // close the modal and reenable dao-cell hoverring effect
               setModalIsOpen(false);
-              document.body.classList.remove('modal-open');
             }}
           >
             Proceed
@@ -472,7 +465,6 @@ export default function App() {
               setWithdrawClicked(false);
               // close the modal and reenable dao-cell hoverring effect
               setModalIsOpen(false);
-              document.body.classList.remove('modal-open');
             }}
           >
             Cancel
