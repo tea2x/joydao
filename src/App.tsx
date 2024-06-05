@@ -8,6 +8,7 @@ import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX }
 import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import "./styles.css";
 import Modal from 'react-modal';
+Modal.setAppElement('#root');
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
@@ -22,6 +23,7 @@ export default function App() {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [modalIsOpen, setModalIsOpen] = React.useState(false);
   const [currentCell, setCurrentCell] = React.useState<DaoCell | null>(null);
+  const [modalMessage, setModalMessage] = React.useState<string>();
 
 
   initializeConfig(TEST_NET_CONFIG as Config);
@@ -212,6 +214,34 @@ export default function App() {
     }
   }
 
+  const prepareMessage = () => {
+    console.log(">>>currentCell: ", currentCell)
+    if (currentCell) {
+      let message = '';
+      if (currentCell.isDeposit) {
+        if (currentCell.ripe) {
+          message = "Your deposit is currently within the optimal withdrawal window to maximize your reward!\
+          Proceed withdraw now and unlock in " + (currentCell.sinceEpoch - currentCell.tipEpoch) + " epochs,\
+          approximately " + (currentCell.sinceEpoch - currentCell.tipEpoch)*4 + " hours from now.\
+          If you don't, your deposit will enter another 30-day lock cycle.";
+        } else {
+          message = "Now is not a good time to withdraw your deposits. Please wait until epoch "
+          + (currentCell.sinceEpoch - 12) + " (about " + (currentCell.sinceEpoch - 12 - currentCell.tipEpoch)/4 + " days),\
+          to make your withdrawal to have the maximum rewards.";
+        }
+      } else {
+        if (currentCell.ripe) {
+          message = "Complete your Dao withdrawal, getting back in total " + currentCell.maximumWithdraw+ " CKB";
+        } else {
+          message = "Your withdrawal has not yet reached the time window when it can be unlocked. You must wait \
+          until epoch " + (currentCell.sinceEpoch + 1);
+        }
+      }
+      // display the message in your modal
+      setModalMessage(message);
+    }
+  };
+
   const hideDepositTextBoxAndDropDown = (e:any) => {
     e.stopPropagation(); // Prevent event propagation
     if (isDepositing && e.target === e.currentTarget) {
@@ -248,8 +278,11 @@ export default function App() {
       await updateDaoList();
     })();  
 
+    if (currentCell) {
+      prepareMessage();
+    }
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [currentCell]);
 
   return (
     <div className={`container ${joyidInfo ? '' : 'background-image'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
@@ -391,7 +424,7 @@ export default function App() {
               const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
               const buttonTextColor = isDeposit ? '#99c824' : '#e58603';
               return (
-                <div key={index} className='dao-cell'
+                <div key={index} className='dao-cell' //{`dao-cell ${currentCell && currentCell.ripe ? 'shake' : ''}`}
                   ref={el => {
                     if (el) {
                       el.style.setProperty('--boxSize', `${boxSize}px`);
@@ -431,12 +464,12 @@ export default function App() {
         onRequestClose={() => {
           // close the modal
           setModalIsOpen(false); 
+          // clear the modal message
+          setModalMessage("");
         }}
       >
         <h2>Information</h2>
-        <text>
-          Under development ...
-        </text>
+        <p>{modalMessage}</p>
         <div className='button'>
           <button
             className='proceed'
@@ -452,6 +485,8 @@ export default function App() {
               }
               // close the modal
               setModalIsOpen(false);
+              // clear the modal message
+              setModalMessage("");
             }}
           >
             Proceed
@@ -462,6 +497,8 @@ export default function App() {
             onClick={() => {
               // close the modal
               setModalIsOpen(false);
+              // clear the modal message
+              setModalMessage("");
             }}
           >
             Cancel

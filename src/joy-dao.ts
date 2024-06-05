@@ -237,19 +237,6 @@ export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCel
   
     const since: PackedSince = "0x" + minimalSince.toString(16);
 
-
-
-    console.log(">>>since: ", parseSince(since));
-
-    const currentEpoch = await rpc.getCurrentEpoch();
-    console.log(">>>currentEpoch: ", currentEpoch)
-    console.log(">>>compactTarget: ", parseInt(currentEpoch.compactTarget,16));
-    console.log(">>>startNumber: ", parseInt(currentEpoch.startNumber,16));
-    console.log(">>>length: ", parseInt(currentEpoch.length,16));
-    console.log(">>>number: ", parseInt(currentEpoch.number,16));
-
-
-
     // add header deps
     txSkeleton = txSkeleton.update("headerDeps", (headerDeps) => {
         return headerDeps.push(daoDepositCell.blockHash!, daoWithdrawalCell.blockHash!);

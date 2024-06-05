@@ -17,13 +17,13 @@ const lightClientRPC = new LightClientRPC(NODE_URL);
 
 export interface DaoCell extends Cell {
 	isDeposit: boolean,
-	commiteEpoch?: number,
-	tipEpoch?: number,
+	commiteEpoch: number,
+	tipEpoch: number,
 	sinceEpoch: number,
 	sinceLength: number,
 	sinceIndex: number,
 	maximumWithdraw: bigint
-	ripe?: boolean,
+	ripe: boolean,
 }
 
 export async function getBlockHash(blockNumber: string) {
@@ -269,7 +269,7 @@ export const enrichDaoCellInfo = async (cell:DaoCell, deposit: boolean) => {
 	} else {
 		const finding = await findDepositCellWith(cell);
 		const depositBlockHeader = await rpc.getHeader(finding.deposit.blockHash!);
-		const withdrawBlockHeader = await rpc.getHeader(finding.deposit.blockHash!);
+		const withdrawBlockHeader = await rpc.getHeader(cell.blockHash!);
 		const earliestSince = dao.calculateDaoEarliestSince(depositBlockHeader.epoch, withdrawBlockHeader.epoch);
 		const parsedSince = parseSince(earliestSince.toString());
 		cell.sinceEpoch = (parsedSince.value as EpochSinceValue).number;
