@@ -355,10 +355,16 @@ body {
 }
 
 .dao-cell:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
     color: textColor;
     position: relative;
     z-index: 1;
+}
+
+body.modal-open .dao-cell:hover {
+    transform: none;
+    color: initial;
+    z-index: auto;
 }
 
 .dao-cell-button {

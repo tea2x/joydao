@@ -54,7 +54,7 @@ In this joyDAO application, all you need to verify is that the output cells - be
 
 In the above joyDAO example transaction that you can see in joyID signing page, "lock" is short for Lock Script and "type" is short for Type Script. Take a look at the output cells. Here in this example we have 2 outputs.
 
-- step1: go to : https://lumos-website.vercel.app/tools/address-conversion
+- step1: go to : https://explorer.nervos.org/tools/address-conversion
 - step2: in tab Address To Script, paste your joyId address and you'll see a data structure {codeHash, hashType, Args}
 - step3: compare it to the trie in each output "lock". If matched, output cells are YOURS
 

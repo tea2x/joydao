@@ -1,20 +1,20 @@
 import * as React from 'react';
 import { Cell } from "@ckb-lumos/base";
 import { connect, signRawTransaction } from '@joyid/ckb';
-import { sendTransaction, waitForTransactionConfirmation, queryBalance, Balance } from './lib/helpers';
+import { sendTransaction, waitForTransactionConfirmation, queryBalance, Balance, enrichDaoCellInfo, DaoCell } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import "./styles.css";
-import useModal from 'react-modal';
 import Modal from 'react-modal';
+const appElement = document.getElementById('root');
 
 export default function App() {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
   const [balance, setBalance] = React.useState<Balance | null>(null);
-  const [depositCells, setDepositCells] = React.useState<Cell[]>([]);
-  const [withdrawalCells, setWithdrawalCells] = React.useState<Cell[]>([]);
+  const [depositCells, setDepositCells] = React.useState<DaoCell[]>([]);
+  const [withdrawalCells, setWithdrawalCells] = React.useState<DaoCell[]>([]);
   const [showDropdown, setShowDropdown] = React.useState(false);
   const [depositAmount, setDepositAmount] = React.useState('');
   const [isDepositing, setIsDepositing] = React.useState(false);
@@ -28,6 +28,7 @@ export default function App() {
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
+  console.log(">>>currentCell: ", currentCell)
   const updateDaoList = async () => {
     const storedAuthData = localStorage.getItem('joyidInfo');
     if (storedAuthData) {
@@ -39,8 +40,8 @@ export default function App() {
         const withdrawals = await collectWithdrawals(authInfo.address);
   
         setBalance(balance);
-        setDepositCells(deposits);
-        setWithdrawalCells(withdrawals);
+        setDepositCells(deposits as DaoCell[]);
+        setWithdrawalCells(withdrawals as DaoCell[]);
         setIsLoading(false);
   
         localStorage.setItem('balance', JSON.stringify(balance));
@@ -62,8 +63,8 @@ export default function App() {
 
       setJoyidInfo(authData);
       setBalance(balance);
-      setDepositCells(deposits);
-      setWithdrawalCells(withdrawals);
+      setDepositCells(deposits as DaoCell[]);
+      setWithdrawalCells(withdrawals as DaoCell[]);
       setIsLoading(false);
 
       localStorage.setItem('joyidInfo', JSON.stringify(authData));
@@ -110,11 +111,16 @@ export default function App() {
     }
   }
 
-  const onWithdraw = (cell:Cell) => {
+  const onWithdraw = async (cell:DaoCell) => {
     // to differentiate with unlock Click
     setWithdrawClicked(true);
-    // Open the modal
+    // Open the modal and disable dao-cell hoverring effect
+    document.body.classList.add('modal-open');
     setModalIsOpen(true);
+
+    // enrich the deposit dao cell info
+    await enrichDaoCellInfo(cell, true);
+
     // Save the cell for later
     setCurrentCell(cell);
   };
@@ -147,12 +153,18 @@ export default function App() {
     }
   }
 
-  const onUnlock = (cell:Cell) => {
-    // Open the modal
+  const onUnlock = async (cell:DaoCell) => {
+    // Open the modal and disable dao-cell hoverring effect
+    document.body.classList.add('modal-open');
     setModalIsOpen(true);
+
+    // enrich the withdrawal dao cell info
+    await enrichDaoCellInfo(cell, false);
+
     // Save the cell for later
     setCurrentCell(cell);
   };
+
   const _onUnlock = async(withdrawalCell: Cell) => {
     try {
       const daoTx = await buildUnlockTransaction(joyidInfo.address, withdrawalCell);
@@ -422,23 +434,33 @@ export default function App() {
       )}
 
       <Modal
+        appElement={appElement || undefined}
         isOpen={modalIsOpen}
-        onRequestClose={() => setModalIsOpen(false)}
+        onRequestClose={() => {
+          // close the modal and reenable dao-cell hoverring effect
+          setModalIsOpen(false); 
+          document.body.classList.remove('modal-open');
+        }}
       >
         <h2>Information</h2>
+        <text>
+          Under development ...
+        </text>
         <div className='button'>
           <button
             className='proceed'
             onClick={() => {
               if (currentCell) {
                 if (withdrawClicked) {
+                  setWithdrawClicked(false);
                   _onWithdraw(currentCell);
                 } else {
                   _onUnlock(currentCell);
                 }
               }
-              setWithdrawClicked(false);
+              // close the modal and reenable dao-cell hoverring effect
               setModalIsOpen(false);
+              document.body.classList.remove('modal-open');
             }}
           >
             Proceed
@@ -447,8 +469,10 @@ export default function App() {
           <button
             className='cancel'
             onClick={() => {
+              setWithdrawClicked(false);
+              // close the modal and reenable dao-cell hoverring effect
               setModalIsOpen(false);
-              setWithdrawClicked(false)
+              document.body.classList.remove('modal-open');
             }}
           >
             Cancel

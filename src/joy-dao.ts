@@ -1,5 +1,7 @@
 import { CKBTransaction } from '@joyid/ckb';
-import { CellDep, Address, Cell, Transaction, HexString, PackedDao, PackedSince } from "@ckb-lumos/base";
+import { CellDep, Address, Cell, Transaction, HexString, PackedDao, PackedSince, since } from "@ckb-lumos/base";
+const { parseSince } = since;
+import { EpochSinceValue } from "@ckb-lumos/base/lib/since"
 import { INDEXER_URL, NODE_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./config";
 import { addressToScript, TransactionSkeleton, createTransactionFromSkeleton, minimalCellCapacityCompatible} from "@ckb-lumos/helpers";
 import { dao }  from "@ckb-lumos/common-scripts";
@@ -109,9 +111,7 @@ export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell
     txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
 
     // add dao input cell
-    let clonedInputCell:Cell = daoDepositCell;
-    clonedInputCell.blockHash = await getBlockHash(daoDepositCell.blockNumber!);
-    txSkeleton = txSkeleton.update("inputs", (i)=>i.push(clonedInputCell));
+    txSkeleton = txSkeleton.update("inputs", (i)=>i.push(daoDepositCell));
 
     // add dao output cell
     const daoOutputCell:Cell = {
@@ -236,6 +236,19 @@ export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCel
     });
   
     const since: PackedSince = "0x" + minimalSince.toString(16);
+
+
+
+    console.log(">>>since: ", parseSince(since));
+
+    const currentEpoch = await rpc.getCurrentEpoch();
+    console.log(">>>currentEpoch: ", currentEpoch)
+    console.log(">>>compactTarget: ", parseInt(currentEpoch.compactTarget,16));
+    console.log(">>>startNumber: ", parseInt(currentEpoch.startNumber,16));
+    console.log(">>>length: ", parseInt(currentEpoch.length,16));
+    console.log(">>>number: ", parseInt(currentEpoch.number,16));
+
+
 
     // add header deps
     txSkeleton = txSkeleton.update("headerDeps", (headerDeps) => {

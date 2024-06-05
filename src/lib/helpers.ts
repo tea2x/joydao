@@ -1,5 +1,6 @@
 import { RPC } from "@ckb-lumos/lumos";
-import { Script, Address, Cell, Transaction, OutPoint} from "@ckb-lumos/base";
+import { Script, Address, Cell, Transaction, OutPoint, PackedSince, since} from "@ckb-lumos/base";
+const { parseSince } = since;
 import { NODE_URL, INDEXER_URL, CKB_SHANNON_RATIO } from "../config";
 import { addressToScript } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
@@ -7,10 +8,22 @@ import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';
 import { CellCollector, Indexer} from "@ckb-lumos/ckb-indexer";
 import { LightClientRPC } from "@ckb-lumos/light-client";
 import { getConfig } from "@ckb-lumos/config-manager";
+import { dao }  from "@ckb-lumos/common-scripts";
+import { EpochSinceValue } from "@ckb-lumos/base/lib/since"
 
 const INDEXER = new Indexer(INDEXER_URL);
 const rpc = new RPC(NODE_URL);
 const lightClientRPC = new LightClientRPC(NODE_URL);
+
+export interface DaoCell extends Cell {
+	commiteEpoch?: number,
+	tipEpoch?: number,
+	sinceEpoch: number,
+	sinceLength: number,
+	sinceIndex: number,
+	maximumWithdraw: bigint
+	ripe?: boolean,
+}
 
 export async function getBlockHash(blockNumber: string) {
     const blockHash = await rpc.getBlockHash(blockNumber);
@@ -231,6 +244,38 @@ export async function waitForTransactionConfirmation(txid: string)
 {
 	console.log("Waiting for transaction to confirm.");
 	await waitForConfirmation(txid, (_status)=>console.log("."), {recheckMs: 1_000});
+}
+
+export interface epochDepth {
+	commitEpoch: string,
+	tipEpoch: string,
+}
+
+export const enrichDaoCellInfo = async (cell:DaoCell, deposit: boolean) => {
+	const currentEpoch = await rpc.getCurrentEpoch();
+	cell.tipEpoch = parseInt(currentEpoch.number,16);
+
+    cell.blockHash = await getBlockHash(cell.blockNumber!);
+
+	if(deposit) {
+		const commitHeader = await rpc.getHeader(cell.blockHash!);
+		cell.commiteEpoch = parseInt(commitHeader.epoch,16);
+		const mod = (cell.tipEpoch - cell.commiteEpoch)%180;
+		// best interest + safest time to make a withdraw is in epoch range (168,180] 
+		// of the current cycle which is about 2 days
+		cell.ripe =  (mod >= 168 && mod < 180) ? true : false;
+	} else {
+		const finding = await findDepositCellWith(cell);
+		const depositBlockHeader = await rpc.getHeader(finding.deposit.blockHash!);
+		const withdrawBlockHeader = await rpc.getHeader(finding.deposit.blockHash!);
+		const earliestSince = dao.calculateDaoEarliestSince(depositBlockHeader.epoch, withdrawBlockHeader.epoch);
+		const parsedSince = parseSince(earliestSince.toString());
+		cell.sinceEpoch = (parsedSince.value as EpochSinceValue).number;
+		cell.sinceLength = (parsedSince.value as EpochSinceValue).length;
+		cell.sinceIndex = (parsedSince.value as EpochSinceValue).index;
+		cell.maximumWithdraw = dao.calculateMaximumWithdraw(cell, depositBlockHeader.dao, withdrawBlockHeader.dao);
+		cell.ripe = (cell.tipEpoch > cell.sinceEpoch);
+	}
 }
 
 export default {
