@@ -21,8 +21,7 @@ export default function App() {
   const [isWaitingTxConfirm, setIsWaitingTxConfirm] = React.useState(false);
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [modalIsOpen, setModalIsOpen] = React.useState(false);
-  const [currentCell, setCurrentCell] = React.useState<Cell | null>(null);
-  const [withdrawClicked, setWithdrawClicked] = React.useState(false);
+  const [currentCell, setCurrentCell] = React.useState<DaoCell | null>(null);
 
 
   initializeConfig(TEST_NET_CONFIG as Config);
@@ -110,9 +109,7 @@ export default function App() {
   }
 
   const onWithdraw = async (cell:DaoCell) => {
-    // to differentiate with unlock Click
-    setWithdrawClicked(true);
-    // Open the modal and disable dao-cell hoverring effect
+    // Open the modal 
     setModalIsOpen(true);
 
     // enrich the deposit dao cell info
@@ -151,7 +148,7 @@ export default function App() {
   }
 
   const onUnlock = async (cell:DaoCell) => {
-    // Open the modal and disable dao-cell hoverring effect
+    // Open the modal 
     setModalIsOpen(true);
 
     // enrich the withdrawal dao cell info
@@ -432,7 +429,7 @@ export default function App() {
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={() => {
-          // close the modal and reenable dao-cell hoverring effect
+          // close the modal
           setModalIsOpen(false); 
         }}
       >
@@ -445,14 +442,15 @@ export default function App() {
             className='proceed'
             onClick={() => {
               if (currentCell) {
-                if (withdrawClicked) {
-                  setWithdrawClicked(false);
+                // if this is a deposit cell, allow for withdraw 
+                // otherwise it's a withdrawl cell and allow for unlock check
+                if (currentCell.isDeposit) {
                   _onWithdraw(currentCell);
                 } else {
                   _onUnlock(currentCell);
                 }
               }
-              // close the modal and reenable dao-cell hoverring effect
+              // close the modal
               setModalIsOpen(false);
             }}
           >
@@ -462,8 +460,7 @@ export default function App() {
           <button
             className='cancel'
             onClick={() => {
-              setWithdrawClicked(false);
-              // close the modal and reenable dao-cell hoverring effect
+              // close the modal
               setModalIsOpen(false);
             }}
           >

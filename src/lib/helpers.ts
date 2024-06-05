@@ -16,6 +16,7 @@ const rpc = new RPC(NODE_URL);
 const lightClientRPC = new LightClientRPC(NODE_URL);
 
 export interface DaoCell extends Cell {
+	isDeposit: boolean,
 	commiteEpoch?: number,
 	tipEpoch?: number,
 	sinceEpoch: number,
@@ -252,6 +253,7 @@ export interface epochDepth {
 }
 
 export const enrichDaoCellInfo = async (cell:DaoCell, deposit: boolean) => {
+	cell.isDeposit = deposit;
 	const currentEpoch = await rpc.getCurrentEpoch();
 	cell.tipEpoch = parseInt(currentEpoch.number,16);
 
