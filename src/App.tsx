@@ -25,7 +25,6 @@ export default function App() {
   const [currentCell, setCurrentCell] = React.useState<DaoCell | null>(null);
   const [modalMessage, setModalMessage] = React.useState<string>();
 
-
   initializeConfig(TEST_NET_CONFIG as Config);
 
   const updateDaoList = async () => {
@@ -215,32 +214,30 @@ export default function App() {
   }
 
   const prepareMessage = () => {
-    console.log(">>>currentCell: ", currentCell)
     if (currentCell) {
+      const step = currentCell.tipEpoch - currentCell.depositEpoch;
       let message = '';
       if (currentCell.isDeposit) {
         if (currentCell.ripe) {
-          message = "Your deposit is currently within the optimal withdrawal window to maximize your reward!\
-          Proceed withdraw now and unlock in " + (currentCell.sinceEpoch - currentCell.tipEpoch) + " epochs,\
-          approximately " + (currentCell.sinceEpoch - currentCell.tipEpoch)*4 + " hours from now.\
-          If you don't, your deposit will enter another 30-day lock cycle.";
+          message = `Optimal withdrawal window reached! Withdraw now and unlock a total of ${Math.floor(step/180)} \
+            complete cycles in after ${(180 - (step%180))} epochs (approximately ${(180 - (step%180))*4} hours. \
+            Otherwise, your deposit will enter another 30-day lock cycle.`;
         } else {
-          message = "Now is not a good time to withdraw your deposits. Please wait until epoch "
-          + (currentCell.sinceEpoch - 12) + " (about " + (currentCell.sinceEpoch - 12 - currentCell.tipEpoch)/4 + " days),\
-          to make your withdrawal to have the maximum rewards.";
+          message = `Please wait until epoch ${currentCell.depositEpoch + (180 - (step%180))} (in approximately \
+            ${((180 - (step%180))/6).toFixed(2)} days) to maximize your rewards in this cycle. Do you wish to continue?`
         }
       } else {
         if (currentCell.ripe) {
-          message = "Complete your Dao withdrawal, getting back in total " + currentCell.maximumWithdraw+ " CKB";
+          message = `You're now able to complete your Dao withdrawal, receiving a total of ${currentCell.maximumWithdraw} CKB.`;
         } else {
-          message = "Your withdrawal has not yet reached the time window when it can be unlocked. You must wait \
-          until epoch " + (currentCell.sinceEpoch + 1);
+          message = `Your withdrawal is not yet ready to be unlocked. Please wait until epoch ${currentCell.sinceEpoch + 1} \
+            (in approximately ${((currentCell.sinceEpoch + 1 - currentCell.tipEpoch)/6).toFixed(2)} days).`;
         }
       }
-      // display the message in your modal
+      // display the message in modal
       setModalMessage(message);
     }
-  };
+  };  
 
   const hideDepositTextBoxAndDropDown = (e:any) => {
     e.stopPropagation(); // Prevent event propagation

@@ -10,6 +10,7 @@ import { LightClientRPC } from "@ckb-lumos/light-client";
 import { getConfig } from "@ckb-lumos/config-manager";
 import { dao }  from "@ckb-lumos/common-scripts";
 import { EpochSinceValue } from "@ckb-lumos/base/lib/since"
+import { BI, BIish } from "@ckb-lumos/bi";
 
 const INDEXER = new Indexer(INDEXER_URL);
 const rpc = new RPC(NODE_URL);
@@ -17,7 +18,7 @@ const lightClientRPC = new LightClientRPC(NODE_URL);
 
 export interface DaoCell extends Cell {
 	isDeposit: boolean,
-	commiteEpoch: number,
+	depositEpoch: number,
 	tipEpoch: number,
 	sinceEpoch: number,
 	sinceLength: number,
@@ -247,29 +248,40 @@ export async function waitForTransactionConfirmation(txid: string)
 	await waitForConfirmation(txid, (_status)=>console.log("."), {recheckMs: 1_000});
 }
 
-export interface epochDepth {
-	commitEpoch: string,
-	tipEpoch: string,
-}
+function parseEpochCompatible(epoch: BIish): {
+	length: BI;
+	index: BI;
+	number: BI;
+  } {
+	const _epoch = BI.from(epoch);
+	return {
+	  length: _epoch.shr(40).and(0xfff),
+	  index: _epoch.shr(24).and(0xfff),
+	  number: _epoch.and(0xffffff),
+	};
+  }
 
 export const enrichDaoCellInfo = async (cell:DaoCell, deposit: boolean) => {
 	cell.isDeposit = deposit;
 	const currentEpoch = await rpc.getCurrentEpoch();
 	cell.tipEpoch = parseInt(currentEpoch.number,16);
-
     cell.blockHash = await getBlockHash(cell.blockNumber!);
 
+	let depositBlockHeader;
 	if(deposit) {
-		const commitHeader = await rpc.getHeader(cell.blockHash!);
-		cell.commiteEpoch = parseInt(commitHeader.epoch,16);
-		const mod = (cell.tipEpoch - cell.commiteEpoch)%180;
+		depositBlockHeader = await rpc.getHeader(cell.blockHash!);
+		cell.depositEpoch = parseEpochCompatible(depositBlockHeader.epoch).number.toNumber();
+
+		const mod = (cell.tipEpoch - cell.depositEpoch)%180;
 		// best interest + safest time to make a withdraw is in epoch range (168,180] 
-		// of the current cycle which is about 2 days
+		// of the current cycle which is about 12 epochs ~ 2 days
 		cell.ripe =  (mod >= 168 && mod < 180) ? true : false;
 	} else {
 		const finding = await findDepositCellWith(cell);
-		const depositBlockHeader = await rpc.getHeader(finding.deposit.blockHash!);
+		depositBlockHeader = await rpc.getHeader(finding.deposit.blockHash!);
 		const withdrawBlockHeader = await rpc.getHeader(cell.blockHash!);
+		cell.depositEpoch = parseEpochCompatible(depositBlockHeader.epoch).number.toNumber();
+
 		const earliestSince = dao.calculateDaoEarliestSince(depositBlockHeader.epoch, withdrawBlockHeader.epoch);
 		const parsedSince = parseSince(earliestSince.toString());
 		cell.sinceEpoch = (parsedSince.value as EpochSinceValue).number;
