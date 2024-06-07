@@ -278,8 +278,10 @@ export const enrichDaoCellInfo = async (cell:DaoCell, deposit: boolean, tipEpoch
 			cell.ripe =  (mod >= 168 && mod < 180) ? true : false;
 		} else {
 			const finding = await findDepositCellWith(cell);
-			depositBlockHeader = await rpc.getHeader(finding.deposit.blockHash!);
-			const withdrawBlockHeader = await rpc.getHeader(cell.blockHash!);
+			const [depositBlockHeader, withdrawBlockHeader] = await Promise.all([
+				rpc.getHeader(finding.deposit.blockHash!),
+				rpc.getHeader(cell.blockHash!)
+			  ]);			  
 			cell.depositEpoch = parseEpochCompatible(depositBlockHeader.epoch).number.toNumber();
 			const withdrawEpoch = parseEpochCompatible(withdrawBlockHeader.epoch).number.toNumber();
 
