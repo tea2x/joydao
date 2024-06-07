@@ -25,6 +25,7 @@ export default function App() {
   const [currentCell, setCurrentCell] = React.useState<DaoCell | null>(null);
   const [modalMessage, setModalMessage] = React.useState<string>();
   const [tipEpoch, setTipEpoch] = React.useState<number>();
+  const [isModalMessageLoading, setIsModalMessageLoading] = React.useState(false);
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
@@ -121,12 +122,14 @@ export default function App() {
   const onWithdraw = async (cell:DaoCell) => {
     // Open the modal 
     setModalIsOpen(true);
+    setIsModalMessageLoading(true);
 
     // enrich the deposit dao cell info
     await enrichDaoCellInfo(cell, true, tipEpoch!);
 
     // Save the cell for later
     setCurrentCell(cell);
+    setIsModalMessageLoading(false);
   };
   
   const _onWithdraw = async (cell: Cell) => {
@@ -160,12 +163,14 @@ export default function App() {
   const onUnlock = async (cell:DaoCell) => {
     // Open the modal 
     setModalIsOpen(true);
+    setIsModalMessageLoading(true);
 
     // enrich the withdrawal dao cell info
     await enrichDaoCellInfo(cell, false, tipEpoch!);
 
     // Save the cell for later
     setCurrentCell(cell);
+    setIsModalMessageLoading(false);
   };
 
   const _onUnlock = async(withdrawalCell: Cell) => {
@@ -223,9 +228,9 @@ export default function App() {
   }
 
   const prepareMessage = () => {
+    let message = '';
     if (currentCell && tipEpoch) {
       const step = tipEpoch - currentCell.depositEpoch;
-      let message = '';
       if (currentCell.isDeposit) {
         if (currentCell.ripe) {
           message = `Optimal withdrawal window reached! Withdraw now and unlock a total of ${Math.floor(step/180)} \
@@ -245,6 +250,8 @@ export default function App() {
       }
       // display the message in modal
       setModalMessage(message);
+    } else {
+      message = 'The current dao deposit information can not be retrieved now. Try refreshing the page';
     }
   };  
 
@@ -476,6 +483,14 @@ export default function App() {
           setModalMessage("");
         }}
       >
+        {isModalMessageLoading && (
+          <div className="modal-loading-overlay">
+              <div className="modal-loading-circle-container">
+                  <div className="modal-loading-circle"></div>
+              </div>
+          </div>
+        )}
+    
         <h2>Information</h2>
         <p>{modalMessage}</p>
         <div className='button'>
