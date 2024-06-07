@@ -396,6 +396,7 @@ body {
     align-items: center;
     position: relative;
     align-self: flex-start;
+    margin-top: 25vh;
 }
 
 .modal-loading-overlay {
@@ -563,9 +564,8 @@ button.cancel {
     }
 
     .ReactModal__Content {
-        width: 90%;
-        max-width: 265px;
-        margin: 70px auto;
+        width: 100%;
+        max-width: 30vh;
         padding: 20px;
         background-color: #ffffff;
         border: none;
