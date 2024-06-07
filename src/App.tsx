@@ -367,13 +367,14 @@ export default function App() {
         )}
       </div>
 
-      {joyidInfo && [...depositCells, ...withdrawalCells].length === 0 ? (
-        <div className='no-deposit-message' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
-          <h2>Whoops, no deposits found!</h2>
-        </div>
-      ) : (
-        <div className='cell-grid' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
-          {[...depositCells, ...withdrawalCells].sort((a, b) => {
+      {joyidInfo && (
+        [...depositCells, ...withdrawalCells].length === 0 ? (
+          <div className='no-deposit-message' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+            <h2>Whoops, no deposits found!</h2>
+          </div>
+        ) : (
+          <div className='cell-grid' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+            {[...depositCells, ...withdrawalCells].sort((a, b) => {
               const aBlkNum = parseInt(a.blockNumber!, 16);
               const bBlkNum = parseInt(b.blockNumber!, 16);
               return bBlkNum - aBlkNum;
@@ -462,7 +463,8 @@ export default function App() {
                 </div>
               );
             })}
-        </div>
+          </div>
+        )
       )}
 
       <Modal
