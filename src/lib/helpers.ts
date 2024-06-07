@@ -19,10 +19,10 @@ const lightClientRPC = new LightClientRPC(NODE_URL);
 export interface DaoCell extends Cell {
 	isDeposit: boolean,
 	depositEpoch: number,
-	tipEpoch: number,
+	// tipEpoch: number,
 	sinceEpoch: number,
-	sinceLength: number,
-	sinceIndex: number,
+	// sinceLength: number,
+	// sinceIndex: number,
 	maximumWithdraw: bigint
 	ripe: boolean,
 }
@@ -261,35 +261,41 @@ function parseEpochCompatible(epoch: BIish): {
 	};
   }
 
-export const enrichDaoCellInfo = async (cell:DaoCell, deposit: boolean) => {
-	cell.isDeposit = deposit;
-	const currentEpoch = await rpc.getCurrentEpoch();
-	cell.tipEpoch = parseInt(currentEpoch.number,16);
-    cell.blockHash = await getBlockHash(cell.blockNumber!);
+export const enrichDaoCellInfo = async (cell:DaoCell, deposit: boolean, tipEpoch: number) => {
+	if (cell.isDeposit == null) {
+		cell.isDeposit = deposit;
+		cell.blockHash = await getBlockHash(cell.blockNumber!);
+	
+		let depositBlockHeader;
+		if(deposit) {
+			depositBlockHeader = await rpc.getHeader(cell.blockHash!);
+			cell.depositEpoch = parseEpochCompatible(depositBlockHeader.epoch).number.toNumber();
+	
+			const mod = (tipEpoch - cell.depositEpoch)%180;
+			// best interest + safest time (before the deposit enters another locking cycle) 
+			// to make a withdraw is in epoch range (168,180]  of the current cycle which is
+			// about 12 epochs ~ 2 days
+			cell.ripe =  (mod >= 168 && mod < 180) ? true : false;
+		} else {
+			const finding = await findDepositCellWith(cell);
+			depositBlockHeader = await rpc.getHeader(finding.deposit.blockHash!);
+			const withdrawBlockHeader = await rpc.getHeader(cell.blockHash!);
+			cell.depositEpoch = parseEpochCompatible(depositBlockHeader.epoch).number.toNumber();
+			const withdrawEpoch = parseEpochCompatible(withdrawBlockHeader.epoch).number.toNumber();
 
-	let depositBlockHeader;
-	if(deposit) {
-		depositBlockHeader = await rpc.getHeader(cell.blockHash!);
-		cell.depositEpoch = parseEpochCompatible(depositBlockHeader.epoch).number.toNumber();
-
-		const mod = (cell.tipEpoch - cell.depositEpoch)%180;
-		// best interest + safest time to make a withdraw is in epoch range (168,180] 
-		// of the current cycle which is about 12 epochs ~ 2 days
-		cell.ripe =  (mod >= 168 && mod < 180) ? true : false;
-	} else {
-		const finding = await findDepositCellWith(cell);
-		depositBlockHeader = await rpc.getHeader(finding.deposit.blockHash!);
-		const withdrawBlockHeader = await rpc.getHeader(cell.blockHash!);
-		cell.depositEpoch = parseEpochCompatible(depositBlockHeader.epoch).number.toNumber();
-
-		const earliestSince = dao.calculateDaoEarliestSince(depositBlockHeader.epoch, withdrawBlockHeader.epoch);
-		const parsedSince = parseSince(earliestSince.toString());
-		cell.sinceEpoch = (parsedSince.value as EpochSinceValue).number;
-		cell.sinceLength = (parsedSince.value as EpochSinceValue).length;
-		cell.sinceIndex = (parsedSince.value as EpochSinceValue).index;
-		cell.maximumWithdraw = dao.calculateMaximumWithdraw(cell, depositBlockHeader.dao, withdrawBlockHeader.dao);
-		cell.ripe = (cell.tipEpoch > cell.sinceEpoch);
+			// TODO ripe can also be calculated as Math.ceil( (w-d)/180 ) * 180 + d + 1
+			const earliestSince = dao.calculateDaoEarliestSince(depositBlockHeader.epoch, withdrawBlockHeader.epoch);
+			const parsedSince = parseSince(earliestSince.toString());
+			cell.sinceEpoch = (parsedSince.value as EpochSinceValue).number;
+			cell.maximumWithdraw = dao.calculateMaximumWithdraw(cell, depositBlockHeader.dao, withdrawBlockHeader.dao);
+			cell.ripe = (tipEpoch > cell.sinceEpoch);
+		}
 	}
+}
+
+export const getTipEpoch = async():Promise<number> => {
+	const currentEpoch = await rpc.getCurrentEpoch();
+	return parseInt(currentEpoch.number,16);
 }
 
 export default {

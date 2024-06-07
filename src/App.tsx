@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Cell } from "@ckb-lumos/base";
 import { connect, signRawTransaction } from '@joyid/ckb';
-import { sendTransaction, waitForTransactionConfirmation, queryBalance, Balance, enrichDaoCellInfo, DaoCell } from './lib/helpers';
+import { sendTransaction, waitForTransactionConfirmation, queryBalance, Balance, enrichDaoCellInfo, DaoCell, getTipEpoch } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX } from "./config";
@@ -24,6 +24,7 @@ export default function App() {
   const [modalIsOpen, setModalIsOpen] = React.useState(false);
   const [currentCell, setCurrentCell] = React.useState<DaoCell | null>(null);
   const [modalMessage, setModalMessage] = React.useState<string>();
+  const [tipEpoch, setTipEpoch] = React.useState<number>();
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
@@ -36,11 +37,13 @@ export default function App() {
         const balance = await queryBalance(authInfo.address);
         const deposits = await collectDeposits(authInfo.address);
         const withdrawals = await collectWithdrawals(authInfo.address);
+        const epoch = await getTipEpoch();
   
         setBalance(balance);
         setDepositCells(deposits as DaoCell[]);
         setWithdrawalCells(withdrawals as DaoCell[]);
         setIsLoading(false);
+        setTipEpoch(epoch);
   
         localStorage.setItem('balance', JSON.stringify(balance));
         localStorage.setItem('depositCells', JSON.stringify(deposits));
@@ -58,12 +61,14 @@ export default function App() {
       const balance = await queryBalance(authData.address);
       const deposits = await collectDeposits(authData.address);
       const withdrawals = await collectWithdrawals(authData.address);
+      const epoch = await getTipEpoch();
 
       setJoyidInfo(authData);
       setBalance(balance);
       setDepositCells(deposits as DaoCell[]);
       setWithdrawalCells(withdrawals as DaoCell[]);
       setIsLoading(false);
+      setTipEpoch(epoch);
 
       localStorage.setItem('joyidInfo', JSON.stringify(authData));
       localStorage.setItem('balance', JSON.stringify(balance));
@@ -114,7 +119,7 @@ export default function App() {
     setModalIsOpen(true);
 
     // enrich the deposit dao cell info
-    await enrichDaoCellInfo(cell, true);
+    await enrichDaoCellInfo(cell, true, tipEpoch!);
 
     // Save the cell for later
     setCurrentCell(cell);
@@ -153,7 +158,7 @@ export default function App() {
     setModalIsOpen(true);
 
     // enrich the withdrawal dao cell info
-    await enrichDaoCellInfo(cell, false);
+    await enrichDaoCellInfo(cell, false, tipEpoch!);
 
     // Save the cell for later
     setCurrentCell(cell);
@@ -214,8 +219,8 @@ export default function App() {
   }
 
   const prepareMessage = () => {
-    if (currentCell) {
-      const step = currentCell.tipEpoch - currentCell.depositEpoch;
+    if (currentCell && tipEpoch) {
+      const step = tipEpoch - currentCell.depositEpoch;
       let message = '';
       if (currentCell.isDeposit) {
         if (currentCell.ripe) {
@@ -223,15 +228,15 @@ export default function App() {
             complete cycles in after ${(180 - (step%180))} epochs (approximately ${(180 - (step%180))*4} hours. \
             Otherwise, your deposit will enter another 30-day lock cycle.`;
         } else {
-          message = `Please wait until epoch ${currentCell.depositEpoch + (180 - (step%180))} (in approximately \
-            ${((180 - (step%180))/6).toFixed(2)} days) to maximize your rewards in this cycle. Do you wish to continue?`
+          message = `Please wait until epoch ${(tipEpoch + 168 - step%180)} (in approximately \
+            ${((168 - step%180)/6).toFixed(2)} days) to maximize your rewards in this cycle. Do you wish to continue?`
         }
       } else {
         if (currentCell.ripe) {
           message = `You're now able to complete your Dao withdrawal, receiving a total of ${currentCell.maximumWithdraw} CKB.`;
         } else {
-          message = `Your withdrawal is not yet ready to be unlocked. Please wait until epoch ${currentCell.sinceEpoch + 1} \
-            (in approximately ${((currentCell.sinceEpoch + 1 - currentCell.tipEpoch)/6).toFixed(2)} days).`;
+          message = `Come back and unlock your withdrawal at epoch ${(tipEpoch + 181 - step%180)} \
+            (in approximately ${((181 - step%180)/6).toFixed(2)} days).`;
         }
       }
       // display the message in modal
@@ -275,11 +280,11 @@ export default function App() {
       await updateDaoList();
     })();  
 
-    if (currentCell) {
+    if (currentCell && tipEpoch) {
       prepareMessage();
     }
     return () => window.removeEventListener('resize', handleResize);
-  }, [currentCell]);
+  }, [currentCell, tipEpoch]);
 
   return (
     <div className={`container ${joyidInfo ? '' : 'background-image'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
