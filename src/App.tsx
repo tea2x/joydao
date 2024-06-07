@@ -491,7 +491,7 @@ export default function App() {
           </div>
         )}
     
-        <h2>Information</h2>
+        <h3>Deposit Information</h3>
         <p>{modalMessage}</p>
         <div className='button'>
           <button

@@ -380,13 +380,12 @@ body {
 }
   
 .ReactModal__Content {
-    width: 90%;
     max-width: 600px;
     margin: 20px auto;
     padding: 20px;
     background-color: #ffffff;
     border: none;
-    border-radius: 10px;
+    border-radius: 10px !important;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
     transition: transform 0.5s ease-in-out;
 
@@ -564,8 +563,8 @@ button.cancel {
     }
 
     .ReactModal__Content {
-        width: 100%;
-        max-width: 30vh;
+        min-height: 30vh;
+        max-width: 40vh;
         padding: 20px;
         background-color: #ffffff;
         border: none;
