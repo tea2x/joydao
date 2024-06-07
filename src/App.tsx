@@ -58,26 +58,28 @@ export default function App() {
     setIsLoading(true);
     try {
       const authData = await connect();
-      const balance = await queryBalance(authData.address);
-      const deposits = await collectDeposits(authData.address);
-      const withdrawals = await collectWithdrawals(authData.address);
-      const epoch = await getTipEpoch();
-
+      const [balance, deposits, withdrawals, epoch] = await Promise.all([
+        queryBalance(authData.address),
+        collectDeposits(authData.address),
+        collectWithdrawals(authData.address),
+        getTipEpoch(),
+      ]);
+  
       setJoyidInfo(authData);
       setBalance(balance);
       setDepositCells(deposits as DaoCell[]);
       setWithdrawalCells(withdrawals as DaoCell[]);
       setIsLoading(false);
       setTipEpoch(epoch);
-
+  
       localStorage.setItem('joyidInfo', JSON.stringify(authData));
       localStorage.setItem('balance', JSON.stringify(balance));
       localStorage.setItem('depositCells', JSON.stringify(deposits));
       localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
-    } catch (error:any) {
-        alert('Error: ' + error.message);
+    } catch (error: any) {
+      alert('Error: ' + error.message);
     }
-  }
+  };  
 
   const onDeposit = async () => {
     if (isDepositing) {
