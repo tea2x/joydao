@@ -448,6 +448,11 @@ button.proceed {
     color: white;
 }
 
+button.proceed:disabled {
+    background-color: #cccccc; /* Gray */
+    cursor: not-allowed;
+}  
+
 button.cancel {
     background-color: #b6382f; /* Red */
     color: white;
