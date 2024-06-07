@@ -204,7 +204,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
     transition: transform 0.5s ease-in-out;
-    min-height: 800px;
+    min-height: 100vh;
 }
 
 .dao-link {
@@ -395,6 +395,7 @@ body {
     justify-content: space-between;
     align-items: center;
     position: relative;
+    align-self: flex-start;
 }
 
 .modal-loading-overlay {
