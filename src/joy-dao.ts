@@ -6,7 +6,7 @@ import { INDEXER_URL, NODE_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAP
 import { addressToScript, TransactionSkeleton, createTransactionFromSkeleton, minimalCellCapacityCompatible} from "@ckb-lumos/helpers";
 import { dao }  from "@ckb-lumos/common-scripts";
 import { Indexer } from "@ckb-lumos/ckb-indexer";
-import { getBlockHash, ckbytesToShannons, intToHex, hexToInt, collectInputs, findDepositCellWith, FindDepositCellResult } from './lib/helpers';
+import { getBlockHash, ckbytesToShannons, intToHex, hexToInt, collectInputs, findDepositCellWith } from './lib/helpers';
 import { serializeWitnessArgs } from '@nervosnetwork/ckb-sdk-utils';
 import { number } from "@ckb-lumos/codec";
 import { getConfig, Config } from "@ckb-lumos/config-manager";
@@ -179,19 +179,20 @@ export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCel
     txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(daoCellDep as CellDep));
     txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
 
-    // find the deposit cell
-    const ret:FindDepositCellResult = await findDepositCellWith(daoWithdrawalCell);
-    let daoDepositCell = ret.deposit;
-    daoDepositCell.outPoint = ret.depositTrace;
-
+    // find the deposit cell and
     // enrich DAO withdrawal cell data with block hash info
-    daoWithdrawalCell.blockHash = await getBlockHash(daoWithdrawalCell.blockNumber!);
+    const [daoDepositCell, withdrawBlkHash] = await Promise.all([
+      findDepositCellWith(daoWithdrawalCell),
+      getBlockHash(daoWithdrawalCell.blockNumber!)
+    ]);
+    daoWithdrawalCell.blockHash = withdrawBlkHash;
 
     // calculate since & capacity (interest)
-    const depositBlockHeader = await rpc.getHeader(daoDepositCell.blockHash!);
+    const [depositBlockHeader, withdrawBlockHeader] = await Promise.all([
+      rpc.getHeader(daoDepositCell.blockHash!),
+      rpc.getHeader(daoWithdrawalCell.blockHash!)
+    ]);
     const depositEpoch = parseEpochCompatible(depositBlockHeader!.epoch);
-  
-    const withdrawBlockHeader = await rpc.getHeader(daoWithdrawalCell.blockHash!);
     const withdrawEpoch = parseEpochCompatible(withdrawBlockHeader!.epoch);
   
     const withdrawFraction = withdrawEpoch.index.mul(depositEpoch.length);

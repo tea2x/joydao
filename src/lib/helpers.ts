@@ -136,11 +136,7 @@ export const queryBalance = async(joyidAddr: Address): Promise<Balance> => {
 	return ret;
 }
 
-export interface FindDepositCellResult {
-    deposit: Cell;
-    depositTrace: OutPoint;
-}
-export const findDepositCellWith = async(withdrawalCell: Cell): Promise<FindDepositCellResult> => {
+export const findDepositCellWith = async(withdrawalCell: Cell): Promise<Cell> => {
     const withdrawPhase1TxRecord:any = await rpc.getTransaction(withdrawalCell.outPoint!.txHash);
 	const depositCellTrace = withdrawPhase1TxRecord.transaction.inputs[parseInt(withdrawalCell.outPoint!.index, 16)];
 
@@ -154,13 +150,11 @@ export const findDepositCellWith = async(withdrawalCell: Cell): Promise<FindDepo
 			type: depositCellOutput.type
 		},
 		data: depositTxRecord.transaction.outputsData[parseInt(depositCellTrace.previousOutput.index, 16)],
-		blockHash: depositTxRecord.txStatus.blockHash
+		blockHash: depositTxRecord.txStatus.blockHash,
+		outPoint: depositCellTrace.previousOutput
 	};
 
-	return {
-		deposit: retCell,
-		depositTrace: depositCellTrace.previousOutput
-	};
+	return retCell;
 }
 
 export async function sendTransaction(signedTx: Transaction) {
@@ -277,11 +271,11 @@ export const enrichDaoCellInfo = async (cell:DaoCell, deposit: boolean, tipEpoch
 			// about 12 epochs ~ 2 days
 			cell.ripe =  (mod >= 168 && mod < 180) ? true : false;
 		} else {
-			const finding = await findDepositCellWith(cell);
+			const daoDepositCell = await findDepositCellWith(cell);
 			const [depositBlockHeader, withdrawBlockHeader] = await Promise.all([
-				rpc.getHeader(finding.deposit.blockHash!),
+				rpc.getHeader(daoDepositCell.blockHash!),
 				rpc.getHeader(cell.blockHash!)
-			  ]);			  
+			]);			  
 			cell.depositEpoch = parseEpochCompatible(depositBlockHeader.epoch).number.toNumber();
 			const withdrawEpoch = parseEpochCompatible(withdrawBlockHeader.epoch).number.toNumber();
 
