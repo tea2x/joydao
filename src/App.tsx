@@ -33,11 +33,13 @@ export default function App() {
     if (storedAuthData) {
       try {
         const authInfo = JSON.parse(storedAuthData);
-
-        const balance = await queryBalance(authInfo.address);
-        const deposits = await collectDeposits(authInfo.address);
-        const withdrawals = await collectWithdrawals(authInfo.address);
-        const epoch = await getTipEpoch();
+  
+        const [balance, deposits, withdrawals, epoch] = await Promise.all([
+          queryBalance(authInfo.address),
+          collectDeposits(authInfo.address),
+          collectWithdrawals(authInfo.address),
+          getTipEpoch(),
+        ]);
   
         setBalance(balance);
         setDepositCells(deposits as DaoCell[]);
@@ -48,11 +50,11 @@ export default function App() {
         localStorage.setItem('balance', JSON.stringify(balance));
         localStorage.setItem('depositCells', JSON.stringify(deposits));
         localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
-      } catch (error:any) {
+      } catch (error: any) {
         alert('Error: ' + error.message);
       }
     }
-  }
+  };  
   
   const onConnect = async () => {
     setIsLoading(true);
