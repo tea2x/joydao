@@ -237,7 +237,7 @@ export default function App() {
             complete cycles in after ${(180 - (step%180))} epochs (approximately ${(180 - (step%180))*4} hours. \
             Otherwise, your deposit will enter another 30-day lock cycle.`;
         } else {
-          message = `Please wait until epoch ${(tipEpoch + 168 - step%180)} (in approximately \
+          message = `You can wait until epoch ${(tipEpoch + 168 - step%180)} (in approximately \
             ${((168 - step%180)/6).toFixed(2)} days) to maximize your rewards in this cycle. Do you wish to continue?`
         }
       } else {
