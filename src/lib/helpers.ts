@@ -294,6 +294,28 @@ export const getTipEpoch = async():Promise<number> => {
 	return parseInt(currentEpoch.number,16);
 }
 
+export class SeededRandom {
+    private seed: number;
+
+    constructor(seed: number) {
+        this.seed = seed;
+    }
+
+    next(min: number, max: number): number {
+        // These numbers are constants used in the Linear Congruential Generator (LCG) algorithm.
+        // The LCG algorithm uses the formula: X_{n+1} = (aX_n + c) mod m
+        // In this formula, X_n is the current value (or "seed"), and a, c, and m are constants.
+        // In this code, a is 9301, c is 49297, and m is 233280.
+        // These constants are chosen because they give a good period and distribution of values.
+        this.seed = (this.seed * 9301 + 49297) % 233280;
+        const rnd = this.seed / 233280;
+
+        // After generating X_{n+1}, the code divides it by m to get a random floating-point number between 0 and 1.
+        // This is then scaled to the desired range [min, max).
+        return min + rnd * (max - min);
+    }
+}
+
 export default {
 	sendTransaction,
 	waitForTransactionConfirmation,

@@ -1,9 +1,9 @@
 # Abstract
 
-To those who invest in CKB long term, wallet security is always the number 1 priority. Currently locking their CKB to the DAO with a hardware wallet seems best because it offers high security (but not Ledger). As we know CKB blockchain can support Passkeys SECP256r1 and [joyID has already leveraged that](https://discord.com/channels/1065112455170228314/1065116735797215332/1191939677440180335).
+To those who invest in CKB long term, wallet security is always the number 1 priority. Currently locking their CKB to the DAO with a hardware wallet seems best because it offers high security. Ledger stands out to be the only hardware wallet that supports Nervos but there was a big scandal about how they manage user's seed phrase shards. As we know CKB blockchain can support a very high locking standard called Passkeys SECP256r1 and [joyID has already leveraged that](https://discord.com/channels/1065112455170228314/1065116735797215332/1191939677440180335).
 
 # Motivation
-I want to offer an affordable and highly secure option for Nervos longterm investors to interact with the Nervos DAO without having to buy a hardware wallet. This project aims to enable Nervos DAO interaction via JoyID with Passkeys native level security.
+I want to offer an affordable and highly secure option for Nervos longterm investors + joyID users to interact with the Nervos DAO without having to buy a hardware wallet. This project aims to enable Nervos DAO interaction via JoyID with Passkeys native level security.
 
 # In case you want to verify joyDao's integrity
 When we sign a transaction, we can check what it will trigger and whether it's malicious or not.
