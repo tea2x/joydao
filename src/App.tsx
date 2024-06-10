@@ -6,11 +6,12 @@ import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
+import { ccc } from "@ckb-ccc/connector-react";
 import "./App.css";
 import Modal from 'react-modal';
 Modal.setAppElement('#root');
 
-export default function App() {
+const App = () => {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
   const [balance, setBalance] = React.useState<Balance | null>(null);
   const [depositCells, setDepositCells] = React.useState<DaoCell[]>([]);
@@ -569,3 +570,14 @@ export default function App() {
     )
   }
 }
+
+
+const cccWrappedApp = () => {
+  return (
+    <ccc.Provider>
+      <App />
+    </ccc.Provider>
+  );
+};
+
+export default cccWrappedApp;
