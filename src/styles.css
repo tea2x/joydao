@@ -342,7 +342,7 @@ body {
     border: 1px solid var(--backgroundColor);
     padding: 3px;
     margin: 3px;
-    border-radius: 50px;
+    border-radius: 35px;
     width: var(--cellWidth);
     height: var(--cellHeight);
     display: flex;
