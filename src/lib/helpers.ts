@@ -1,5 +1,6 @@
 import { RPC } from "@ckb-lumos/lumos";
-import { Script, Address, Cell, Transaction, OutPoint} from "@ckb-lumos/base";
+import { Script, Address, Cell, Transaction, OutPoint, PackedSince, since} from "@ckb-lumos/base";
+const { parseSince } = since;
 import { NODE_URL, INDEXER_URL, CKB_SHANNON_RATIO } from "../config";
 import { addressToScript } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
@@ -7,10 +8,24 @@ import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';
 import { CellCollector, Indexer} from "@ckb-lumos/ckb-indexer";
 import { LightClientRPC } from "@ckb-lumos/light-client";
 import { getConfig } from "@ckb-lumos/config-manager";
+import { dao }  from "@ckb-lumos/common-scripts";
+import { EpochSinceValue } from "@ckb-lumos/base/lib/since"
+import { BI, BIish } from "@ckb-lumos/bi";
 
 const INDEXER = new Indexer(INDEXER_URL);
 const rpc = new RPC(NODE_URL);
 const lightClientRPC = new LightClientRPC(NODE_URL);
+
+export interface DaoCell extends Cell {
+	isDeposit: boolean,
+	depositEpoch: number,
+	// tipEpoch: number,
+	sinceEpoch: number,
+	// sinceLength: number,
+	// sinceIndex: number,
+	maximumWithdraw: bigint
+	ripe: boolean,
+}
 
 export async function getBlockHash(blockNumber: string) {
     const blockHash = await rpc.getBlockHash(blockNumber);
@@ -121,11 +136,7 @@ export const queryBalance = async(joyidAddr: Address): Promise<Balance> => {
 	return ret;
 }
 
-export interface FindDepositCellResult {
-    deposit: Cell;
-    depositTrace: OutPoint;
-}
-export const findDepositCellWith = async(withdrawalCell: Cell): Promise<FindDepositCellResult> => {
+export const findDepositCellWith = async(withdrawalCell: Cell): Promise<Cell> => {
     const withdrawPhase1TxRecord:any = await rpc.getTransaction(withdrawalCell.outPoint!.txHash);
 	const depositCellTrace = withdrawPhase1TxRecord.transaction.inputs[parseInt(withdrawalCell.outPoint!.index, 16)];
 
@@ -139,13 +150,11 @@ export const findDepositCellWith = async(withdrawalCell: Cell): Promise<FindDepo
 			type: depositCellOutput.type
 		},
 		data: depositTxRecord.transaction.outputsData[parseInt(depositCellTrace.previousOutput.index, 16)],
-		blockHash: depositTxRecord.txStatus.blockHash
+		blockHash: depositTxRecord.txStatus.blockHash,
+		outPoint: depositCellTrace.previousOutput
 	};
 
-	return {
-		deposit: retCell,
-		depositTrace: depositCellTrace.previousOutput
-	};
+	return retCell;
 }
 
 export async function sendTransaction(signedTx: Transaction) {
@@ -231,6 +240,80 @@ export async function waitForTransactionConfirmation(txid: string)
 {
 	console.log("Waiting for transaction to confirm.");
 	await waitForConfirmation(txid, (_status)=>console.log("."), {recheckMs: 1_000});
+}
+
+function parseEpochCompatible(epoch: BIish): {
+	length: BI;
+	index: BI;
+	number: BI;
+  } {
+	const _epoch = BI.from(epoch);
+	return {
+	  length: _epoch.shr(40).and(0xfff),
+	  index: _epoch.shr(24).and(0xfff),
+	  number: _epoch.and(0xffffff),
+	};
+  }
+
+export const enrichDaoCellInfo = async (cell:DaoCell, deposit: boolean, tipEpoch: number) => {
+	if (cell.isDeposit == null) {
+		cell.isDeposit = deposit;
+		cell.blockHash = await getBlockHash(cell.blockNumber!);
+	
+		let depositBlockHeader;
+		if(deposit) {
+			depositBlockHeader = await rpc.getHeader(cell.blockHash!);
+			cell.depositEpoch = parseEpochCompatible(depositBlockHeader.epoch).number.toNumber();
+	
+			const mod = (tipEpoch - cell.depositEpoch)%180;
+			// best interest + safest time (before the deposit enters another locking cycle) 
+			// to make a withdraw is in epoch range (168,180]  of the current cycle which is
+			// about 12 epochs ~ 2 days
+			cell.ripe =  (mod >= 168 && mod < 180) ? true : false;
+		} else {
+			const daoDepositCell = await findDepositCellWith(cell);
+			const [depositBlockHeader, withdrawBlockHeader] = await Promise.all([
+				rpc.getHeader(daoDepositCell.blockHash!),
+				rpc.getHeader(cell.blockHash!)
+			]);			  
+			cell.depositEpoch = parseEpochCompatible(depositBlockHeader.epoch).number.toNumber();
+			const withdrawEpoch = parseEpochCompatible(withdrawBlockHeader.epoch).number.toNumber();
+
+			// TODO ripe can also be calculated as Math.ceil( (w-d)/180 ) * 180 + d + 1
+			const earliestSince = dao.calculateDaoEarliestSince(depositBlockHeader.epoch, withdrawBlockHeader.epoch);
+			const parsedSince = parseSince(earliestSince.toString());
+			cell.sinceEpoch = (parsedSince.value as EpochSinceValue).number;
+			cell.maximumWithdraw = dao.calculateMaximumWithdraw(cell, depositBlockHeader.dao, withdrawBlockHeader.dao);
+			cell.ripe = (tipEpoch > cell.sinceEpoch);
+		}
+	}
+}
+
+export const getTipEpoch = async():Promise<number> => {
+	const currentEpoch = await rpc.getCurrentEpoch();
+	return parseInt(currentEpoch.number,16);
+}
+
+export class SeededRandom {
+    private seed: number;
+
+    constructor(seed: number) {
+        this.seed = seed;
+    }
+
+    next(min: number, max: number): number {
+        // These numbers are constants used in the Linear Congruential Generator (LCG) algorithm.
+        // The LCG algorithm uses the formula: X_{n+1} = (aX_n + c) mod m
+        // In this formula, X_n is the current value (or "seed"), and a, c, and m are constants.
+        // In this code, a is 9301, c is 49297, and m is 233280.
+        // These constants are chosen because they give a good period and distribution of values.
+        this.seed = (this.seed * 9301 + 49297) % 233280;
+        const rnd = this.seed / 233280;
+
+        // After generating X_{n+1}, the code divides it by m to get a random floating-point number between 0 and 1.
+        // This is then scaled to the desired range [min, max).
+        return min + rnd * (max - min);
+    }
 }
 
 export default {

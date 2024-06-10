@@ -45,3 +45,5 @@ export const TX_FEE = 10_000; //shanon
 export const DAO_MINIMUM_CAPACITY = 104;
 export const MINIMUM_CHANGE_CAPACITY = 61; //61ckb
 export const CKB_SHANNON_RATIO = 100_000_000;
+
+export const TESTNET_EXPLORER_PREFIX = "https://pudge.explorer.nervos.org/transaction/";
