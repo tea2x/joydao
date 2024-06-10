@@ -12,7 +12,7 @@ import Modal from 'react-modal';
 Modal.setAppElement('#root');
 
 const App = () => {
-  const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
+  const [joyidAddress, setJoyidAddress] = React.useState<string>("");
   const [balance, setBalance] = React.useState<Balance | null>(null);
   const [depositCells, setDepositCells] = React.useState<DaoCell[]>([]);
   const [withdrawalCells, setWithdrawalCells] = React.useState<DaoCell[]>([]);
@@ -27,19 +27,23 @@ const App = () => {
   const [modalMessage, setModalMessage] = React.useState<string>();
   const [tipEpoch, setTipEpoch] = React.useState<number>();
   const [isModalMessageLoading, setIsModalMessageLoading] = React.useState(false);
+  const [internalAddress, setInternalAddress] = React.useState("");
+  const [ckbAddress, setCkbAddress] = React.useState("");
+  // const [isTestnet, setIsTestnet] = React.useState(true);
+
+  const { wallet, open, disconnect, setClient } = ccc.useCcc();
+  const signer = ccc.useSigner();
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
   const updateDaoList = async () => {
-    const storedAuthData = localStorage.getItem('joyidInfo');
-    if (storedAuthData) {
+    const storedJoyidAddress = localStorage.getItem('joyIdAddress');
+    if (storedJoyidAddress) {
       try {
-        const authInfo = JSON.parse(storedAuthData);
-  
         const [balance, deposits, withdrawals, epoch] = await Promise.all([
-          queryBalance(authInfo.address),
-          collectDeposits(authInfo.address),
-          collectWithdrawals(authInfo.address),
+          queryBalance(storedJoyidAddress),
+          collectDeposits(storedJoyidAddress),
+          collectWithdrawals(storedJoyidAddress),
           getTipEpoch(),
         ]);
   
@@ -58,32 +62,54 @@ const App = () => {
     }
   };  
   
+  const Sign = async(message:string) => {
+    const signer = ccc.useSigner();
+    if (signer) {
+      const signature = await signer.signMessage(message);
+    }
+  }
+
+  const joyIdConnect = async () => {
+    setModalIsOpen(false);
+    const authData = await connect();
+    await settleUserInfo(authData.address);
+  };
+
+  function cccConnect() {
+    if (ckbAddress)
+      settleUserInfo(ckbAddress);
+  }
+
   const onConnect = async () => {
+    setModalIsOpen(true);
+  }
+
+  const settleUserInfo = async (ckbAddress: string) => {
     setIsLoading(true);
     try {
-      const authData = await connect();
       const [balance, deposits, withdrawals, epoch] = await Promise.all([
-        queryBalance(authData.address),
-        collectDeposits(authData.address),
-        collectWithdrawals(authData.address),
+        queryBalance(ckbAddress),
+        collectDeposits(ckbAddress),
+        collectWithdrawals(ckbAddress),
         getTipEpoch(),
       ]);
   
-      setJoyidInfo(authData);
+      setJoyidAddress(ckbAddress);
       setBalance(balance);
       setDepositCells(deposits as DaoCell[]);
       setWithdrawalCells(withdrawals as DaoCell[]);
       setIsLoading(false);
       setTipEpoch(epoch);
   
-      localStorage.setItem('joyidInfo', JSON.stringify(authData));
+      localStorage.setItem('joyIdAddress', ckbAddress);
       localStorage.setItem('balance', JSON.stringify(balance));
       localStorage.setItem('depositCells', JSON.stringify(deposits));
       localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
     } catch (error: any) {
+      // setIsLoading(false); //TODO
       alert('Error: ' + error.message);
     }
-  };  
+  };
 
   const onDeposit = async () => {
     if (isDepositing) {
@@ -92,10 +118,10 @@ const App = () => {
         setIsDepositing(false); // Revert back to the deposit button //TODO
 
         const amount = BigInt(depositAmount);
-        const daoTx = await buildDepositTransaction(joyidInfo.address, amount);
+        const daoTx = await buildDepositTransaction(joyidAddress, amount);
         const signedTx = await signRawTransaction(
           daoTx,
-          joyidInfo.address
+          joyidAddress
         );
   
         // Send the transaction to the RPC node.
@@ -135,11 +161,11 @@ const App = () => {
   
   const _onWithdraw = async (cell: Cell) => {
     try {
-      const daoTx = await buildWithdrawTransaction(joyidInfo.address, cell);
+      const daoTx = await buildWithdrawTransaction(joyidAddress, cell);
 
       const signedTx = await signRawTransaction(
         daoTx,
-        joyidInfo.address
+        joyidAddress
       );
 
       // Send the transaction to the RPC node.
@@ -176,11 +202,11 @@ const App = () => {
 
   const _onUnlock = async(withdrawalCell: Cell) => {
     try {
-      const daoTx = await buildUnlockTransaction(joyidInfo.address, withdrawalCell);
+      const daoTx = await buildUnlockTransaction(joyidAddress, withdrawalCell);
 
       const signedTx = await signRawTransaction(
         daoTx,
-        joyidInfo.address
+        joyidAddress
       );
       // console.log(">>>signedTx: ", JSON.stringify(signedTx, null, 2))
 
@@ -204,14 +230,14 @@ const App = () => {
   }
 
   const onSignOut = async () => {
-    setJoyidInfo(null);
+    setJoyidAddress("");
     setBalance(null);
     setDepositCells([]);
     setWithdrawalCells([]);
     setShowDropdown(false);
     setIsLoading(false);
 
-    localStorage.removeItem('joyidInfo');
+    localStorage.removeItem('joyIdAddress');
     localStorage.removeItem('balance');
     localStorage.removeItem('depositCells');
     localStorage.removeItem('withdrawalCells');
@@ -267,16 +293,24 @@ const App = () => {
     }
   }
 
+  const copyAddress = (address:string) => {
+    navigator.clipboard.writeText(address).then(() => {
+      console.log('Address copied to clipboard'); //TODO notif // + replace alert
+    }).catch(err => {
+      console.error('Could not copy address: ', err);
+    });
+  }
+  
   React.useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
 
-    const storedAuthData = localStorage.getItem('joyidInfo');
+    const storedJoyidAddress = localStorage.getItem('joyIdAddress');
     const storedBalance = localStorage.getItem('balance');
     const storedDepositCells = localStorage.getItem('depositCells');
     const storedWithdrawalCells = localStorage.getItem('withdrawalCells');
-    if (storedAuthData) {
-      setJoyidInfo(JSON.parse(storedAuthData));
+    if (storedJoyidAddress) {
+      setJoyidAddress(storedJoyidAddress);
     }
     if (storedBalance) {
       setBalance(JSON.parse(storedBalance));
@@ -298,6 +332,26 @@ const App = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [currentCell, tipEpoch]);
 
+  React.useEffect(() => {
+    if (!signer) {
+      setInternalAddress("");
+      setCkbAddress("");
+      return;
+    }
+
+    (async () => {
+      setInternalAddress(await signer.getInternalAddress());
+      setCkbAddress(await signer.getRecommendedAddress());
+      cccConnect();
+    })();
+  }, [signer, ckbAddress]);
+
+  // React.useEffect(() => {
+  //   setClient(
+  //     isTestnet ? new ccc.ClientPublicTestnet() : new ccc.ClientPublicMainnet(),
+  //   );
+  // }, [isTestnet, setClient]);
+
   {
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
     const smallScreenDeviceMinCellWidth = 100;
@@ -315,7 +369,7 @@ const App = () => {
     const dummyCellWidthRandomizer = new SeededRandom(daoCellNum);
 
     return (
-      <div className={`container ${joyidInfo ? '' : 'background-image'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+      <div className={`container ${joyidAddress ? '' : 'background-image'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {isLoading && (
           <div className="loading-overlay">
             <div className="loading-circle-container">
@@ -336,23 +390,56 @@ const App = () => {
           JoyDAO
         </h1>
 
-        {!joyidInfo && (
+        {!joyidAddress && (
           <div className='description'>
             <p>Nervos DAO with JoyID Passkeys</p>
           </div>
         )}
 
-        {!joyidInfo && (
+        {!joyidAddress && (
           <button className='signin-button' onClick={onConnect}>
             Connect
           </button>
         )}
 
+        {!joyidAddress && (
+          <Modal
+            isOpen={modalIsOpen}
+            onRequestClose={() => {
+              // close the modal
+              setModalIsOpen(false); 
+            }}
+          >
+            <h3>Connect</h3>
+
+            <button
+              onClick={() => {
+                setModalIsOpen(false);
+                joyIdConnect();
+              }}
+            >
+              JoyId connect
+            </button>
+
+            <button
+              onClick={() => {
+                setModalIsOpen(false);
+                open();
+              }}              
+            >
+              CCC connect
+            </button>
+
+
+          </Modal>
+        )}
+
         <div className='account-deposit-buttons' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
-          {joyidInfo && (
+          {joyidAddress && (
             <div className='dropdown-area'>
               <button className='account-button' onClick={(e) => {setShowDropdown(!showDropdown); hideDepositTextBoxAndDropDown(e)}}>
-                {shortenAddress(joyidInfo.address)}
+                <span className="copy-sign" onClick={(e) => {e.stopPropagation(); copyAddress(joyidAddress)}}>⧉</span>
+                {shortenAddress(joyidAddress)}
               </button>
 
               {showDropdown && (
@@ -367,7 +454,7 @@ const App = () => {
             </div>
           )}
 
-          {joyidInfo && (
+          {joyidAddress && (
             isDepositing ? (
               <input
                 type="text"
@@ -391,7 +478,7 @@ const App = () => {
           )}
         </div>
 
-        {joyidInfo && (
+        {joyidAddress && (
           daoCellNum === 0 ? (
             <div className='no-deposit-message' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
               <h2>Whoops, no deposits found!</h2>
@@ -505,67 +592,66 @@ const App = () => {
                   </div>
                 );
               })}
-              
+
+              <Modal
+                isOpen={modalIsOpen}
+                onRequestClose={() => {
+                  // close the modal
+                  setModalIsOpen(false); 
+                  // clear the modal message
+                  setModalMessage("");
+                }}
+              >
+                {isModalMessageLoading && (
+                  <div className="modal-loading-overlay">
+                      <div className="modal-loading-circle-container">
+                          <div className="modal-loading-circle"></div>
+                      </div>
+                  </div>
+                )}
+            
+                <h3>Deposit Information</h3>
+                <p>{modalMessage}</p>
+                <div className='button'>
+                  <button
+                    className='proceed'
+                    disabled={currentCell ? (!currentCell.isDeposit && !currentCell.ripe) : false}
+                    onClick={() => {
+                      if (currentCell) {
+                        // if this is a deposit cell, allow for withdraw 
+                        // otherwise it's a withdrawl cell and allow for unlock check
+                        if (currentCell.isDeposit) {
+                          _onWithdraw(currentCell);
+                        } else {
+                          _onUnlock(currentCell);
+                        }
+                      }
+                      // close the modal
+                      setModalIsOpen(false);
+                      // clear the modal message
+                      setModalMessage("");
+                    }}
+                  >
+                    Proceed
+                  </button>
+
+                  <button
+                    className='cancel'
+                    onClick={() => {
+                      // close the modal
+                      setModalIsOpen(false);
+                      // clear the modal message
+                      setModalMessage("");
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </Modal>
+
             </div>
           )
         )}
-
-        <Modal
-          isOpen={modalIsOpen}
-          onRequestClose={() => {
-            // close the modal
-            setModalIsOpen(false); 
-            // clear the modal message
-            setModalMessage("");
-          }}
-        >
-          {isModalMessageLoading && (
-            <div className="modal-loading-overlay">
-                <div className="modal-loading-circle-container">
-                    <div className="modal-loading-circle"></div>
-                </div>
-            </div>
-          )}
-      
-          <h3>Deposit Information</h3>
-          <p>{modalMessage}</p>
-          <div className='button'>
-            <button
-              className='proceed'
-              disabled={currentCell ? (!currentCell.isDeposit && !currentCell.ripe) : false}
-              onClick={() => {
-                if (currentCell) {
-                  // if this is a deposit cell, allow for withdraw 
-                  // otherwise it's a withdrawl cell and allow for unlock check
-                  if (currentCell.isDeposit) {
-                    _onWithdraw(currentCell);
-                  } else {
-                    _onUnlock(currentCell);
-                  }
-                }
-                // close the modal
-                setModalIsOpen(false);
-                // clear the modal message
-                setModalMessage("");
-              }}
-            >
-              Proceed
-            </button>
-
-            <button
-              className='cancel'
-              onClick={() => {
-                // close the modal
-                setModalIsOpen(false);
-                // clear the modal message
-                setModalMessage("");
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </Modal>
-
       </div>
     )
   }

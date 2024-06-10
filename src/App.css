@@ -97,6 +97,27 @@ body {
   background-position: right 10px center;
   background-repeat: no-repeat;
   font-weight: bold;
+  position: relative;
+}
+
+.account-button .copy-sign {
+  position: absolute;
+  font-size: 25px;
+  color: #597415;
+  right: 10px;
+}
+
+.account-button .copy-sign:hover {
+  opacity: 1;
+  animation: rainbow 5s linear infinite;
+}
+
+@keyframes rainbow {
+  14% {color: orange;}
+  28% {color: yellow;}
+  42% {color: lime;}
+  71% {color: indigo;}
+  85% {color: violet;}
 }
 
 .account-button:hover {
@@ -326,7 +347,7 @@ body {
   border: 1px solid #ddd;
   padding: 3px;
   margin: 3px;
-  border-radius: 50px;
+  border-radius: 35px;
   width: var(--cellWidth);
   height: var(--cellHeight);
   display: flex;
