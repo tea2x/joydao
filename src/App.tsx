@@ -118,6 +118,7 @@ const App = () => {
 
         const amount = BigInt(depositAmount);
         const daoTx = await buildDepositTransaction(ckbAddress, amount);
+        console.log(">>>daoTx: ", daoTx);
 
         let signedTx;
         let txid = "";
@@ -417,7 +418,7 @@ const App = () => {
           </button>
         )}
 
-        {!ckbAddress && (
+        {(!ckbAddress || !signer) && (
           <Modal
             isOpen={modalIsOpen}
             onRequestClose={() => {
@@ -444,8 +445,6 @@ const App = () => {
             >
               CCC connect
             </button>
-
-
           </Modal>
         )}
 
@@ -461,9 +460,18 @@ const App = () => {
                 <div className='dropdown-menu'>
                   <p>Available: {balance ? balance.available.toString() + ' CKB' : 'Loading...'}</p>
                   <p>Deposited: {balance ? balance.occupied.toString() + ' CKB' : 'Loading...'}</p>
-                  <button className='signout-button' onClick={onSignOut}>
-                    Sign Out
-                  </button>
+
+                  {(!signer && !isJoyIdAddress(ckbAddress)) ? (
+                    <button className='signout-button' onClick={() => {setShowDropdown(false); setModalIsOpen(true)}}>
+                      Reconnect
+                    </button>
+
+                  ) : (
+                    <button className='signout-button' onClick={onSignOut}>
+                      Sign Out
+                    </button>
+                  )}
+
                 </div>
               )}
             </div>
