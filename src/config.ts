@@ -3,12 +3,24 @@ export const INDEXER_URL = "https://testnet.ckb.dev/indexer";
 
 // testnet joyid
 export const JOYID_CELLDEP = {
+  codeHash: "0xd23761b364210735c19c60561d213fb3beae2fd6172743719eff6920e020baac",
+  hashType: "type",
   outPoint: {
     txHash: "0x4dcf3f3b09efac8995d6cbee87c5345e812d310094651e0c3d9a730f32dc9263",
     index: "0x0"
   },
   depType: "depGroup"
 };
+
+export const OMNILOCK_CELLDEP = {
+  codeHash: "0xf329effd1c475a2978453c8600e1eaf0bc2087ee093c3ee64cc96ec6847752cb",
+  hashType: "type",
+  outPoint: {
+    txHash: "0xec18bf0d857c981c3d1f4e17999b9b90c484b303378e94de1a57b0872f5d4602",
+    index: "0x0"
+  },
+  depType: "code"
+}
 
 export const TEST_NET_CONFIG = {
   PREFIX: "ckt",

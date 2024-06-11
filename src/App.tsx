@@ -1,23 +1,26 @@
 import * as React from 'react';
-import { Cell } from "@ckb-lumos/base";
 import { connect, signRawTransaction } from '@joyid/ckb';
-import { sendTransaction, waitForTransactionConfirmation, queryBalance, Balance, enrichDaoCellInfo, DaoCell, getTipEpoch, SeededRandom } from './lib/helpers';
+import { sendTransaction, waitForTransactionConfirmation, 
+  queryBalance, Balance, enrichDaoCellInfo, DaoCell, 
+  getTipEpoch, SeededRandom, isJoyIdAddress } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import { ccc } from "@ckb-ccc/connector-react";
+import { Transaction as CCCTransaction } from "@ckb-ccc/core";
 import "./App.css";
 import Modal from 'react-modal';
+import { Transaction as BaseTransaction } from "@ckb-lumos/base";
+import { error } from 'console';
 Modal.setAppElement('#root');
 
 const App = () => {
-  const [joyidAddress, setJoyidAddress] = React.useState<string>("");
   const [balance, setBalance] = React.useState<Balance | null>(null);
   const [depositCells, setDepositCells] = React.useState<DaoCell[]>([]);
   const [withdrawalCells, setWithdrawalCells] = React.useState<DaoCell[]>([]);
   const [showDropdown, setShowDropdown] = React.useState(false);
-  const [depositAmount, setDepositAmount] = React.useState('');
+  const [depositAmount, setDepositAmount] = React.useState(''); // TODO, reuse the modal
   const [isDepositing, setIsDepositing] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isWaitingTxConfirm, setIsWaitingTxConfirm] = React.useState(false);
@@ -33,6 +36,9 @@ const App = () => {
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
+  console.log(">>>signer: ", signer)
+  console.log(">>>wallet: ", wallet)
+  console.log(">>>ckbAddress: ", ckbAddress)
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
@@ -60,14 +66,7 @@ const App = () => {
         alert('Error: ' + error.message);
       }
     }
-  };  
-  
-  const Sign = async(message:string) => {
-    const signer = ccc.useSigner();
-    if (signer) {
-      const signature = await signer.signMessage(message);
-    }
-  }
+  };
 
   const joyIdConnect = async () => {
     setModalIsOpen(false);
@@ -94,7 +93,7 @@ const App = () => {
         getTipEpoch(),
       ]);
   
-      setJoyidAddress(ckbAddress);
+      setCkbAddress(ckbAddress);
       setBalance(balance);
       setDepositCells(deposits as DaoCell[]);
       setWithdrawalCells(withdrawals as DaoCell[]);
@@ -118,16 +117,29 @@ const App = () => {
         setIsDepositing(false); // Revert back to the deposit button //TODO
 
         const amount = BigInt(depositAmount);
-        const daoTx = await buildDepositTransaction(joyidAddress, amount);
-        const signedTx = await signRawTransaction(
-          daoTx,
-          joyidAddress
-        );
-  
-        // Send the transaction to the RPC node.
-        const txid = await sendTransaction(signedTx);
+        const daoTx = await buildDepositTransaction(ckbAddress, amount);
+
+        let signedTx;
+        let txid = "";
+
+        if (isJoyIdAddress(ckbAddress)) {
+          console.log(">>>signing with joyid")
+          signedTx = await signRawTransaction(
+            daoTx,
+            ckbAddress
+          );
+          // Send the transaction to the RPC node.
+          txid = await sendTransaction(signedTx);
+        } else {
+          if (signer) {
+            txid = await signer.sendTransaction(daoTx);
+          } else {
+            throw new Error('Wallet disconnected! Sign out and sign in again!');
+          }
+        }
+
         alert(`Transaction Sent: ${txid}\n`);
-  
+
         setIsWaitingTxConfirm(true);
         setIsLoading(true);
 
@@ -159,13 +171,13 @@ const App = () => {
     setIsModalMessageLoading(false);
   };
   
-  const _onWithdraw = async (cell: Cell) => {
+  const _onWithdraw = async (cell: DaoCell) => {
     try {
-      const daoTx = await buildWithdrawTransaction(joyidAddress, cell);
+      const daoTx = await buildWithdrawTransaction(ckbAddress, cell);
 
       const signedTx = await signRawTransaction(
         daoTx,
-        joyidAddress
+        ckbAddress
       );
 
       // Send the transaction to the RPC node.
@@ -200,13 +212,13 @@ const App = () => {
     setIsModalMessageLoading(false);
   };
 
-  const _onUnlock = async(withdrawalCell: Cell) => {
+  const _onUnlock = async(withdrawalCell: DaoCell) => {
     try {
-      const daoTx = await buildUnlockTransaction(joyidAddress, withdrawalCell);
+      const daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell);
 
       const signedTx = await signRawTransaction(
         daoTx,
-        joyidAddress
+        ckbAddress
       );
       // console.log(">>>signedTx: ", JSON.stringify(signedTx, null, 2))
 
@@ -230,7 +242,8 @@ const App = () => {
   }
 
   const onSignOut = async () => {
-    setJoyidAddress("");
+    disconnect();
+    setCkbAddress("");
     setBalance(null);
     setDepositCells([]);
     setWithdrawalCells([]);
@@ -310,7 +323,7 @@ const App = () => {
     const storedDepositCells = localStorage.getItem('depositCells');
     const storedWithdrawalCells = localStorage.getItem('withdrawalCells');
     if (storedJoyidAddress) {
-      setJoyidAddress(storedJoyidAddress);
+      setCkbAddress(storedJoyidAddress);
     }
     if (storedBalance) {
       setBalance(JSON.parse(storedBalance));
@@ -342,9 +355,12 @@ const App = () => {
     (async () => {
       setInternalAddress(await signer.getInternalAddress());
       setCkbAddress(await signer.getRecommendedAddress());
-      cccConnect();
     })();
-  }, [signer, ckbAddress]);
+  }, [signer]);
+
+  React.useEffect(() => {
+    cccConnect();
+  }, [ckbAddress]);
 
   // React.useEffect(() => {
   //   setClient(
@@ -369,7 +385,7 @@ const App = () => {
     const dummyCellWidthRandomizer = new SeededRandom(daoCellNum);
 
     return (
-      <div className={`container ${joyidAddress ? '' : 'background-image'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+      <div className={`container ${ckbAddress ? '' : 'background-image'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {isLoading && (
           <div className="loading-overlay">
             <div className="loading-circle-container">
@@ -390,19 +406,19 @@ const App = () => {
           JoyDAO
         </h1>
 
-        {!joyidAddress && (
+        {!ckbAddress && (
           <div className='description'>
             <p>Nervos DAO with JoyID Passkeys</p>
           </div>
         )}
 
-        {!joyidAddress && (
+        {!ckbAddress && (
           <button className='signin-button' onClick={onConnect}>
             Connect
           </button>
         )}
 
-        {!joyidAddress && (
+        {!ckbAddress && (
           <Modal
             isOpen={modalIsOpen}
             onRequestClose={() => {
@@ -435,11 +451,11 @@ const App = () => {
         )}
 
         <div className='account-deposit-buttons' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
-          {joyidAddress && (
+          {ckbAddress && (
             <div className='dropdown-area'>
               <button className='account-button' onClick={(e) => {setShowDropdown(!showDropdown); hideDepositTextBoxAndDropDown(e)}}>
-                <span className="copy-sign" onClick={(e) => {e.stopPropagation(); copyAddress(joyidAddress)}}>⧉</span>
-                {shortenAddress(joyidAddress)}
+                <span className="copy-sign" onClick={(e) => {e.stopPropagation(); copyAddress(ckbAddress)}}>⧉</span>
+                {shortenAddress(ckbAddress)}
               </button>
 
               {showDropdown && (
@@ -454,7 +470,7 @@ const App = () => {
             </div>
           )}
 
-          {joyidAddress && (
+          {ckbAddress && (
             isDepositing ? (
               <input
                 type="text"
@@ -478,7 +494,7 @@ const App = () => {
           )}
         </div>
 
-        {joyidAddress && (
+        {ckbAddress && (
           daoCellNum === 0 ? (
             <div className='no-deposit-message' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
               <h2>Whoops, no deposits found!</h2>
@@ -656,7 +672,6 @@ const App = () => {
     )
   }
 }
-
 
 const cccWrappedApp = () => {
   return (

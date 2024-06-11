@@ -1,7 +1,7 @@
 import { RPC } from "@ckb-lumos/lumos";
 import { Script, Address, Cell, Transaction, OutPoint, PackedSince, since} from "@ckb-lumos/base";
 const { parseSince } = since;
-import { NODE_URL, INDEXER_URL, CKB_SHANNON_RATIO } from "../config";
+import { NODE_URL, INDEXER_URL, CKB_SHANNON_RATIO, JOYID_CELLDEP } from "../config";
 import { addressToScript } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
 import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';
@@ -314,6 +314,11 @@ export class SeededRandom {
         // This is then scaled to the desired range [min, max).
         return min + rnd * (max - min);
     }
+}
+
+export const isJoyIdAddress = (address: string) => {
+	const config = getConfig();
+	return(addressToScript(address, { config }).codeHash == JOYID_CELLDEP.codeHash);
 }
 
 export default {

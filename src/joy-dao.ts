@@ -1,8 +1,8 @@
 import { CKBTransaction } from '@joyid/ckb';
-import { CellDep, Address, Cell, Transaction, HexString, PackedDao, PackedSince, since } from "@ckb-lumos/base";
+import { CellDep, DepType, Address, Cell, Transaction, HexString, PackedDao, PackedSince, since } from "@ckb-lumos/base";
 const { parseSince } = since;
 import { EpochSinceValue } from "@ckb-lumos/base/lib/since"
-import { INDEXER_URL, NODE_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP} from "./config";
+import { INDEXER_URL, NODE_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP, OMNILOCK_CELLDEP} from "./config";
 import { addressToScript, TransactionSkeleton, createTransactionFromSkeleton, minimalCellCapacityCompatible} from "@ckb-lumos/helpers";
 import { dao }  from "@ckb-lumos/common-scripts";
 import { Indexer } from "@ckb-lumos/ckb-indexer";
@@ -70,7 +70,19 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
     );
 
     // adding joyID cell deps
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
+    const config = getConfig();
+    const fromScript = addressToScript(joyidAddr, { config });
+    if (fromScript.codeHash == JOYID_CELLDEP.codeHash) {
+      txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
+        outPoint: JOYID_CELLDEP.outPoint,
+        depType: JOYID_CELLDEP.depType as DepType
+      }));
+    } else if (fromScript.codeHash == OMNILOCK_CELLDEP.codeHash) {
+      txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
+        outPoint: OMNILOCK_CELLDEP.outPoint,
+        depType: OMNILOCK_CELLDEP.depType as DepType
+      }));
+    }
 
     // adding input capacity cells
     const requiredCapacity = ckbytesToShannons(amount + BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE);
