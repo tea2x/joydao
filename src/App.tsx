@@ -113,8 +113,8 @@ const App = () => {
   const onDeposit = async () => {
     if (isDepositing) {
       try {
-        setDepositAmount(''); // Clear the input field
-        setIsDepositing(false); // Revert back to the deposit button //TODO
+        setDepositAmount('');
+        setIsDepositing(false);
 
         const amount = BigInt(depositAmount);
         const daoTx = await buildDepositTransaction(ckbAddress, amount);
@@ -123,7 +123,6 @@ const App = () => {
         let txid = "";
 
         if (isJoyIdAddress(ckbAddress)) {
-          console.log(">>>signing with joyid")
           signedTx = await signRawTransaction(
             daoTx,
             ckbAddress
