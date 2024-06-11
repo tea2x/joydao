@@ -32,13 +32,9 @@ const App = () => {
   const [isModalMessageLoading, setIsModalMessageLoading] = React.useState(false);
   const [internalAddress, setInternalAddress] = React.useState("");
   const [ckbAddress, setCkbAddress] = React.useState("");
-  // const [isTestnet, setIsTestnet] = React.useState(true);
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
-  console.log(">>>signer: ", signer)
-  console.log(">>>wallet: ", wallet)
-  console.log(">>>ckbAddress: ", ckbAddress)
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
@@ -134,7 +130,7 @@ const App = () => {
           if (signer) {
             txid = await signer.sendTransaction(daoTx);
           } else {
-            throw new Error('Wallet disconnected! Sign out and sign in again!');
+            throw new Error('Wallet disconnected. Reconnect!');
           }
         }
 
