@@ -263,6 +263,10 @@ body {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
   transition: transform 0.5s ease-in-out;
   min-height: 90vh;
+  background-image: url('./images/plume-signin-background_portrait.png');
+  background-size: 950px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .dao-link {
@@ -436,13 +440,6 @@ body {
   bottom: 5px;
 }
 
-.background-image {
-  background-image: url('./images/plume-signin-background.png');
-  background-size: 1500px;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
 .ReactModal__Content {
   max-width: 300px;
   margin: 20px auto;
@@ -551,6 +548,7 @@ button.cancel {
 .main-wallet-option {
   position: relative;
   top: 20px;
+  min-height: 200px;
 }
 
 .headline-separation {
@@ -594,6 +592,8 @@ button.cancel {
       min-height: 800px;
       padding: 0px;
       margin-top: 0px;
+      background-image: url('./images/plume-signin-background_portrait.png');
+      background-size: 500px;
   }
 
   .dao-cell-dummy {
@@ -630,11 +630,6 @@ button.cancel {
 
   .description {
     top: -25px;
-  }
-
-  .background-image {
-    background-image: url('./images/plume-signin-background_portrait.png');
-    background-size: 500px;
   }
 
   .dropdown-menu {
