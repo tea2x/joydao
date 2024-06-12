@@ -42,6 +42,7 @@ body {
   display: flex;
   justify-content: center;
   width: 100%;
+  margin-top: 40px;
   margin-bottom: 80px;
 }
 
@@ -73,11 +74,42 @@ body {
 
 .signin-button:hover {
   transform: translateY(-3px);
-}
-
-.signin-button:hover {
   background-color: #000;
   color: #A8E72F;
+}
+
+.joyid-connect {
+  background-color: #8CDD00;
+  color: #000000;
+  box-shadow: 
+    2px 2px 0 #354f32,
+    4px 4px 0 #2b5328;
+  margin-top: 15%;
+  width: 180px;
+  padding: 1px 1px;
+  background-image: url('./images/joyid-green.svg');
+  background-size: 180px;
+  background-position: right 0px center;
+  background-repeat: no-repeat;
+}
+
+.joyid-connect:hover {
+  background-color: #000;
+  color: #f8f8f8;
+}
+
+.other-wallet-connect {
+  background: linear-gradient(3deg, #FF7F00, #FFFF00, #00FF00);
+  color: #000000;
+  box-shadow: 
+    2px 2px 0 #81773c,
+    4px 4px 0 #694427;
+  margin-top: 20%;
+  width: 180px;
+}
+
+.other-wallet-connect:hover {
+  color: #000000;
 }
 
 .account-button {
@@ -219,6 +251,7 @@ body {
 
 .container {
   display: flex;
+  justify-content: center;
   flex-direction: column;
   align-items: center;
   width: 60%;
@@ -411,7 +444,7 @@ body {
 }
 
 .ReactModal__Content {
-  max-width: 600px;
+  max-width: 300px;
   margin: 20px auto;
   padding: 20px;
   background-color: #ffffff;
@@ -510,6 +543,20 @@ button.cancel {
   animation-iteration-count: infinite;
 }  
 
+.connect-wallet {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.main-wallet-option {
+  position: relative;
+  top: 20px;
+}
+
+.headline-separation {
+  border-top: 1px solid #000;
+}
+
 @media only screen and (max-width: 768px) {
   .account-deposit-buttons {
       margin-bottom: 40px;
@@ -529,11 +576,19 @@ button.cancel {
       background-size: 35px;
       padding-left: 2px;
       width: 180px;
-      height: 50px;
       font-size: 1.5em;
       font-weight: bold;
   }
-
+  
+  .joyid-connect {
+    background-size: 150px;
+    font-size: 1em;
+  }
+  
+  .other-wallet-connect {
+    font-size: 1em;
+  }
+  
   .container {
       width: 100%;
       min-height: 800px;
@@ -595,5 +650,6 @@ button.cancel {
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
       transition: transform 0.5s ease-in-out;
+      min-width: 200px;
   }
 }

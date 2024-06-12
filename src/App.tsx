@@ -393,7 +393,7 @@ const App = () => {
     const dummyCellWidthRandomizer = new SeededRandom(daoCellNum);
 
     return (
-      <div className={`container ${ckbAddress ? '' : 'background-image'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+      <div className={`container background-image`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {isLoading && (
           <div className="loading-overlay">
             <div className="loading-circle-container">
@@ -416,7 +416,7 @@ const App = () => {
 
         {!ckbAddress && (
           <div className='description'>
-            <p>Your Nervos DAO portal</p>
+            <p>Multi-chain Nervos DAO portal</p>
           </div>
         )}
 
@@ -434,25 +434,30 @@ const App = () => {
               setConnectModalIsOpen(false); 
             }}
           >
-            <h3>Connect</h3>
+            <div className='main-wallet-option'>
+              <div className="connect-wallet">Connect Wallet</div>
+              <div className='headline-separation'> </div>
+              <button
+                className="signin-button joyid-connect"
+                onClick={() => {
+                  setConnectModalIsOpen(false);
+                  joyIdConnect();
+                }}
+              >
+                {/* JoyId Passkeys */}
+              </button>
 
-            <button
-              onClick={() => {
-                setConnectModalIsOpen(false);
-                joyIdConnect();
-              }}
-            >
-              JoyId connect
-            </button>
+              <button
+                className="signin-button other-wallet-connect"
+                onClick={() => {
+                  setConnectModalIsOpen(false);
+                  open();
+                }}              
+              >
+                Others
+              </button>
+            </div>
 
-            <button
-              onClick={() => {
-                setConnectModalIsOpen(false);
-                open();
-              }}              
-            >
-              CCC connect
-            </button>
           </Modal>
         )}
 
