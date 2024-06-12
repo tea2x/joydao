@@ -82,6 +82,15 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
         outPoint: OMNILOCK_CELLDEP.outPoint,
         depType: OMNILOCK_CELLDEP.depType as DepType
       }));
+
+      // omnilock needs secp256k1 celldep
+      txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
+        outPoint: {
+          txHash: config.SCRIPTS.SECP256K1_BLAKE160!.TX_HASH,
+          index: config.SCRIPTS.SECP256K1_BLAKE160!.INDEX
+        },
+        depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType
+      }));
     }
 
     // adding input capacity cells
