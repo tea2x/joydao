@@ -125,7 +125,7 @@ body {
   color: #A8E72F;
 }
 
-.signout-button {
+.dropdown-button {
   background-color: #597415;
   color: #fff;
   padding: 5px 10px;
@@ -146,7 +146,7 @@ body {
   background-repeat: no-repeat;
 }
 
-.signout-button:hover {
+.dropdown-button:hover {
   background-color: #000;
   color: #A8E72F;
 }
@@ -515,7 +515,7 @@ button.cancel {
       margin-bottom: 40px;
   }
 
-  .signin-button, .account-button, .signout-button, .deposit-button {
+  .signin-button, .account-button, .dropdown-button, .deposit-button {
       width: 150px;
       height: 45px;
       padding: 5px 20px 5px 10px;

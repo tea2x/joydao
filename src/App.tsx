@@ -8,11 +8,8 @@ import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import { ccc } from "@ckb-ccc/connector-react";
-import { Transaction as CCCTransaction } from "@ckb-ccc/core";
 import "./App.css";
 import Modal from 'react-modal';
-import { Transaction as BaseTransaction } from "@ckb-lumos/base";
-import { error } from 'console';
 Modal.setAppElement('#root');
 
 const App = () => {
@@ -32,6 +29,7 @@ const App = () => {
   const [isModalMessageLoading, setIsModalMessageLoading] = React.useState(false);
   const [internalAddress, setInternalAddress] = React.useState("");
   const [ckbAddress, setCkbAddress] = React.useState("");
+  const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
@@ -65,7 +63,7 @@ const App = () => {
   };
 
   const joyIdConnect = async () => {
-    setModalIsOpen(false);
+    setConnectModalIsOpen(false);
     const authData = await connect();
     await settleUserInfo(authData.address);
   };
@@ -76,7 +74,7 @@ const App = () => {
   }
 
   const onConnect = async () => {
-    setModalIsOpen(true);
+    setConnectModalIsOpen(true);
   }
 
   const settleUserInfo = async (ckbAddress: string) => {
@@ -114,7 +112,6 @@ const App = () => {
 
         const amount = BigInt(depositAmount);
         const daoTx = await buildDepositTransaction(ckbAddress, amount);
-        console.log(">>>daoTx: ", daoTx);
 
         let signedTx;
         let txid = "";
@@ -358,12 +355,6 @@ const App = () => {
     cccConnect();
   }, [ckbAddress]);
 
-  // React.useEffect(() => {
-  //   setClient(
-  //     isTestnet ? new ccc.ClientPublicTestnet() : new ccc.ClientPublicMainnet(),
-  //   );
-  // }, [isTestnet, setClient]);
-
   {
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
     const smallScreenDeviceMinCellWidth = 100;
@@ -416,17 +407,17 @@ const App = () => {
 
         {(!ckbAddress || !signer) && (
           <Modal
-            isOpen={modalIsOpen}
+            isOpen={connectModalIsOpen}
             onRequestClose={() => {
               // close the modal
-              setModalIsOpen(false); 
+              setConnectModalIsOpen(false); 
             }}
           >
             <h3>Connect</h3>
 
             <button
               onClick={() => {
-                setModalIsOpen(false);
+                setConnectModalIsOpen(false);
                 joyIdConnect();
               }}
             >
@@ -435,7 +426,7 @@ const App = () => {
 
             <button
               onClick={() => {
-                setModalIsOpen(false);
+                setConnectModalIsOpen(false);
                 open();
               }}              
             >
@@ -458,12 +449,12 @@ const App = () => {
                   <p>Deposited: {balance ? balance.occupied.toString() + ' CKB' : 'Loading...'}</p>
 
                   {(!signer && !isJoyIdAddress(ckbAddress)) ? (
-                    <button className='signout-button' onClick={() => {setShowDropdown(false); setModalIsOpen(true)}}>
+                    <button className='dropdown-button' onClick={() => {setShowDropdown(false); setConnectModalIsOpen(true)}}>
                       Reconnect
                     </button>
 
                   ) : (
-                    <button className='signout-button' onClick={onSignOut}>
+                    <button className='dropdown-button' onClick={onSignOut}>
                       Sign Out
                     </button>
                   )}
