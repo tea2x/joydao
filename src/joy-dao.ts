@@ -129,7 +129,28 @@ export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell
     let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
 
     // adding joyID cell deps
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
+    const config = getConfig();
+    const fromScript = addressToScript(joyidAddr, { config });
+    if (fromScript.codeHash == JOYID_CELLDEP.codeHash) {
+      txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
+        outPoint: JOYID_CELLDEP.outPoint,
+        depType: JOYID_CELLDEP.depType as DepType
+      }));
+    } else if (fromScript.codeHash == OMNILOCK_CELLDEP.codeHash) {
+      txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
+        outPoint: OMNILOCK_CELLDEP.outPoint,
+        depType: OMNILOCK_CELLDEP.depType as DepType
+      }));
+
+      // omnilock needs secp256k1 celldep
+      txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
+        outPoint: {
+          txHash: config.SCRIPTS.SECP256K1_BLAKE160!.TX_HASH,
+          index: config.SCRIPTS.SECP256K1_BLAKE160!.INDEX
+        },
+        depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType
+      }));
+    }
 
     // add dao input cell
     txSkeleton = txSkeleton.update("inputs", (i)=>i.push(daoDepositCell));
@@ -169,6 +190,7 @@ export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell
     }
 
     // converting skeleton to CKB transaction
+    console.log(">>>txSkeleton: ", JSON.stringify(txSkeleton, null, 2))
     const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
     return daoWithdrawTx as CKBTransaction;
 }

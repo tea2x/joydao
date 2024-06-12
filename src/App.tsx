@@ -168,13 +168,24 @@ const App = () => {
     try {
       const daoTx = await buildWithdrawTransaction(ckbAddress, cell);
 
-      const signedTx = await signRawTransaction(
-        daoTx,
-        ckbAddress
-      );
+      let signedTx;
+      let txid = "";
 
-      // Send the transaction to the RPC node.
-      const txid = await sendTransaction(signedTx);
+      if (isJoyIdAddress(ckbAddress)) {
+        signedTx = await signRawTransaction(
+          daoTx,
+          ckbAddress
+        );
+        // Send the transaction to the RPC node.
+        txid = await sendTransaction(signedTx);
+      } else {
+        if (signer) {
+          txid = await signer.sendTransaction(daoTx);
+        } else {
+          throw new Error('Wallet disconnected. Reconnect!');
+        }
+      }
+      
       alert(`Transaction Sent: ${txid}\n`);
 
       setIsWaitingTxConfirm(true);
