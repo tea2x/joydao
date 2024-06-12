@@ -219,8 +219,32 @@ export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCel
         },
         depType: template.DEP_TYPE,
     }
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(daoCellDep as CellDep));
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(JOYID_CELLDEP as CellDep));
+
+    const fromScript = addressToScript(joyidAddr, { config });
+    if (fromScript.codeHash == JOYID_CELLDEP.codeHash) {
+      //joyid celldep
+      txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
+        outPoint: JOYID_CELLDEP.outPoint,
+        depType: JOYID_CELLDEP.depType as DepType
+      }));
+    } else if (fromScript.codeHash == OMNILOCK_CELLDEP.codeHash) {
+      txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
+        outPoint: OMNILOCK_CELLDEP.outPoint,
+        depType: OMNILOCK_CELLDEP.depType as DepType
+      }));
+
+      // omnilock needs secp256k1 celldep
+      txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
+        outPoint: {
+          txHash: config.SCRIPTS.SECP256K1_BLAKE160!.TX_HASH,
+          index: config.SCRIPTS.SECP256K1_BLAKE160!.INDEX
+        },
+        depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType
+      }));
+
+      // dao cell dep
+      txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(daoCellDep as CellDep));
+    }
 
     // find the deposit cell and
     // enrich DAO withdrawal cell data with block hash info
