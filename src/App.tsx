@@ -411,12 +411,12 @@ const App = () => {
           await updateDaoList();
           window.location.reload();
         }}>
-          JoyDAO
+          CKBANK
         </h1>
 
         {!ckbAddress && (
           <div className='description'>
-            <p>Nervos DAO with JoyID Passkeys</p>
+            <p>Your Nervos DAO portal</p>
           </div>
         )}
 

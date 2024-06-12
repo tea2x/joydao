@@ -22,20 +22,20 @@ body {
   font-size: 3em;
   font-weight: bold;
   text-shadow: 
-      1px 1px 0 #353f2d,
-      2px 2px 0 #353f2d,
-      3px 3px 0 #353f2d,
-      4px 4px 0 #353f2d,
-      5px 5px 0 #353f2d,
-      6px 6px 0 #353f2d,
-      7px 7px 0 #353f2d,
-      8px 8px 0 #353f2d,
-      9px 9px 0 #353f2d,
-      10px 10px 0 #353f2d;
-  transform: rotate(-2deg);
-  margin-bottom: 30px;
-  color: #ace129;
+      2px 2px 0 #555,
+      4px 4px 0 #333;
+  transform: rotate(-1deg);
+  margin: 30px;
+  position: relative;
+  top: 40px;
+
+  color: #a8a8a8;
   cursor: pointer;
+  border: 3px solid #505050;
+  padding: 5px;
+  background-color: #f8f8f8;
+  height: 65px;
+  font-weight: lighter
 }
 
 .account-deposit-buttons {
@@ -51,24 +51,28 @@ body {
 }
 
 .signin-button {
-  background-color: #7da31d;
-  color: #fff;
-  padding: 10px 40px 10px 20px;
-  border: none;
-  border-radius: 10px;
+  background-color: #f8f8f8;
+  color: #505050;
+  padding: 10px 20px;
+  border: 3px solid #505050;
+  border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 150px;
+  width: 200px;
   height: 40px;
-  background-image: url('./images/joyid-logo.png');
-  background-size: 25px;
-  background-position: right 15px center;
-  background-repeat: no-repeat;
-  margin-top: 500px;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
+  margin-top: 300px;
+  transition: transform 0.3s ease;
+}
+
+.signin-button:hover {
+  transform: translateY(-3px);
 }
 
 .signin-button:hover {
@@ -225,7 +229,7 @@ body {
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
   transition: transform 0.5s ease-in-out;
-  min-height: 100vh;
+  min-height: 90vh;
 }
 
 .dao-link {
@@ -324,11 +328,12 @@ body {
 }
 
 .description {
-  margin-top: -5px;
-  font-size: 15px;
-  color: #cfcece;
-  font-weight: bold;
+  position: relative;
+  top: -25px;
+  font-size: 13px;
+  color: #404040;
   animation: blink 1s infinite;
+  transform: rotate(-1deg);
 }
 
 @keyframes blink {
@@ -399,8 +404,8 @@ body {
 }
 
 .background-image {
-  background-image: url('./images/dao-safe.jpg');
-  background-size: 350px;
+  background-image: url('./images/plume-signin-background.png');
+  background-size: 1500px;
   background-position: center;
   background-repeat: no-repeat;
 }
@@ -506,11 +511,6 @@ button.cancel {
 }  
 
 @media only screen and (max-width: 768px) {
-  .title {
-      font-size: 3em;
-      margin-top: 20px;
-  }
-
   .account-deposit-buttons {
       margin-bottom: 40px;
   }
@@ -525,7 +525,6 @@ button.cancel {
   }
 
   .signin-button {
-      margin-top: 400px;
       background-position: right 10px center;
       background-size: 35px;
       padding-left: 2px;
@@ -575,16 +574,12 @@ button.cancel {
   }
 
   .description {
-      margin-top: -20px;
-      font-size: 18px;
-      color: #262626;
+    top: -25px;
   }
 
   .background-image {
-      background-image: url('./images/dao-safe.jpg');
-      background-size: 400px;
-      background-position: top 165px center;
-      background-repeat: no-repeat;
+    background-image: url('./images/plume-signin-background_portrait.png');
+    background-size: 500px;
   }
 
   .dropdown-menu {
