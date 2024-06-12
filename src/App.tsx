@@ -321,12 +321,30 @@ const App = () => {
   }
 
   const copyAddress = (address:string) => {
-    navigator.clipboard.writeText(address).then(() => {
-      console.log('Address copied to clipboard'); //TODO notif // + replace alert
-    }).catch(err => {
-      console.error('Could not copy address: ', err);
-    });
-  }
+    if (navigator.clipboard) {
+      // Clipboard API is available
+      navigator.clipboard.writeText(address).then(() => {
+        console.log('Address copied to clipboard'); //TODO notif // + replace alert
+      }).catch(err => {
+        console.error('Could not copy address: ', err);
+      });
+    } else {
+      // Clipboard API is not available, use fallback
+      const textarea = document.createElement('textarea');
+      textarea.value = address;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        console.log('Address copied to clipboard');
+      } catch (err) {
+        console.error('Could not copy address: ', err);
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
+  };
+  
   
   React.useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -411,7 +429,7 @@ const App = () => {
           await updateDaoList();
           window.location.reload();
         }}>
-          CKBANK
+          CKBank
         </h1>
 
         {!ckbAddress && (

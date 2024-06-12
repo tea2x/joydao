@@ -33,7 +33,7 @@ body {
   cursor: pointer;
   border: 3px solid #505050;
   padding: 5px;
-  background-color: #f8f8f8;
+  background-color: #746d6d;
   height: 65px;
   font-weight: lighter
 }
@@ -68,8 +68,9 @@ body {
   box-shadow: 
     2px 2px 0 #555,
     4px 4px 0 #333;
-  margin-top: 300px;
   transition: transform 0.3s ease;
+  position: relative;
+  top: 100px
 }
 
 .signin-button:hover {
@@ -84,13 +85,13 @@ body {
   box-shadow: 
     2px 2px 0 #354f32,
     4px 4px 0 #2b5328;
-  margin-top: 15%;
   width: 180px;
   padding: 1px 1px;
   background-image: url('./images/joyid-green.svg');
   background-size: 180px;
   background-position: right 0px center;
   background-repeat: no-repeat;
+  top: 25px
 }
 
 .joyid-connect:hover {
@@ -106,6 +107,7 @@ body {
     4px 4px 0 #694427;
   margin-top: 20%;
   width: 180px;
+  top: 30px
 }
 
 .other-wallet-connect:hover {
@@ -368,7 +370,7 @@ body {
   position: relative;
   top: -25px;
   font-size: 13px;
-  color: #404040;
+  color: #cecece;
   animation: blink 1s infinite;
   transform: rotate(-1deg);
 }
@@ -399,6 +401,7 @@ body {
   background-color: #f8f8f8;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
   position: relative;
+  opacity: 0.66;
 }
 
 .dao-cell {
@@ -556,95 +559,102 @@ button.cancel {
 }
 
 @media only screen and (max-width: 768px) {
+  .title {
+    top: -20px;
+  }
+
   .account-deposit-buttons {
-      margin-bottom: 40px;
+    margin-bottom: 40px;
   }
 
   .signin-button, .account-button, .dropdown-button, .deposit-button {
-      width: 150px;
-      height: 45px;
-      padding: 5px 20px 5px 10px;
-      font-size: 14px;
-      margin-bottom: 30px;
-      font-weight: bold;
+    width: 150px;
+    height: 45px;
+    padding: 5px 20px 5px 10px;
+    font-size: 14px;
+    margin-bottom: 30px;
+    font-weight: bold;
   }
 
   .signin-button {
-      background-position: right 10px center;
-      background-size: 35px;
-      padding-left: 2px;
-      width: 180px;
-      font-size: 1.5em;
-      font-weight: bold;
+    background-position: right 10px center;
+    background-size: 35px;
+    padding-left: 2px;
+    width: 180px;
+    font-size: 1.5em;
+    font-weight: bold;
+    top: 60px;
   }
   
   .joyid-connect {
     background-size: 150px;
     font-size: 1em;
+    top: 25px;
   }
   
   .other-wallet-connect {
     font-size: 1em;
+    top: 25px;
   }
   
   .container {
-      width: 100%;
-      min-height: 800px;
-      padding: 0px;
-      margin-top: 0px;
-      background-image: url('./images/plume-signin-background_portrait.png');
-      background-size: 500px;
+    width: 100%;
+    min-height: 800px;
+    padding: 0px;
+    margin-top: 0px;
+    background-image: url('./images/plume-signin-background_portrait.png');
+    background-size: 500px;
   }
 
   .dao-cell-dummy {
-      padding: 3px;
-      margin: 3px;
-      font-size: 16px;
-      height: var(--cellHeight);
+    padding: 3px;
+    margin: 3px;
+    font-size: 16px;
+    height: var(--cellHeight);
   }
 
   .dao-cell {
-      padding: 3px;
-      margin: 3px;
-      font-size: 16px;
-      height: var(--cellHeight);
+    padding: 3px;
+    margin: 3px;
+    font-size: 16px;
+    height: var(--cellHeight);
   }
 
   .dao-cell-button {
-      font-size: 0.8em;
+    font-size: 0.8em;
   }
 
   .deposit-textbox {
-      padding: 5px 10px;
-      width: 150px;
-      height: 35px;
+    padding: 5px 10px;
+    width: 150px;
+    height: 35px;
   }
 
   .no-deposit-message {
-      font-size: 1em;
+    font-size: 1em;
   }
 
   .tx-confirmation-message {
-      font-size: 14px;
+    font-size: 14px;
   }
 
   .description {
-    top: -25px;
+    top: -85px;
   }
 
   .dropdown-menu {
-      margin-top: -27px;
-      height: 130px;
+    margin-top: -27px;
+    height: 130px;
   }
 
   .ReactModal__Content {
-      max-width: 40vh;
-      padding: 20px;
-      background-color: #ffffff;
-      border: none;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
-      transition: transform 0.5s ease-in-out;
-      min-width: 200px;
+    max-width: 40vh;
+    padding: 20px;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+    transition: transform 0.5s ease-in-out;
+    min-width: 200px;
   }
 }
