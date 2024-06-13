@@ -418,7 +418,7 @@ const App = () => {
               <div className="loading-circle"></div>
               {isWaitingTxConfirm && (
                 <p className="tx-confirmation-message">
-                  Your tx can take up a few minutes to process!
+                  Your tx can take a few minutes to process!
                 </p>
               )}
             </div>
