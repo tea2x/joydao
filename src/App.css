@@ -22,12 +22,10 @@ body {
   font-size: 3em;
   font-weight: bold;
   text-shadow: 
-      2px 2px 0 #555,
+      2px 2px 0 #909090,
       4px 4px 0 #333;
   transform: rotate(-1deg);
-  margin: 30px;
-  position: relative;
-  top: 40px;
+  margin: 80px;
 
   color: #a8a8a8;
   cursor: pointer;
@@ -42,7 +40,6 @@ body {
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-top: 40px;
   margin-bottom: 80px;
 }
 
@@ -121,7 +118,6 @@ body {
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.2s ease;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   transform: translateY(2px);
   font-size: 15px;
@@ -136,6 +132,10 @@ body {
   background-repeat: no-repeat;
   font-weight: bold;
   position: relative;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
+  transition: transform 0.3s ease;
 }
 
 .account-button .copy-sign {
@@ -159,6 +159,7 @@ body {
 }
 
 .account-button:hover {
+  transform: translateY(-3px);
   background-color: #000;
   color: #A8E72F;
 }
@@ -234,9 +235,16 @@ body {
   background-position: right 10px center;
   background-repeat: no-repeat;
   font-weight: bold;
+  width: 200px;
+  height: 40px;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
+  transition: transform 0.3s ease;
 }
 
 .deposit-button:hover {
+  transform: translateY(-3px);
   background-color: #000;
   color: #A8E72F;
 }
@@ -244,11 +252,13 @@ body {
 .deposit-textbox {
   background-color: #ffffff;
   color: #808080;
-  padding: 10px 20px;
+  /* padding: 10px 20px; */
   border: 2px solid #35a50c;
   border-radius: 5px;
   cursor: pointer;
   animation: blink 1s infinite;
+  width: 200px;
+  height: 40px;
 }
 
 .container {
@@ -369,7 +379,7 @@ body {
 
 .description {
   position: relative;
-  top: -25px;
+  top: -115px;
   font-size: 13px;
   color: #cecece;
   animation: blink 1s infinite;
@@ -390,8 +400,8 @@ body {
 
 .dao-cell-dummy {
   border: 1px solid #ddd;
-  padding: 10px;
-  margin: 10px;
+  padding: 3px;
+  margin: 3px;
   border-radius: 35px;
   width: var(--cellWidth);
   height: var(--cellHeight);
@@ -402,13 +412,16 @@ body {
   background-color: #f8f8f8;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
   position: relative;
-  opacity: 0.66;
+  opacity: 0.2;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
 }
 
 .dao-cell {
   border: 1px solid var(--backgroundColor);
-  padding: 10px;
-  margin: 10px;
+  padding: 3px;
+  margin: 3px;
   border-radius: 35px;
   width: var(--cellWidth);
   height: var(--cellHeight);
@@ -424,6 +437,9 @@ body {
   animation: dropdownFadeIn 0.5s ease-in-out;
   font-size: 1.2em;
   position: relative;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
 }
 
 .dao-cell:hover {
@@ -560,10 +576,6 @@ button.cancel {
 }
 
 @media only screen and (max-width: 768px) {
-  .title {
-    top: -20px;
-  }
-
   .account-deposit-buttons {
     margin-bottom: 40px;
   }
@@ -636,10 +648,6 @@ button.cancel {
 
   .tx-confirmation-message {
     font-size: 14px;
-  }
-
-  .description {
-    top: -85px;
   }
 
   .dropdown-menu {

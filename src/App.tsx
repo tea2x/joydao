@@ -6,11 +6,13 @@ import { sendTransaction, waitForTransactionConfirmation,
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX } from "./config";
-import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
+import { buildDepositTransaction, buildWithdrawTransaction,
+  buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import { ccc } from "@ckb-ccc/connector-react";
 import "./App.css";
 import Modal from 'react-modal';
 Modal.setAppElement('#root');
+import { SnackbarProvider, useSnackbar } from 'notistack';
 
 const App = () => {
   const [balance, setBalance] = React.useState<Balance | null>(null);
@@ -33,6 +35,7 @@ const App = () => {
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
+  const { enqueueSnackbar } = useSnackbar();
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
@@ -56,16 +59,20 @@ const App = () => {
         localStorage.setItem('balance', JSON.stringify(balance));
         localStorage.setItem('depositCells', JSON.stringify(deposits));
         localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
-      } catch (error: any) {
-        alert('Error: ' + error.message);
+      } catch (e: any) {
+        enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
       }
     }
   };
 
   const joyIdConnect = async () => {
-    setConnectModalIsOpen(false);
-    const authData = await connect();
-    await settleUserInfo(authData.address);
+    try {
+      setConnectModalIsOpen(false);
+      const authData = await connect();
+      await settleUserInfo(authData.address);
+    } catch (e: any) {
+      enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
+    }
   };
 
   function cccConnect() {
@@ -98,9 +105,9 @@ const App = () => {
       localStorage.setItem('balance', JSON.stringify(balance));
       localStorage.setItem('depositCells', JSON.stringify(deposits));
       localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
-    } catch (error: any) {
+    } catch (e: any) {
       // setIsLoading(false); //TODO
-      alert('Error: ' + error.message);
+      enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
     }
   };
 
@@ -131,7 +138,7 @@ const App = () => {
           }
         }
 
-        alert(`Transaction Sent: ${txid}\n`);
+        enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: 'success' });
 
         setIsWaitingTxConfirm(true);
         setIsLoading(true);
@@ -143,8 +150,8 @@ const App = () => {
         setIsWaitingTxConfirm(false);
         await updateDaoList();
 
-      } catch (error:any) {
-        alert('Error: ' + error.message);
+      } catch (e:any) {
+        enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
       }
     } else {
       setIsDepositing(true);
@@ -186,7 +193,7 @@ const App = () => {
         }
       }
       
-      alert(`Transaction Sent: ${txid}\n`);
+      enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: 'success' });
 
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
@@ -198,8 +205,8 @@ const App = () => {
       setIsWaitingTxConfirm(false);
       await updateDaoList();
 
-    } catch(error:any) {
-      alert('Error: ' + error.message);
+    } catch(e:any) {
+      enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
     }
   }
 
@@ -238,7 +245,7 @@ const App = () => {
         }
       }
 
-      alert(`Transaction Sent: ${txid}\n`);
+      enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: 'success' });
 
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
@@ -250,8 +257,8 @@ const App = () => {
       setIsWaitingTxConfirm(false);
       await updateDaoList();
       
-    } catch(error:any) {
-      alert('Error: ' + error.message);
+    } catch(e:any) {
+      enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
     }
   }
 
@@ -324,7 +331,7 @@ const App = () => {
     if (navigator.clipboard) {
       // Clipboard API is available
       navigator.clipboard.writeText(address).then(() => {
-        console.log('Address copied to clipboard'); //TODO notif // + replace alert
+        enqueueSnackbar('Address copied to clipboard', { variant: 'info' });
       }).catch(err => {
         console.error('Could not copy address: ', err);
       });
@@ -345,11 +352,8 @@ const App = () => {
     }
   };
   
-  
+  // updating deposit info
   React.useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-
     const storedJoyidAddress = localStorage.getItem('joyIdAddress');
     const storedBalance = localStorage.getItem('balance');
     const storedDepositCells = localStorage.getItem('depositCells');
@@ -374,9 +378,16 @@ const App = () => {
     if (currentCell && tipEpoch) {
       prepareMessage();
     }
-    return () => window.removeEventListener('resize', handleResize);
   }, [currentCell, tipEpoch]);
 
+  // check device window width
+  React.useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  });
+
+  // updating other chain wallets info
   React.useEffect(() => {
     if (!signer) {
       setInternalAddress("");
@@ -390,6 +401,7 @@ const App = () => {
     })();
   }, [signer]);
 
+  // calling cccConnect when ckbAddress varies
   React.useEffect(() => {
     cccConnect();
   }, [ckbAddress]);
@@ -469,7 +481,11 @@ const App = () => {
                 className="signin-button other-wallet-connect"
                 onClick={() => {
                   setConnectModalIsOpen(false);
-                  open();
+                  try {
+                    open();
+                  } catch(e:any) {
+                    enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
+                  }
                 }}              
               >
                 Others
@@ -479,11 +495,25 @@ const App = () => {
           </Modal>
         )}
 
-        <div className='account-deposit-buttons' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+        <div className='account-deposit-buttons'
+          onClick={(e) => hideDepositTextBoxAndDropDown(e)}
+        >
           {ckbAddress && (
             <div className='dropdown-area'>
-              <button className='account-button' onClick={(e) => {setShowDropdown(!showDropdown); hideDepositTextBoxAndDropDown(e)}}>
-                <span className="copy-sign" onClick={(e) => {e.stopPropagation(); copyAddress(ckbAddress)}}>⧉</span>
+              <button className='account-button'
+                onClick={(e) => {
+                  setShowDropdown(!showDropdown);
+                  hideDepositTextBoxAndDropDown(e)
+                }}
+              >
+                <span className="copy-sign"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyAddress(ckbAddress)
+                  }}
+                >
+                  ⧉
+                </span>
                 {shortenAddress(ckbAddress)}
               </button>
 
@@ -493,7 +523,12 @@ const App = () => {
                   <p>Deposited: {balance ? balance.occupied.toString() + ' CKB' : 'Loading...'}</p>
 
                   {(!signer && !isJoyIdAddress(ckbAddress)) ? (
-                    <button className='dropdown-button' onClick={() => {setShowDropdown(false); setConnectModalIsOpen(true)}}>
+                    <button className='dropdown-button'
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setConnectModalIsOpen(true)
+                      }}
+                    >
                       Reconnect
                     </button>
 
@@ -525,7 +560,12 @@ const App = () => {
                 className='deposit-textbox'
               />
             ) : (
-              <button className='deposit-button' onClick={(e) => { onDeposit(); hideDepositTextBoxAndDropDown(e); }}>
+              <button className='deposit-button'
+                onClick={(e) => {
+                  onDeposit();
+                  hideDepositTextBoxAndDropDown(e);
+                }}
+              >
                 Deposit
               </button>
             )
@@ -534,7 +574,9 @@ const App = () => {
 
         {ckbAddress && (
           daoCellNum === 0 ? (
-            <div className='no-deposit-message' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+            <div className='no-deposit-message'
+              onClick={(e) => hideDepositTextBoxAndDropDown(e)}
+            >
               <h2>Whoops, no deposits found!</h2>
             </div>
           ) : (
@@ -713,9 +755,11 @@ const App = () => {
 
 const cccWrappedApp = () => {
   return (
-    <ccc.Provider>
-      <App />
-    </ccc.Provider>
+    <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+      <ccc.Provider>
+        <App />
+      </ccc.Provider>
+    </SnackbarProvider>
   );
 };
 
