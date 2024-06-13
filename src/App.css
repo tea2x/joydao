@@ -20,20 +20,27 @@ body {
 
 .title {
   font-size: 3em;
-  font-weight: bold;
+  color: #f8f8f8;
   text-shadow: 
-      2px 2px 0 #909090,
-      4px 4px 0 #333;
-  transform: rotate(-1deg);
+    2px 2px 0 #505050,
+    4px 4px 0 #333;
+  transform: rotate(-0.5deg);
   margin: 80px;
-
-  color: #a8a8a8;
   cursor: pointer;
   border: 3px solid #505050;
   padding: 5px;
-  background-color: #746d6d;
+  background-color: #505050;
   height: 65px;
-  font-weight: lighter
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.title:hover {
+  color: #A8E72F; /* Color transition to match the button's hover state */
+  background-color: #000; /* Background transition to match the button's hover state */
 }
 
 .account-deposit-buttons {
@@ -382,7 +389,7 @@ body {
 
 .description {
   position: relative;
-  top: -115px;
+  top: -110px;
   font-size: 13px;
   color: #cecece;
   animation: blink 1s infinite;
@@ -655,6 +662,7 @@ button.cancel {
 
   .dropdown-menu {
     margin-top: -30px;
+    width: 180px;
     height: 100px;
   }
 
