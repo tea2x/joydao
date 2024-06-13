@@ -391,7 +391,7 @@ const App = () => {
   React.useEffect(() => {
     if (!signer) {
       setInternalAddress("");
-      setCkbAddress("");
+      // setCkbAddress("");
       return;
     }
 
