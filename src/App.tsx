@@ -279,7 +279,7 @@ const App = () => {
 
   const shortenAddress = (address: string) => {
     if (!address) return '';
-    return `${address.slice(0, 5)}...${address.slice(-7)}`;
+    return `${address.slice(0, 5)}...${address.slice(-6)}`;
   }
 
   const handleDepositKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => { //TODO
@@ -519,8 +519,10 @@ const App = () => {
 
               {showDropdown && (
                 <div className='dropdown-menu'>
-                  <p>Available: {balance ? balance.available.toString() + ' CKB' : 'Loading...'}</p>
-                  <p>Deposited: {balance ? balance.occupied.toString() + ' CKB' : 'Loading...'}</p>
+                  <h5>
+                    <div>Available: {balance ? balance.available.toString() + ' CKB' : 'Loading...'}</div>
+                    <div>Deposited: {balance ? balance.occupied.toString() + ' CKB' : 'Loading...'}</div>
+                  </h5>
 
                   {(!signer && !isJoyIdAddress(ckbAddress)) ? (
                     <button className='dropdown-button'

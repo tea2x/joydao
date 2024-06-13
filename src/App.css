@@ -112,10 +112,10 @@ body {
 }
 
 .account-button {
-  background-color: #597415;
-  color: #fff;
+  background-color: #f8f8f8;
+  color: #505050;
   padding: 10px 20px;
-  border: none;
+  border: 3px solid #505050;
   border-radius: 10px;
   cursor: pointer;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
@@ -124,7 +124,7 @@ body {
   font-weight: 500;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: left;
   width: 200px;
   height: 40px;
   background-size: 25px;
@@ -165,13 +165,12 @@ body {
 }
 
 .dropdown-button {
-  background-color: #597415;
-  color: #fff;
+  background-color: #f8f8f8;
+  color: #505050;
   padding: 5px 10px;
-  border: none;
+  border: 3px solid #505050;
   border-radius: 10px;
   cursor: pointer;
-  margin-top: 5px;
   transition: transform 0.2s ease;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   transform: translateY(2px);
@@ -180,9 +179,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-size: 25px;
-  background-position: right 10px center;
-  background-repeat: no-repeat;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
+  position: absolute;
+  bottom: 5px;
 }
 
 .dropdown-button:hover {
@@ -201,8 +202,10 @@ body {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   animation: dropdownFadeIn 0.5s ease-in-out;
   width: 200px;
+  height: 100px;
   word-wrap: break-word;
   box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+  justify-content: flex-start;
 }
 
 @keyframes dropdownFadeIn {
@@ -217,10 +220,10 @@ body {
 }
 
 .deposit-button {
-  background-color: #597415;
-  color: #fff;
+  background-color: #f8f8f8;
+  color: #505050;
   padding: 10px 20px;
-  border: none;
+  border: 3px solid #505050;
   border-radius: 10px;
   cursor: pointer;
   transition: transform 0.2s ease;
@@ -253,7 +256,7 @@ body {
   background-color: #ffffff;
   color: #808080;
   /* padding: 10px 20px; */
-  border: 2px solid #35a50c;
+  border: 2px solid #3d3d3d;
   border-radius: 5px;
   cursor: pointer;
   animation: blink 1s infinite;
@@ -580,7 +583,7 @@ button.cancel {
     margin-bottom: 40px;
   }
 
-  .signin-button, .account-button, .dropdown-button, .deposit-button {
+  .signin-button, .account-button, .deposit-button {
     width: 150px;
     height: 45px;
     padding: 5px 20px 5px 10px;
@@ -651,8 +654,8 @@ button.cancel {
   }
 
   .dropdown-menu {
-    margin-top: -27px;
-    height: 130px;
+    margin-top: -30px;
+    height: 100px;
   }
 
   .ReactModal__Content {
