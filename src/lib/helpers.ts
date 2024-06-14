@@ -1,5 +1,5 @@
 import { RPC } from "@ckb-lumos/lumos";
-import { Script, Address, Cell, Transaction, OutPoint, PackedSince, since} from "@ckb-lumos/base";
+import { Script, Address, Cell, Transaction, since} from "@ckb-lumos/base";
 const { parseSince } = since;
 import { NODE_URL, INDEXER_URL, CKB_SHANNON_RATIO, JOYID_CELLDEP } from "../config";
 import { addressToScript } from "@ckb-lumos/helpers";
@@ -89,7 +89,7 @@ export const collectInputs = async(
 	}
 
 	if(inputCapacity < capacityRequired)
-		throw new Error("Insufficient balance.");
+		throw new Error("Insufficient balance. If you intend to have some CKB remained, be sure it's greater than 63!");
 
 	return {inputCells, inputCapacity};
 }
@@ -99,7 +99,7 @@ export interface Balance {
 	occupied: string
 }
 export const queryBalance = async(joyidAddr: Address): Promise<Balance> => {
-	const ret:Balance = {available: "", occupied: ""};
+	const ret:Balance = {available: '', occupied: ''};
 
 	// query available balance
     let query:CKBIndexerQueryOptions = {lock: addressToScript(joyidAddr), type: "empty"};
@@ -108,7 +108,7 @@ export const queryBalance = async(joyidAddr: Address): Promise<Balance> => {
 	for await (const cell of cellCollector.collect()) {
 		balance += hexToInt(cell.cellOutput.capacity);
 	}
-	ret.available = (balance/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	ret.available = balance.toString();
 
 	// query dao capacity locked in
 	const config = getConfig();
@@ -131,7 +131,7 @@ export const queryBalance = async(joyidAddr: Address): Promise<Balance> => {
 	for await (const cell of daoCellCollector.collect()) {
 		balance += hexToInt(cell.cellOutput.capacity);
 	}
-	ret.occupied = (balance/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	ret.occupied = balance.toString();
 
 	return ret;
 }

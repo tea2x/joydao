@@ -1,7 +1,5 @@
 import { CKBTransaction } from '@joyid/ckb';
 import { CellDep, DepType, Address, Cell, Transaction, HexString, PackedDao, PackedSince, since } from "@ckb-lumos/base";
-const { parseSince } = since;
-import { EpochSinceValue } from "@ckb-lumos/base/lib/since"
 import { INDEXER_URL, NODE_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP, OMNILOCK_CELLDEP} from "./config";
 import { addressToScript, TransactionSkeleton, createTransactionFromSkeleton, minimalCellCapacityCompatible} from "@ckb-lumos/helpers";
 import { dao }  from "@ckb-lumos/common-scripts";
@@ -55,8 +53,11 @@ export const collectWithdrawals = async(joyidAddr: Address): Promise<Cell[]> => 
   ----
   returns a CKB raw transaction
 */
-export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint): Promise<CKBTransaction> => {
-    if (amount < DAO_MINIMUM_CAPACITY) {
+export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint, depositMax: boolean): Promise<CKBTransaction> => {
+    // when deposit max, unit is shannon
+    amount = depositMax ? (amount - BigInt(TX_FEE)) : ckbytesToShannons(amount);
+
+    if (amount < ckbytesToShannons(BigInt(DAO_MINIMUM_CAPACITY))) {
         throw new Error("Mimum DAO deposit is 104 CKB.");
     }
 
@@ -66,7 +67,7 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
         txSkeleton,
         joyidAddr, // will gather inputs from this address.
         joyidAddr, // will generate a dao cell with lock of this address.
-        ckbytesToShannons(amount),
+        amount,
     );
 
     // adding joyID cell deps
@@ -92,17 +93,24 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint)
         depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType
       }));
     }
-
+console.log(">>>depositMax: ",depositMax)
     // adding input capacity cells
-    const requiredCapacity = ckbytesToShannons(amount + BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE);
+    let requiredCapacity;
+    if (depositMax) {
+      requiredCapacity = amount + BigInt(TX_FEE);
+    } else {
+      requiredCapacity = amount + ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE)
+    }
     const collectedInputs = await collectInputs(INDEXER, addressToScript(joyidAddr), requiredCapacity);
     txSkeleton = txSkeleton.update("inputs", (i)=>i.concat(collectedInputs.inputCells));
 
-    // calculate change and add an output cell
-    const outputCapacity = txSkeleton.outputs.toArray().reduce((a, c)=>a+hexToInt(c.cellOutput.capacity), BigInt(0));
-    const changeCellCapacity = collectedInputs.inputCapacity - outputCapacity - BigInt(TX_FEE);
-    let change:Cell = {cellOutput: {capacity: intToHex(changeCellCapacity), lock: addressToScript(joyidAddr)}, data: "0x"};
-	txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
+    // no change cell when deposit max
+    if (!depositMax) {
+      const outputCapacity = txSkeleton.outputs.toArray().reduce((a, c)=>a+hexToInt(c.cellOutput.capacity), BigInt(0));
+      const changeCellCapacity = collectedInputs.inputCapacity - outputCapacity - BigInt(TX_FEE);
+      let change:Cell = {cellOutput: {capacity: intToHex(changeCellCapacity), lock: addressToScript(joyidAddr)}, data: "0x"};
+      txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
+    }
 
     // add joyID witnesses
     const emptyWitness = { lock: '', inputType: '', outputType: '' };
@@ -190,7 +198,6 @@ export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell
     }
 
     // converting skeleton to CKB transaction
-    console.log(">>>txSkeleton: ", JSON.stringify(txSkeleton, null, 2))
     const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
     return daoWithdrawTx as CKBTransaction;
 }

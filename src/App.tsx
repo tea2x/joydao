@@ -19,7 +19,7 @@ const App = () => {
   const [depositCells, setDepositCells] = React.useState<DaoCell[]>([]);
   const [withdrawalCells, setWithdrawalCells] = React.useState<DaoCell[]>([]);
   const [showDropdown, setShowDropdown] = React.useState(false);
-  const [depositAmount, setDepositAmount] = React.useState(''); // TODO, reuse the modal
+  const [depositAmount, setDepositAmount] = React.useState('');
   const [isDepositing, setIsDepositing] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isWaitingTxConfirm, setIsWaitingTxConfirm] = React.useState(false);
@@ -32,6 +32,7 @@ const App = () => {
   const [internalAddress, setInternalAddress] = React.useState("");
   const [ckbAddress, setCkbAddress] = React.useState("");
   const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
+  const [depositMax, setDepositMax] = React.useState(false);
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
@@ -106,7 +107,6 @@ const App = () => {
       localStorage.setItem('depositCells', JSON.stringify(deposits));
       localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
     } catch (e: any) {
-      // setIsLoading(false); //TODO
       enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
     }
   };
@@ -114,11 +114,16 @@ const App = () => {
   const onDeposit = async () => {
     if (isDepositing) {
       try {
-        setDepositAmount('');
         setIsDepositing(false);
 
-        const amount = BigInt(depositAmount);
-        const daoTx = await buildDepositTransaction(ckbAddress, amount);
+        let amount;
+        // depositing max
+        if (depositMax) {
+          amount = BigInt(balance!.available);
+        } else {
+          amount = BigInt(depositAmount);
+        }
+        const daoTx = await buildDepositTransaction(ckbAddress, amount, depositMax);
 
         let signedTx;
         let txid = "";
@@ -149,6 +154,10 @@ const App = () => {
         // update deposit/withdrawal list and balance
         setIsWaitingTxConfirm(false);
         await updateDaoList();
+
+        // reset state var
+        setDepositAmount('');
+        setDepositMax(false);
 
       } catch (e:any) {
         enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
@@ -279,7 +288,11 @@ const App = () => {
 
   const shortenAddress = (address: string) => {
     if (!address) return '';
-    return `${address.slice(0, 5)}...${address.slice(-6)}`;
+    if (windowWidth <= 768) {
+      return `${address.slice(0, 5)}...${address.slice(-6)}`;
+    } else {
+      return `${address.slice(0, 8)}...${address.slice(-8)}`;
+    }
   }
 
   const handleDepositKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => { //TODO
@@ -333,7 +346,7 @@ const App = () => {
       navigator.clipboard.writeText(address).then(() => {
         enqueueSnackbar('Address copied to clipboard', { variant: 'info' });
       }).catch(err => {
-        console.error('Could not copy address: ', err);
+        enqueueSnackbar('Could not copy address', { variant: 'error' });
       });
     } else {
       // Clipboard API is not available, use fallback
@@ -343,9 +356,9 @@ const App = () => {
       textarea.select();
       try {
         document.execCommand('copy');
-        console.log('Address copied to clipboard');
+        enqueueSnackbar('Address copied to clipboard', { variant: 'info' });
       } catch (err) {
-        console.error('Could not copy address: ', err);
+        enqueueSnackbar('Could not copy address', { variant: 'error' });
       } finally {
         document.body.removeChild(textarea);
       }
@@ -520,8 +533,8 @@ const App = () => {
               {showDropdown && (
                 <div className='dropdown-menu'>
                   <h5>
-                    <div>Available: {balance ? balance.available.toString() + ' CKB' : 'Loading...'}</div>
-                    <div>Deposited: {balance ? balance.occupied.toString() + ' CKB' : 'Loading...'}</div>
+                    <div>Available: {balance ? (BigInt(balance.available)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
+                    <div>Deposited: {balance ? (BigInt(balance.occupied)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
                   </h5>
 
                   {(!signer && !isJoyIdAddress(ckbAddress)) ? (
@@ -547,20 +560,33 @@ const App = () => {
 
           {ckbAddress && (
             isDepositing ? (
-              <input
-                type="text"
-                value={depositAmount}
-                placeholder="Enter CKB amount!"
-                onChange={(e) => {
-                  if (e.target.value === 'Enter CKB amount') {
-                    setDepositAmount('');
-                  } else {
-                    setDepositAmount(e.target.value);
-                  }
-                }}
-                onKeyDown={(e) => e.key === 'Enter' && onDeposit()}
-                className='deposit-textbox'
-              />
+              <span>
+                <input
+                  type="text"
+                  value={depositAmount}
+                  placeholder="Enter CKB amount!"
+                  onChange={(e) => {
+                    if (e.target.value === 'Enter CKB amount') {
+                      setDepositAmount('');
+                    } else {
+                      setDepositAmount(e.target.value);
+                    }
+                  }}
+                  onKeyDown={(e) => e.key === 'Enter' && onDeposit()}
+                  className='deposit-textbox'
+                />
+                <span className="max-deposit"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    enqueueSnackbar('You\'re depositing all of your remaning CKB. Part of your deposit will be used to pay Tx Fee', { variant: 'info' });
+                    enqueueSnackbar('It\'s recommended to leave ^63 CKB to pay fee for future txs', { variant: 'warning' });
+                    setDepositMax(true);
+                    setDepositAmount(balance? (BigInt(balance.available)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '');
+                  }}
+                >
+                  Max
+                </span>
+              </span>
             ) : (
               <button className='deposit-button'
                 onClick={(e) => {
@@ -575,7 +601,7 @@ const App = () => {
         </div>
 
         {ckbAddress && (
-          daoCellNum === 0 ? (
+          (daoCellNum === 0 && isLoading == false) ? (
             <div className='no-deposit-message'
               onClick={(e) => hideDepositTextBoxAndDropDown(e)}
             >

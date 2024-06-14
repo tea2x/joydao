@@ -262,13 +262,28 @@ body {
 .deposit-textbox {
   background-color: #ffffff;
   color: #808080;
-  /* padding: 10px 20px; */
   border: 2px solid #3d3d3d;
   border-radius: 5px;
   cursor: pointer;
   animation: blink 1s infinite;
   width: 200px;
+  max-width: 200px;
   height: 40px;
+  padding-right: 40px;
+}
+
+.max-deposit {
+  position: absolute;
+  left: 852px;
+  top: 285px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #597415;
+}
+
+.max-deposit:hover {
+  opacity: 1;
+  animation: rainbow 5s linear infinite;
 }
 
 .container {
@@ -328,13 +343,23 @@ body {
   height: 100%;
   font-size: 1.2em;
   font-weight: bold;
-  color: #73951c;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  background-color: #ffffff;
+  color: #f8f8f8; /* Light color for consistency with the button and title */
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.3), /* Soft shadow for depth */
+    2px 2px 0 #505050; /* Shadow to match the button text color */
+  background-color: #505050; /* Dark background to complement the button and title */
   border-radius: 10px;
   padding: 20px;
   animation: bounce 1s ease-in-out infinite;
-  margin-top: 150px;
+  position: relative;
+  top: 100px;
+  border: 3px solid #505050; /* Border to match the button and title */
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.no-deposit-message:hover {
+  color: #A8E72F; /* Color transition to match the button's and title's hover state */
+  background-color: #000; /* Background transition to match the button's and title's hover state */
 }
 
 @keyframes bounce {
@@ -609,6 +634,10 @@ button.cancel {
     top: 60px;
   }
   
+  .account-button .copy-sign {
+    font-size: 20px;
+  }
+
   .joyid-connect {
     background-size: 150px;
     font-size: 1em;
@@ -647,9 +676,19 @@ button.cancel {
   }
 
   .deposit-textbox {
-    padding: 5px 10px;
     width: 150px;
-    height: 35px;
+    height: 45px;
+    padding-left: 5px;
+    padding-right: 45px;
+    max-width: 120px;
+  }
+
+  .max-deposit {
+    position: absolute;
+    left: 325px;
+    top: 258px;
+    cursor: pointer;
+    font-size: smaller;
   }
 
   .no-deposit-message {
