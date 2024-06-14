@@ -47,7 +47,7 @@ body {
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-bottom: 80px;
+  margin-bottom: 60px;
 }
 
 .dropdown-area {
@@ -109,7 +109,7 @@ body {
   box-shadow: 
     2px 2px 0 #81773c,
     4px 4px 0 #694427;
-  margin-top: 20%;
+  margin-top: 10%;
   width: 180px;
   top: 30px
 }
@@ -414,7 +414,7 @@ body {
 
 .description {
   position: relative;
-  top: -110px;
+  top: -80px;
   font-size: 13px;
   color: #cecece;
   animation: blink 1s infinite;
@@ -435,9 +435,9 @@ body {
 
 .dao-cell-dummy {
   border: 1px solid #ddd;
-  padding: 3px;
-  margin: 3px;
-  border-radius: 35px;
+  padding: 5px;
+  margin: 5px;
+  border-radius: 15px;
   width: var(--cellWidth);
   height: var(--cellHeight);
   display: flex;
@@ -455,9 +455,9 @@ body {
 
 .dao-cell {
   border: 1px solid var(--backgroundColor);
-  padding: 3px;
-  margin: 3px;
-  border-radius: 35px;
+  padding: 5px;
+  margin: 5px;
+  border-radius: 15px;
   width: var(--cellWidth);
   height: var(--cellHeight);
   display: flex;
@@ -478,7 +478,8 @@ body {
 }
 
 .dao-cell:hover {
-  transform: scale(1.05);
+  /* transform: scale(1.05); */
+  transform: translateY(-3px);
   color: textColor;
   position: relative;
 }
@@ -488,11 +489,16 @@ body {
   color: var(--buttonTextColor);
   padding: 10px;
   border: none;
-  border-radius: 50px;
+  border-radius: 15px;
   cursor: pointer;
   font-size: 0.8em;
   position: absolute;
   bottom: 5px;
+}
+
+.dao-cell-button:hover {
+  background-color: #000;
+  color: #738159;
 }
 
 .ReactModal__Content {
@@ -512,7 +518,7 @@ body {
   position: relative;
   align-self: flex-start;
   margin-top: 25vh;
-  min-height: 30vh;
+  min-height: 20vh;
 }
 
 .modal-loading-overlay {
@@ -604,15 +610,17 @@ button.cancel {
   position: relative;
   top: 20px;
   min-height: 200px;
+  max-height: 200px;
 }
 
 .headline-separation {
   border-top: 1px solid #000;
+  /* margin-bottom: 10px; */
 }
 
 @media only screen and (max-width: 768px) {
   .account-deposit-buttons {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
   }
 
   .signin-button, .account-button, .deposit-button {
