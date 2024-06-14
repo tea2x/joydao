@@ -29,7 +29,6 @@ const App = () => {
   const [modalMessage, setModalMessage] = React.useState<string>();
   const [tipEpoch, setTipEpoch] = React.useState<number>();
   const [isModalMessageLoading, setIsModalMessageLoading] = React.useState(false);
-  const [internalAddress, setInternalAddress] = React.useState("");
   const [ckbAddress, setCkbAddress] = React.useState("");
   const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
   const [depositMax, setDepositMax] = React.useState(false);
@@ -123,6 +122,11 @@ const App = () => {
         } else {
           amount = BigInt(depositAmount);
         }
+
+        // reset state var
+        setDepositAmount('');
+        setDepositMax(false);
+
         const daoTx = await buildDepositTransaction(ckbAddress, amount, depositMax);
 
         let signedTx;
@@ -154,10 +158,6 @@ const App = () => {
         // update deposit/withdrawal list and balance
         setIsWaitingTxConfirm(false);
         await updateDaoList();
-
-        // reset state var
-        setDepositAmount('');
-        setDepositMax(false);
 
       } catch (e:any) {
         enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
@@ -403,13 +403,10 @@ const App = () => {
   // updating other chain wallets info
   React.useEffect(() => {
     if (!signer) {
-      setInternalAddress("");
-      // setCkbAddress("");
       return;
     }
 
     (async () => {
-      setInternalAddress(await signer.getInternalAddress());
       setCkbAddress(await signer.getRecommendedAddress());
     })();
   }, [signer]);
@@ -418,6 +415,15 @@ const App = () => {
   React.useEffect(() => {
     cccConnect();
   }, [ckbAddress]);
+
+  // calling deposit max
+  React.useEffect(() => {
+    if (depositAmount) {
+      setTimeout(() => {
+        onDeposit();
+      }, 500);
+    }
+  }, [depositMax, depositAmount]);
 
   {
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
@@ -577,7 +583,7 @@ const App = () => {
                 />
                 <span className="max-deposit"
                   onClick={(e) => {
-                    e.stopPropagation();
+                    // e.stopPropagation();
                     enqueueSnackbar('You\'re depositing all of your remaning CKB. Part of your deposit will be used to pay Tx Fee', { variant: 'info' });
                     enqueueSnackbar('It\'s recommended to leave ^63 CKB to pay fee for future txs', { variant: 'warning' });
                     setDepositMax(true);
