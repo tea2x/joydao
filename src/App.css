@@ -275,7 +275,7 @@ body {
 .max-deposit {
   position: absolute;
   left: 852px;
-  top: 285px;
+  top: 225px;
   cursor: pointer;
   font-weight: bold;
   color: #597415;
@@ -686,7 +686,7 @@ button.cancel {
   .max-deposit {
     position: absolute;
     left: 325px;
-    top: 258px;
+    top: 198px;
     cursor: pointer;
     font-size: smaller;
   }

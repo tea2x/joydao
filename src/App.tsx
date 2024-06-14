@@ -423,7 +423,7 @@ const App = () => {
         onDeposit();
       }, 500);
     }
-  }, [depositMax, depositAmount]);
+  }, [depositMax]);
 
   {
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
