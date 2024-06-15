@@ -74,7 +74,7 @@ body {
     4px 4px 0 #333;
   transition: transform 0.3s ease;
   position: relative;
-  top: 100px
+  top: 300px
 }
 
 .signin-button:hover {
@@ -121,7 +121,7 @@ body {
 .account-button {
   background-color: #f8f8f8;
   color: #505050;
-  padding: 10px 20px;
+  padding: 10px 10px 10px 10px;
   border: 3px solid #505050;
   border-radius: 10px;
   cursor: pointer;
@@ -149,7 +149,7 @@ body {
   position: absolute;
   font-size: 25px;
   color: #597415;
-  right: 10px;
+  right: 5px;
 }
 
 .account-button .copy-sign:hover {
@@ -269,13 +269,13 @@ body {
   width: 200px;
   max-width: 200px;
   height: 40px;
-  padding-right: 40px;
+  padding-left: 10px;
+  padding-right: 50px;
 }
 
 .max-deposit {
-  position: absolute;
-  left: 852px;
-  top: 225px;
+  position: relative;
+  left: -40px;
   cursor: pointer;
   font-weight: bold;
   color: #597415;
@@ -626,7 +626,7 @@ button.cancel {
   .signin-button, .account-button, .deposit-button {
     width: 150px;
     height: 45px;
-    padding: 5px 20px 5px 10px;
+    padding: 5px 10px 5px 10px;
     font-size: 14px;
     margin-bottom: 30px;
     font-weight: bold;
@@ -638,8 +638,6 @@ button.cancel {
     padding-left: 2px;
     width: 180px;
     font-size: 1.5em;
-    font-weight: bold;
-    top: 60px;
   }
   
   .account-button .copy-sign {
@@ -692,10 +690,6 @@ button.cancel {
   }
 
   .max-deposit {
-    position: absolute;
-    left: 325px;
-    top: 198px;
-    cursor: pointer;
     font-size: smaller;
   }
 

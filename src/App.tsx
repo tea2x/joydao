@@ -289,9 +289,9 @@ const App = () => {
   const shortenAddress = (address: string) => {
     if (!address) return '';
     if (windowWidth <= 768) {
-      return `${address.slice(0, 5)}...${address.slice(-6)}`;
+      return `${address.slice(0, 8)}...${address.slice(-5)}`;
     } else {
-      return `${address.slice(0, 8)}...${address.slice(-8)}`;
+      return `${address.slice(0, 8)}...${address.slice(-9)}`;
     }
   }
 
