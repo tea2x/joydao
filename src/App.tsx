@@ -356,7 +356,7 @@ const App = () => {
       textarea.select();
       try {
         document.execCommand('copy');
-        enqueueSnackbar('Address copied to clipboard', { variant: 'info' });
+        // enqueueSnackbar('Address copied to clipboard', { variant: 'info' });
       } catch (err) {
         enqueueSnackbar('Could not copy address', { variant: 'error' });
       } finally {
