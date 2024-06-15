@@ -51,6 +51,8 @@ export const TEST_NET_CONFIG = {
   }
 };
 
+export const FEE_RATE = 1500;
+export const MIN_FEE_RATE = 1000;
 export const TX_FEE = 10_000; //shanon
 // omnilock|joyid lock script argument is 2 bytes longer than that of secp256k1's.
 // so whereas the secp256r1-dao takes 102, joyid-dao takes 104

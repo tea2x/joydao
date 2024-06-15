@@ -419,6 +419,7 @@ const App = () => {
   // calling deposit max
   React.useEffect(() => {
     if (depositAmount) {
+      enqueueSnackbar('Depositing ...', { variant: 'success' });
       setTimeout(() => {
         onDeposit();
       }, 500);
@@ -583,9 +584,7 @@ const App = () => {
                 />
                 <span className="max-deposit"
                   onClick={(e) => {
-                    // e.stopPropagation();
-                    enqueueSnackbar('You\'re depositing all of your remaning CKB. Part of your deposit will be used to pay Tx Fee', { variant: 'info' });
-                    enqueueSnackbar('It\'s recommended to leave ^63 CKB to pay fee for future txs', { variant: 'warning' });
+                    enqueueSnackbar('It\'s recommended to leave ^63 CKB to pay fee for future txs', { variant: 'info' });
                     setDepositMax(true);
                     setDepositAmount(balance? (BigInt(balance.available)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '');
                   }}

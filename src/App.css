@@ -39,8 +39,8 @@ body {
 }
 
 .title:hover {
-  color: #A8E72F; /* Color transition to match the button's hover state */
-  background-color: #000; /* Background transition to match the button's hover state */
+  color: #A8E72F;
+  background-color: #000;
 }
 
 .account-deposit-buttons {
@@ -266,8 +266,7 @@ body {
   border-radius: 5px;
   cursor: pointer;
   animation: blink 1s infinite;
-  width: 200px;
-  max-width: 200px;
+  width: 130px;
   height: 40px;
   padding-left: 10px;
   padding-right: 50px;
@@ -343,23 +342,23 @@ body {
   height: 100%;
   font-size: 1.2em;
   font-weight: bold;
-  color: #f8f8f8; /* Light color for consistency with the button and title */
+  color: #f8f8f8;
   text-shadow: 
-    2px 2px 4px rgba(0, 0, 0, 0.3), /* Soft shadow for depth */
-    2px 2px 0 #505050; /* Shadow to match the button text color */
-  background-color: #505050; /* Dark background to complement the button and title */
+    2px 2px 4px rgba(0, 0, 0, 0.3),
+    2px 2px 0 #505050;
+  background-color: #505050;
   border-radius: 10px;
   padding: 20px;
   animation: bounce 1s ease-in-out infinite;
   position: relative;
   top: 100px;
-  border: 3px solid #505050; /* Border to match the button and title */
-  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for hover effects */
+  border: 3px solid #505050;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .no-deposit-message:hover {
-  color: #A8E72F; /* Color transition to match the button's and title's hover state */
-  background-color: #000; /* Background transition to match the button's and title's hover state */
+  color: #A8E72F;
+  background-color: #000;
 }
 
 @keyframes bounce {
@@ -622,7 +621,7 @@ button.cancel {
 
   .title {
     font-size: 2em;
-    margin: 30px;
+    margin: 40px;
     height: 35px;
     font-weight: 600;
   }

@@ -1,11 +1,40 @@
-import { CKBTransaction } from '@joyid/ckb';
-import { CellDep, DepType, Address, Cell, Transaction, HexString, PackedDao, PackedSince, since } from "@ckb-lumos/base";
-import { INDEXER_URL, NODE_URL, TX_FEE, DAO_MINIMUM_CAPACITY, MINIMUM_CHANGE_CAPACITY, JOYID_CELLDEP, OMNILOCK_CELLDEP} from "./config";
-import { addressToScript, TransactionSkeleton, createTransactionFromSkeleton, minimalCellCapacityCompatible} from "@ckb-lumos/helpers";
-import { dao, common }  from "@ckb-lumos/common-scripts";
+import { CKBTransaction } from "@joyid/ckb";
+import {
+  CellDep,
+  DepType,
+  Address,
+  Cell,
+  Transaction,
+  HexString,
+  PackedDao,
+  PackedSince,
+} from "@ckb-lumos/base";
+import {
+  INDEXER_URL,
+  NODE_URL,
+  TX_FEE,
+  DAO_MINIMUM_CAPACITY,
+  MINIMUM_CHANGE_CAPACITY,
+  JOYID_CELLDEP,
+  OMNILOCK_CELLDEP,
+} from "./config";
+import {
+  addressToScript,
+  TransactionSkeleton,
+  createTransactionFromSkeleton,
+  minimalCellCapacityCompatible,
+} from "@ckb-lumos/helpers";
+import { dao, common } from "@ckb-lumos/common-scripts";
 import { Indexer } from "@ckb-lumos/ckb-indexer";
-import { getBlockHash, ckbytesToShannons, intToHex, hexToInt, collectInputs, findDepositCellWith } from './lib/helpers';
-import { serializeWitnessArgs } from '@nervosnetwork/ckb-sdk-utils';
+import {
+  getBlockHash,
+  ckbytesToShannons,
+  intToHex,
+  hexToInt,
+  collectInputs,
+  findDepositCellWith,
+} from "./lib/helpers";
+import { serializeWitnessArgs } from "@nervosnetwork/ckb-sdk-utils";
 import { number } from "@ckb-lumos/codec";
 import { getConfig, Config } from "@ckb-lumos/config-manager";
 import { BI, BIish } from "@ckb-lumos/bi";
@@ -22,28 +51,38 @@ const INDEXER = new Indexer(INDEXER_URL);
   ----
   returns an array of Cells
 */
-export const collectDeposits = async(joyidAddr: Address): Promise<Cell[]> => {
-  let depositCells:Cell[] = [];
-  const daoDepositedCellCollector = new dao.CellCollector( joyidAddr, INDEXER, "deposit");
+export const collectDeposits = async (joyidAddr: Address): Promise<Cell[]> => {
+  let depositCells: Cell[] = [];
+  const daoDepositedCellCollector = new dao.CellCollector(
+    joyidAddr,
+    INDEXER,
+    "deposit"
+  );
   for await (const inputCell of daoDepositedCellCollector.collect()) {
-      depositCells.push(inputCell);
+    depositCells.push(inputCell);
   }
   return depositCells;
-}
+};
 
 /*
   joyIDaddr: the joyID address
   ----
   returns an array of Cells
 */
-export const collectWithdrawals = async(joyidAddr: Address): Promise<Cell[]> => {
-  let depositCells:Cell[] = [];
-  const daoDepositedCellCollector = new dao.CellCollector( joyidAddr, INDEXER, "withdraw");
+export const collectWithdrawals = async (
+  joyidAddr: Address
+): Promise<Cell[]> => {
+  let depositCells: Cell[] = [];
+  const daoDepositedCellCollector = new dao.CellCollector(
+    joyidAddr,
+    INDEXER,
+    "withdraw"
+  );
   for await (const inputCell of daoDepositedCellCollector.collect()) {
-      depositCells.push(inputCell);
+    depositCells.push(inputCell);
   }
   return depositCells;
-}
+};
 
 /*
   Buid DAO deposit raw transaction
@@ -53,77 +92,104 @@ export const collectWithdrawals = async(joyidAddr: Address): Promise<Cell[]> => 
   ----
   returns a CKB raw transaction
 */
-export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint, depositMax: boolean): Promise<CKBTransaction> => {
-  // when deposit max, unit is shannon
-  amount = depositMax ? (amount - BigInt(TX_FEE)) : ckbytesToShannons(amount);
+export const buildDepositTransaction = async (
+  joyidAddr: Address,
+  amount: bigint,
+  depositMax: boolean
+): Promise<CKBTransaction> => {
+  // when deposit max, there's no change and only fee to miners
+  amount = depositMax ? amount - BigInt(TX_FEE) : ckbytesToShannons(amount);
 
   if (amount < ckbytesToShannons(BigInt(DAO_MINIMUM_CAPACITY))) {
-      throw new Error("Mimum DAO deposit is 104 CKB.");
+    throw new Error("Mimum DAO deposit is 104 CKB.");
   }
 
   // generating basic dao transaction skeleton
   let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
-  txSkeleton = await dao.deposit(
-      txSkeleton,
-      joyidAddr, // will gather inputs from this address.
-      joyidAddr, // will generate a dao cell with lock of this address.
-      amount,
-  );
+  txSkeleton = await dao.deposit(txSkeleton, joyidAddr, joyidAddr, amount);
 
   // adding joyID cell deps
   const config = getConfig();
   const fromScript = addressToScript(joyidAddr, { config });
   if (fromScript.codeHash == JOYID_CELLDEP.codeHash) {
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
-      outPoint: JOYID_CELLDEP.outPoint,
-      depType: JOYID_CELLDEP.depType as DepType
-    }));
+    txSkeleton = txSkeleton.update("cellDeps", (i) =>
+      i.push({
+        outPoint: JOYID_CELLDEP.outPoint,
+        depType: JOYID_CELLDEP.depType as DepType,
+      })
+    );
   } else if (fromScript.codeHash == OMNILOCK_CELLDEP.codeHash) {
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
-      outPoint: OMNILOCK_CELLDEP.outPoint,
-      depType: OMNILOCK_CELLDEP.depType as DepType
-    }));
+    txSkeleton = txSkeleton.update("cellDeps", (i) =>
+      i.push({
+        outPoint: OMNILOCK_CELLDEP.outPoint,
+        depType: OMNILOCK_CELLDEP.depType as DepType,
+      })
+    );
 
     // omnilock needs secp256k1 celldep
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
-      outPoint: {
-        txHash: config.SCRIPTS.SECP256K1_BLAKE160!.TX_HASH,
-        index: config.SCRIPTS.SECP256K1_BLAKE160!.INDEX
-      },
-      depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType
-    }));
+    txSkeleton = txSkeleton.update("cellDeps", (i) =>
+      i.push({
+        outPoint: {
+          txHash: config.SCRIPTS.SECP256K1_BLAKE160!.TX_HASH,
+          index: config.SCRIPTS.SECP256K1_BLAKE160!.INDEX,
+        },
+        depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType,
+      })
+    );
+  } else {
+    throw new Error("Only joyId lock and omnilock are allowed");
   }
-  
+
   // adding input capacity cells
   let requiredCapacity;
   if (depositMax) {
     requiredCapacity = amount + BigInt(TX_FEE);
   } else {
-    requiredCapacity = amount + ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE)
+    requiredCapacity =
+      amount +
+      ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) +
+      BigInt(TX_FEE);
   }
-  const collectedInputs = await collectInputs(INDEXER, addressToScript(joyidAddr), requiredCapacity);
-  txSkeleton = txSkeleton.update("inputs", (i)=>i.concat(collectedInputs.inputCells));
+  const collectedInputs = await collectInputs(
+    INDEXER,
+    addressToScript(joyidAddr),
+    requiredCapacity
+  );
+  txSkeleton = txSkeleton.update("inputs", (i) =>
+    i.concat(collectedInputs.inputCells)
+  );
 
   // no change cell when deposit max
   if (!depositMax) {
-    const outputCapacity = txSkeleton.outputs.toArray().reduce((a, c)=>a+hexToInt(c.cellOutput.capacity), BigInt(0));
-    const changeCellCapacity = collectedInputs.inputCapacity - outputCapacity - BigInt(TX_FEE);
-    let change:Cell = {cellOutput: {capacity: intToHex(changeCellCapacity), lock: addressToScript(joyidAddr)}, data: "0x"};
-    txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
+    const outputCapacity = txSkeleton.outputs
+      .toArray()
+      .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
+    const changeCellCapacity =
+      collectedInputs.inputCapacity - outputCapacity - BigInt(TX_FEE);
+    let change: Cell = {
+      cellOutput: {
+        capacity: intToHex(changeCellCapacity),
+        lock: addressToScript(joyidAddr),
+      },
+      data: "0x",
+    };
+    txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
   }
 
   // add joyID witnesses
-  const emptyWitness = { lock: '', inputType: '', outputType: '' };
-  txSkeleton = txSkeleton.update("witnesses", (i)=>i.push(serializeWitnessArgs(emptyWitness)));
-  for(let i = 1; i < collectedInputs.inputCells.length; i ++) {
-      txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
+  const emptyWitness = { lock: "", inputType: "", outputType: "" };
+  txSkeleton = txSkeleton.update("witnesses", (i) =>
+    i.push(serializeWitnessArgs(emptyWitness))
+  );
+  for (let i = 1; i < collectedInputs.inputCells.length; i++) {
+    txSkeleton = txSkeleton.update("witnesses", (i) => i.push("0x"));
   }
-  
+
   // converting skeleton to CKB transaction
   const daoDepositTx: Transaction = createTransactionFromSkeleton(txSkeleton);
 
   return daoDepositTx as CKBTransaction;
-}
+};
 
 /*
   Buid DAO withdraw raw transaction
@@ -133,74 +199,100 @@ export const buildDepositTransaction = async(joyidAddr: Address, amount: bigint,
   ----
   returns a CKB raw transaction
 */
-export const buildWithdrawTransaction = async(joyidAddr: Address, daoDepositCell: Cell): Promise<CKBTransaction> => {
+export const buildWithdrawTransaction = async (
+  joyidAddr: Address,
+  daoDepositCell: Cell
+): Promise<CKBTransaction> => {
   let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
 
   // adding joyID cell deps
   const config = getConfig();
   const fromScript = addressToScript(joyidAddr, { config });
   if (fromScript.codeHash == JOYID_CELLDEP.codeHash) {
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
-      outPoint: JOYID_CELLDEP.outPoint,
-      depType: JOYID_CELLDEP.depType as DepType
-    }));
+    txSkeleton = txSkeleton.update("cellDeps", (i) =>
+      i.push({
+        outPoint: JOYID_CELLDEP.outPoint,
+        depType: JOYID_CELLDEP.depType as DepType,
+      })
+    );
   } else if (fromScript.codeHash == OMNILOCK_CELLDEP.codeHash) {
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
-      outPoint: OMNILOCK_CELLDEP.outPoint,
-      depType: OMNILOCK_CELLDEP.depType as DepType
-    }));
+    txSkeleton = txSkeleton.update("cellDeps", (i) =>
+      i.push({
+        outPoint: OMNILOCK_CELLDEP.outPoint,
+        depType: OMNILOCK_CELLDEP.depType as DepType,
+      })
+    );
 
     // omnilock needs secp256k1 celldep
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
-      outPoint: {
-        txHash: config.SCRIPTS.SECP256K1_BLAKE160!.TX_HASH,
-        index: config.SCRIPTS.SECP256K1_BLAKE160!.INDEX
-      },
-      depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType
-    }));
+    txSkeleton = txSkeleton.update("cellDeps", (i) =>
+      i.push({
+        outPoint: {
+          txHash: config.SCRIPTS.SECP256K1_BLAKE160!.TX_HASH,
+          index: config.SCRIPTS.SECP256K1_BLAKE160!.INDEX,
+        },
+        depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType,
+      })
+    );
   }
 
   // add dao input cell
-  txSkeleton = txSkeleton.update("inputs", (i)=>i.push(daoDepositCell));
+  txSkeleton = txSkeleton.update("inputs", (i) => i.push(daoDepositCell));
 
   // add dao output cell
-  const daoOutputCell:Cell = {
-      cellOutput: {
-          capacity: daoDepositCell.cellOutput.capacity, 
-          lock: daoDepositCell.cellOutput.lock, 
-          type: daoDepositCell.cellOutput.type
-      }, 
-      data: "0x", // dao.withdraw will fill in
+  const daoOutputCell: Cell = {
+    cellOutput: {
+      capacity: daoDepositCell.cellOutput.capacity,
+      lock: daoDepositCell.cellOutput.lock,
+      type: daoDepositCell.cellOutput.type,
+    },
+    data: "0x", // dao.withdraw will fill in
   };
-  txSkeleton = txSkeleton.update("outputs", (i)=>i.push(daoOutputCell));
+  txSkeleton = txSkeleton.update("outputs", (i) => i.push(daoOutputCell));
 
   // generate the dao withdraw skeleton
   txSkeleton = await dao.withdraw(txSkeleton, daoDepositCell, joyidAddr);
 
   // add fee cell and minimal change cell. Change cell is calculated in advance because
   // if we tend to have a change cell, its capacity must be greater than 61ckb
-  const requiredCapacity = ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE);
-  const collectedInputs = await collectInputs(INDEXER, addressToScript(joyidAddr), requiredCapacity);
-  txSkeleton = txSkeleton.update("inputs", (i)=>i.concat(collectedInputs.inputCells));
+  const requiredCapacity =
+    ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE);
+  const collectedInputs = await collectInputs(
+    INDEXER,
+    addressToScript(joyidAddr),
+    requiredCapacity
+  );
+  txSkeleton = txSkeleton.update("inputs", (i) =>
+    i.concat(collectedInputs.inputCells)
+  );
 
   // calculate change and add an output cell
-  const inputCapacity = txSkeleton.inputs.toArray().reduce((a, c)=>a+hexToInt(c.cellOutput.capacity), BigInt(0));
+  const inputCapacity = txSkeleton.inputs
+    .toArray()
+    .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
   const outputCapacity = hexToInt(daoOutputCell.cellOutput.capacity);
   const changeCellCapacity = inputCapacity - outputCapacity - BigInt(TX_FEE);
-  let change:Cell = {cellOutput: {capacity: intToHex(changeCellCapacity), lock: addressToScript(joyidAddr)}, data: "0x"};
-txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
+  let change: Cell = {
+    cellOutput: {
+      capacity: intToHex(changeCellCapacity),
+      lock: addressToScript(joyidAddr),
+    },
+    data: "0x",
+  };
+  txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
 
   // add joyID witnesses
-  const emptyWitness = { lock: '', inputType: '', outputType: '' };
-  txSkeleton = txSkeleton.update("witnesses", (i)=>i.push(serializeWitnessArgs(emptyWitness)));
-  for(let i = 1; i < txSkeleton.inputs.toArray().length; i ++) {
-      txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
+  const emptyWitness = { lock: "", inputType: "", outputType: "" };
+  txSkeleton = txSkeleton.update("witnesses", (i) =>
+    i.push(serializeWitnessArgs(emptyWitness))
+  );
+  for (let i = 1; i < txSkeleton.inputs.toArray().length; i++) {
+    txSkeleton = txSkeleton.update("witnesses", (i) => i.push("0x"));
   }
 
   // converting skeleton to CKB transaction
   const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
   return daoWithdrawTx as CKBTransaction;
-}
+};
 
 /*
   Buid DAO unlock raw transaction
@@ -211,7 +303,10 @@ txSkeleton = txSkeleton.update("outputs", (i)=>i.push(change));
   ----
   returns a CKB raw transaction
 */
-export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCell: Cell): Promise<CKBTransaction> => {
+export const buildUnlockTransaction = async (
+  joyidAddr: Address,
+  daoWithdrawalCell: Cell
+): Promise<CKBTransaction> => {
   const config = getConfig();
   _checkDaoScript(config);
 
@@ -220,51 +315,59 @@ export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCel
   //  adding DAO celldeps and joyID celldeps
   const template = config.SCRIPTS.DAO!;
   const daoCellDep = {
-      outPoint: {
+    outPoint: {
       txHash: template.TX_HASH,
       index: template.INDEX,
-      },
-      depType: template.DEP_TYPE,
-  }
+    },
+    depType: template.DEP_TYPE,
+  };
 
   const fromScript = addressToScript(joyidAddr, { config });
   if (fromScript.codeHash == JOYID_CELLDEP.codeHash) {
     //joyid celldep
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
-      outPoint: JOYID_CELLDEP.outPoint,
-      depType: JOYID_CELLDEP.depType as DepType
-    }));
+    txSkeleton = txSkeleton.update("cellDeps", (i) =>
+      i.push({
+        outPoint: JOYID_CELLDEP.outPoint,
+        depType: JOYID_CELLDEP.depType as DepType,
+      })
+    );
   } else if (fromScript.codeHash == OMNILOCK_CELLDEP.codeHash) {
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
-      outPoint: OMNILOCK_CELLDEP.outPoint,
-      depType: OMNILOCK_CELLDEP.depType as DepType
-    }));
+    txSkeleton = txSkeleton.update("cellDeps", (i) =>
+      i.push({
+        outPoint: OMNILOCK_CELLDEP.outPoint,
+        depType: OMNILOCK_CELLDEP.depType as DepType,
+      })
+    );
 
     // omnilock needs secp256k1 celldep
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push({
-      outPoint: {
-        txHash: config.SCRIPTS.SECP256K1_BLAKE160!.TX_HASH,
-        index: config.SCRIPTS.SECP256K1_BLAKE160!.INDEX
-      },
-      depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType
-    }));
+    txSkeleton = txSkeleton.update("cellDeps", (i) =>
+      i.push({
+        outPoint: {
+          txHash: config.SCRIPTS.SECP256K1_BLAKE160!.TX_HASH,
+          index: config.SCRIPTS.SECP256K1_BLAKE160!.INDEX,
+        },
+        depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType,
+      })
+    );
 
     // dao cell dep
-    txSkeleton = txSkeleton.update("cellDeps", (i)=>i.push(daoCellDep as CellDep));
+    txSkeleton = txSkeleton.update("cellDeps", (i) =>
+      i.push(daoCellDep as CellDep)
+    );
   }
 
   // find the deposit cell and
   // enrich DAO withdrawal cell data with block hash info
   const [daoDepositCell, withdrawBlkHash] = await Promise.all([
     findDepositCellWith(daoWithdrawalCell),
-    getBlockHash(daoWithdrawalCell.blockNumber!)
+    getBlockHash(daoWithdrawalCell.blockNumber!),
   ]);
   daoWithdrawalCell.blockHash = withdrawBlkHash;
 
   // calculate since & capacity (interest)
   const [depositBlockHeader, withdrawBlockHeader] = await Promise.all([
     rpc.getHeader(daoDepositCell.blockHash!),
-    rpc.getHeader(daoWithdrawalCell.blockHash!)
+    rpc.getHeader(daoWithdrawalCell.blockHash!),
   ]);
   const depositEpoch = parseEpochCompatible(depositBlockHeader!.epoch);
   const withdrawEpoch = parseEpochCompatible(withdrawBlockHeader!.epoch);
@@ -300,7 +403,7 @@ export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCel
   txSkeleton = txSkeleton.update("outputs", (outputs) => {
     return outputs.push({
       cellOutput: {
-        capacity: intToHex(BigInt(parseInt(outputCapacity,16) - TX_FEE)),
+        capacity: intToHex(BigInt(parseInt(outputCapacity, 16) - TX_FEE)),
         lock: addressToScript(joyidAddr),
         type: undefined,
       },
@@ -314,51 +417,60 @@ export const buildUnlockTransaction = async(joyidAddr: Address, daoWithdrawalCel
 
   // add header deps
   txSkeleton = txSkeleton.update("headerDeps", (headerDeps) => {
-      return headerDeps.push(daoDepositCell.blockHash!, daoWithdrawalCell.blockHash!);
+    return headerDeps.push(
+      daoDepositCell.blockHash!,
+      daoWithdrawalCell.blockHash!
+    );
   });
 
   // adding dao withdrawal cell as input
-  txSkeleton = txSkeleton.update("inputs", (i)=>i.push(daoWithdrawalCell));
+  txSkeleton = txSkeleton.update("inputs", (i) => i.push(daoWithdrawalCell));
   if (since) {
-      txSkeleton = txSkeleton.update("inputSinces", (inputSinces) => {
-        return inputSinces.set(txSkeleton.get("inputs").size - 1, since);
-      });
+    txSkeleton = txSkeleton.update("inputSinces", (inputSinces) => {
+      return inputSinces.set(txSkeleton.get("inputs").size - 1, since);
+    });
   }
 
-  // add joyID witnesses place holder; inputType is 64-bit unsigned little-endian integer format 
+  // add joyID witnesses place holder; inputType is 64-bit unsigned little-endian integer format
   // of the deposit cell header index in header_deps, which is 0x0000000000000000 for index 0
-  const emptyWitness = { lock: '', inputType: '0x0000000000000000', outputType: '' };
-  txSkeleton = txSkeleton.update("witnesses", (i)=>i.push(serializeWitnessArgs(emptyWitness)));
-  for(let i = 1; i < txSkeleton.inputs.toArray().length; i ++) {
-      txSkeleton = txSkeleton.update("witnesses", (i)=>i.push("0x"));
+  const emptyWitness = {
+    lock: "",
+    inputType: "0x0000000000000000",
+    outputType: "",
+  };
+  txSkeleton = txSkeleton.update("witnesses", (i) =>
+    i.push(serializeWitnessArgs(emptyWitness))
+  );
+  for (let i = 1; i < txSkeleton.inputs.toArray().length; i++) {
+    txSkeleton = txSkeleton.update("witnesses", (i) => i.push("0x"));
   }
 
   // fix inputs / outputs / witnesses
   txSkeleton = txSkeleton.update("fixedEntries", (fixedEntries) => {
-      return fixedEntries.push(
-          {
-          field: "inputs",
-          index: txSkeleton.get("inputs").size - 1,
-          },
-          {
-          field: "outputs",
-          index: txSkeleton.get("outputs").size - 1,
-          },
-          {
-          field: "witnesses",
-          index: txSkeleton.get("witnesses").size - 1,
-          },
-          {
-          field: "headerDeps",
-          index: txSkeleton.get("headerDeps").size - 2,
-          }
-      );
+    return fixedEntries.push(
+      {
+        field: "inputs",
+        index: txSkeleton.get("inputs").size - 1,
+      },
+      {
+        field: "outputs",
+        index: txSkeleton.get("outputs").size - 1,
+      },
+      {
+        field: "witnesses",
+        index: txSkeleton.get("witnesses").size - 1,
+      },
+      {
+        field: "headerDeps",
+        index: txSkeleton.get("headerDeps").size - 2,
+      }
+    );
   });
 
   // converting skeleton to CKB transaction
   const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
   return daoWithdrawTx as CKBTransaction;
-}
+};
 
 function epochSinceCompatible({
   length,
