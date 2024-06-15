@@ -44,17 +44,15 @@ const DAO_LOCK_PERIOD_EPOCHS_COMPATIBLE = BI.from(180);
 const rpc = new RPC(NODE_URL);
 const INDEXER = new Indexer(INDEXER_URL);
 
-//TODO support Lumos-common script in covering joyId lockscript
-
 /*
-  joyIDaddr: the joyID address
+  ckbAddress: the ckb address that has CKB, and will be used to lock your Dao deposit
   ----
   returns an array of Cells
 */
-export const collectDeposits = async (joyidAddr: Address): Promise<Cell[]> => {
+export const collectDeposits = async (ckbAddress: Address): Promise<Cell[]> => {
   let depositCells: Cell[] = [];
   const daoDepositedCellCollector = new dao.CellCollector(
-    joyidAddr,
+    ckbAddress,
     INDEXER,
     "deposit"
   );
@@ -65,16 +63,16 @@ export const collectDeposits = async (joyidAddr: Address): Promise<Cell[]> => {
 };
 
 /*
-  joyIDaddr: the joyID address
+  ckbAddress: the ckb address that has CKB, and will be used to lock your Dao deposit
   ----
   returns an array of Cells
 */
 export const collectWithdrawals = async (
-  joyidAddr: Address
+  ckbAddress: Address
 ): Promise<Cell[]> => {
   let depositCells: Cell[] = [];
   const daoDepositedCellCollector = new dao.CellCollector(
-    joyidAddr,
+    ckbAddress,
     INDEXER,
     "withdraw"
   );
@@ -87,13 +85,13 @@ export const collectWithdrawals = async (
 /*
   Buid DAO deposit raw transaction
   ----
-  joyIDaddr: the joyID address
+  ckbAddress: the ckb address that has CKB, and will be used to lock your Dao deposit
   amount: the amount to deposit to the DAO in CKB
   ----
   returns a CKB raw transaction
 */
 export const buildDepositTransaction = async (
-  joyidAddr: Address,
+  ckbAddress: Address,
   amount: bigint,
   depositMax: boolean
 ): Promise<CKBTransaction> => {
@@ -106,11 +104,11 @@ export const buildDepositTransaction = async (
 
   // generating basic dao transaction skeleton
   let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
-  txSkeleton = await dao.deposit(txSkeleton, joyidAddr, joyidAddr, amount);
+  txSkeleton = await dao.deposit(txSkeleton, ckbAddress, ckbAddress, amount);
 
-  // adding joyID cell deps
+  // adding cell deps
   const config = getConfig();
-  const fromScript = addressToScript(joyidAddr, { config });
+  const fromScript = addressToScript(ckbAddress, { config });
   if (fromScript.codeHash == JOYID_CELLDEP.codeHash) {
     txSkeleton = txSkeleton.update("cellDeps", (i) =>
       i.push({
@@ -152,7 +150,7 @@ export const buildDepositTransaction = async (
   }
   const collectedInputs = await collectInputs(
     INDEXER,
-    addressToScript(joyidAddr),
+    addressToScript(ckbAddress),
     requiredCapacity
   );
   txSkeleton = txSkeleton.update("inputs", (i) =>
@@ -169,14 +167,14 @@ export const buildDepositTransaction = async (
     let change: Cell = {
       cellOutput: {
         capacity: intToHex(changeCellCapacity),
-        lock: addressToScript(joyidAddr),
+        lock: addressToScript(ckbAddress),
       },
       data: "0x",
     };
     txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
   }
 
-  // add joyID witnesses
+  // add witnesses
   const emptyWitness = { lock: "", inputType: "", outputType: "" };
   txSkeleton = txSkeleton.update("witnesses", (i) =>
     i.push(serializeWitnessArgs(emptyWitness))
@@ -194,20 +192,20 @@ export const buildDepositTransaction = async (
 /*
   Buid DAO withdraw raw transaction
   ----
-  joyIDaddr: the joyID address
+  ckbAddress: the ckb address that has CKB, and will be used to lock your Dao deposit
   daoDepositCell: the cell that locks the DAO deposit
   ----
   returns a CKB raw transaction
 */
 export const buildWithdrawTransaction = async (
-  joyidAddr: Address,
+  ckbAddress: Address,
   daoDepositCell: Cell
 ): Promise<CKBTransaction> => {
   let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
 
-  // adding joyID cell deps
+  // adding cell deps
   const config = getConfig();
-  const fromScript = addressToScript(joyidAddr, { config });
+  const fromScript = addressToScript(ckbAddress, { config });
   if (fromScript.codeHash == JOYID_CELLDEP.codeHash) {
     txSkeleton = txSkeleton.update("cellDeps", (i) =>
       i.push({
@@ -250,7 +248,7 @@ export const buildWithdrawTransaction = async (
   txSkeleton = txSkeleton.update("outputs", (i) => i.push(daoOutputCell));
 
   // generate the dao withdraw skeleton
-  txSkeleton = await dao.withdraw(txSkeleton, daoDepositCell, joyidAddr);
+  txSkeleton = await dao.withdraw(txSkeleton, daoDepositCell, ckbAddress);
 
   // add fee cell and minimal change cell. Change cell is calculated in advance because
   // if we tend to have a change cell, its capacity must be greater than 61ckb
@@ -258,7 +256,7 @@ export const buildWithdrawTransaction = async (
     ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE);
   const collectedInputs = await collectInputs(
     INDEXER,
-    addressToScript(joyidAddr),
+    addressToScript(ckbAddress),
     requiredCapacity
   );
   txSkeleton = txSkeleton.update("inputs", (i) =>
@@ -274,13 +272,13 @@ export const buildWithdrawTransaction = async (
   let change: Cell = {
     cellOutput: {
       capacity: intToHex(changeCellCapacity),
-      lock: addressToScript(joyidAddr),
+      lock: addressToScript(ckbAddress),
     },
     data: "0x",
   };
   txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
 
-  // add joyID witnesses
+  // add witnesses
   const emptyWitness = { lock: "", inputType: "", outputType: "" };
   txSkeleton = txSkeleton.update("witnesses", (i) =>
     i.push(serializeWitnessArgs(emptyWitness))
@@ -297,14 +295,14 @@ export const buildWithdrawTransaction = async (
 /*
   Buid DAO unlock raw transaction
   ----
-  joyIDaddr: the joyID address
+  ckbAddress: the ckb address that has CKB, and will be used to lock your Dao deposit
   daoDepositCell: the cell that locks the DAO deposit
   daoWithdrawalCell: the DAO withdrawal cell
   ----
   returns a CKB raw transaction
 */
 export const buildUnlockTransaction = async (
-  joyidAddr: Address,
+  ckbAddress: Address,
   daoWithdrawalCell: Cell
 ): Promise<CKBTransaction> => {
   const config = getConfig();
@@ -312,7 +310,7 @@ export const buildUnlockTransaction = async (
 
   let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
 
-  //  adding DAO celldeps and joyID celldeps
+  //  adding celldeps
   const template = config.SCRIPTS.DAO!;
   const daoCellDep = {
     outPoint: {
@@ -322,9 +320,8 @@ export const buildUnlockTransaction = async (
     depType: template.DEP_TYPE,
   };
 
-  const fromScript = addressToScript(joyidAddr, { config });
+  const fromScript = addressToScript(ckbAddress, { config });
   if (fromScript.codeHash == JOYID_CELLDEP.codeHash) {
-    //joyid celldep
     txSkeleton = txSkeleton.update("cellDeps", (i) =>
       i.push({
         outPoint: JOYID_CELLDEP.outPoint,
@@ -404,7 +401,7 @@ export const buildUnlockTransaction = async (
     return outputs.push({
       cellOutput: {
         capacity: intToHex(BigInt(parseInt(outputCapacity, 16) - TX_FEE)),
-        lock: addressToScript(joyidAddr),
+        lock: addressToScript(ckbAddress),
         type: undefined,
       },
       data: "0x",
@@ -431,7 +428,7 @@ export const buildUnlockTransaction = async (
     });
   }
 
-  // add joyID witnesses place holder; inputType is 64-bit unsigned little-endian integer format
+  // add witnesses place holder; inputType is 64-bit unsigned little-endian integer format
   // of the deposit cell header index in header_deps, which is 0x0000000000000000 for index 0
   const emptyWitness = {
     lock: "",
