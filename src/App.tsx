@@ -31,7 +31,6 @@ const App = () => {
   const [isModalMessageLoading, setIsModalMessageLoading] = React.useState(false);
   const [ckbAddress, setCkbAddress] = React.useState("");
   const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
-  const [depositMax, setDepositMax] = React.useState(false);
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
@@ -114,33 +113,22 @@ const App = () => {
     if (isDepositing) {
       try {
         setIsDepositing(false);
-
-        let amount;
-        // depositing max
-        if (depositMax) {
-          amount = BigInt(balance!.available);
-        } else {
-          amount = BigInt(depositAmount);
-        }
-
+        const amount = BigInt(depositAmount);
         // reset state var
         setDepositAmount('');
-        setDepositMax(false);
-
-        const daoTx = await buildDepositTransaction(ckbAddress, amount, depositMax);
+        const daoTx = await buildDepositTransaction(ckbAddress, amount);
 
         let signedTx;
         let txid = "";
-
         if (isJoyIdAddress(ckbAddress)) {
           signedTx = await signRawTransaction(
             daoTx,
             ckbAddress
           );
-          // Send the transaction to the RPC node.
           txid = await sendTransaction(signedTx);
         } else {
           if (signer) {
+            enqueueSnackbar(`Openning ${wallet.name} ...`, { variant: 'success' });
             txid = await signer.sendTransaction(daoTx);
           } else {
             throw new Error('Wallet disconnected. Reconnect!');
@@ -148,7 +136,6 @@ const App = () => {
         }
 
         enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: 'success' });
-
         setIsWaitingTxConfirm(true);
         setIsLoading(true);
 
@@ -308,18 +295,18 @@ const App = () => {
       if (currentCell.isDeposit) {
         if (currentCell.ripe) {
           message = `Optimal withdrawal window reached! Withdraw now and unlock a total of ${Math.floor(step/180)} \
-            complete cycles in after ${(180 - (step%180))} epochs (approximately ${(180 - (step%180))*4} hours. \
-            Otherwise, your deposit will enter another 30-day lock cycle.`;
+            complete cycles in ${(180 - (step%180))} epochs (in ~ ${(180 - (step%180))*4} hours. \
+            After that, your deposit will enter another 30-day lock cycle.`;
         } else {
-          message = `You can wait until epoch ${(tipEpoch + 168 - step%180)} (in approximately \
-            ${((168 - step%180)/6).toFixed(2)} days) to maximize your rewards in this cycle. Do you wish to continue?`
+          message = `To maximize your reward in this cycle, please wait until epoch ${(tipEpoch + 168 - step%180)} (in ~ \
+            ${((168 - step%180)/6).toFixed(2)} days). Do you wish to continue?`
         }
       } else {
         if (currentCell.ripe) {
-          message = `You're now able to complete your Dao withdrawal, receiving a total of ${currentCell.maximumWithdraw} CKB.`;
+          message = `Completing withdrawal process, receiving a total of ~ ${(currentCell.maximumWithdraw/BigInt(CKB_SHANNON_RATIO))} CKB.`;
         } else {
           message = `Come back and unlock your withdrawal at epoch ${(tipEpoch + 181 - step%180)} \
-            (in approximately ${((181 - step%180)/6).toFixed(2)} days).`;
+            (in approximately ${((181 - step%180)/6).toFixed(2)} days) to receive ~ ${(currentCell.maximumWithdraw/BigInt(CKB_SHANNON_RATIO))} CKB.`;
         }
       }
       // display the message in modal
@@ -416,16 +403,6 @@ const App = () => {
     cccConnect();
   }, [ckbAddress]);
 
-  // calling deposit max
-  React.useEffect(() => {
-    if (depositAmount) {
-      enqueueSnackbar('Depositing ...', { variant: 'success' });
-      setTimeout(() => {
-        onDeposit();
-      }, 500);
-    }
-  }, [depositMax]);
-
   {
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
     const smallScreenDeviceMinCellWidth = 100;
@@ -461,7 +438,7 @@ const App = () => {
           await updateDaoList();
           window.location.reload();
         }}>
-          CKBank
+          joyDAO
         </h1>
 
         {!ckbAddress && (
@@ -582,15 +559,14 @@ const App = () => {
                   onKeyDown={(e) => e.key === 'Enter' && onDeposit()}
                   className='deposit-textbox'
                 />
-                <span className="max-deposit"
+                {/* <span className="max-deposit"
                   onClick={(e) => {
                     enqueueSnackbar('It\'s recommended to leave ^63 CKB to pay fee for future txs', { variant: 'info' });
-                    setDepositMax(true);
                     setDepositAmount(balance? (BigInt(balance.available)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '');
                   }}
                 >
                   Max
-                </span>
+                </span> */}
               </span>
             ) : (
               <button className='deposit-button'
@@ -744,7 +720,7 @@ const App = () => {
                 <div className='button'>
                   <button
                     className='proceed'
-                    disabled={currentCell ? (!currentCell.isDeposit && !currentCell.ripe) : false}
+                    // disabled={currentCell ? (!currentCell.isDeposit && !currentCell.ripe) : false}
                     onClick={() => {
                       if (currentCell) {
                         // if this is a deposit cell, allow for withdraw 

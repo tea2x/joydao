@@ -51,13 +51,17 @@ export const TEST_NET_CONFIG = {
   }
 };
 
-export const FEE_RATE = 1500;
-export const MIN_FEE_RATE = 1000;
+export const FEE_RATE = 1500; // 1500 shannon per KB
+export const MIN_FEE_RATE = 1000; // 1000 shannon per KB
+export const MAX_TX_SIZE = 10000; // in Bytes
 export const TX_FEE = 10_000; //shanon
 // omnilock|joyid lock script argument is 2 bytes longer than that of secp256k1's.
 // so whereas the secp256r1-dao takes 102, joyid-dao takes 104
 export const DAO_MINIMUM_CAPACITY = 104;
 export const MINIMUM_CHANGE_CAPACITY = 63; //63ckb for joyidLock/moniLock cell
 export const CKB_SHANNON_RATIO = 100_000_000;
+
+export const JOYID_SIGNATURE_PLACEHOLDER_DEFAULT = '0x' + '0'.repeat(694); //joyid lock signature length is 347 bytes
+export const OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT = '0x' + '0'.repeat(170); //joyid lock signature length is 85 bytes
 
 export const TESTNET_EXPLORER_PREFIX = "https://pudge.explorer.nervos.org/transaction/";

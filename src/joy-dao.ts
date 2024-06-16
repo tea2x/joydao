@@ -8,6 +8,7 @@ import {
   HexString,
   PackedDao,
   PackedSince,
+  blockchain,
 } from "@ckb-lumos/base";
 import {
   INDEXER_URL,
@@ -17,14 +18,17 @@ import {
   MINIMUM_CHANGE_CAPACITY,
   JOYID_CELLDEP,
   OMNILOCK_CELLDEP,
+  FEE_RATE,
+  MAX_TX_SIZE,
 } from "./config";
 import {
   addressToScript,
   TransactionSkeleton,
   createTransactionFromSkeleton,
   minimalCellCapacityCompatible,
+  TransactionSkeletonType,
 } from "@ckb-lumos/helpers";
-import { dao, common } from "@ckb-lumos/common-scripts";
+import { dao } from "@ckb-lumos/common-scripts";
 import { Indexer } from "@ckb-lumos/ckb-indexer";
 import {
   getBlockHash,
@@ -33,8 +37,8 @@ import {
   hexToInt,
   collectInputs,
   findDepositCellWith,
+  addDefaultWitnessPlaceholders,
 } from "./lib/helpers";
-import { serializeWitnessArgs } from "@nervosnetwork/ckb-sdk-utils";
 import { number } from "@ckb-lumos/codec";
 import { getConfig, Config } from "@ckb-lumos/config-manager";
 import { BI, BIish } from "@ckb-lumos/bi";
@@ -92,18 +96,16 @@ export const collectWithdrawals = async (
 */
 export const buildDepositTransaction = async (
   ckbAddress: Address,
-  amount: bigint,
-  depositMax: boolean
+  amount: bigint
 ): Promise<CKBTransaction> => {
-  // when deposit max, there's no change and only fee to miners
-  amount = depositMax ? amount - BigInt(TX_FEE) : ckbytesToShannons(amount);
+  let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
 
+  amount = ckbytesToShannons(amount);
   if (amount < ckbytesToShannons(BigInt(DAO_MINIMUM_CAPACITY))) {
     throw new Error("Mimum DAO deposit is 104 CKB.");
   }
 
   // generating basic dao transaction skeleton
-  let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
   txSkeleton = await dao.deposit(txSkeleton, ckbAddress, ckbAddress, amount);
 
   // adding cell deps
@@ -138,16 +140,13 @@ export const buildDepositTransaction = async (
     throw new Error("Only joyId lock and omnilock are allowed");
   }
 
-  // adding input capacity cells
-  let requiredCapacity;
-  if (depositMax) {
-    requiredCapacity = amount + BigInt(TX_FEE);
-  } else {
-    requiredCapacity =
+  // calculating fee for a really large dummy tx (^100 inputs) and adding input capacity cells
+  let fee = calculateFeeCompatible(MAX_TX_SIZE, FEE_RATE).toNumber();
+  const requiredCapacity =
       amount +
       ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) +
-      BigInt(TX_FEE);
-  }
+      BigInt(fee);
+
   const collectedInputs = await collectInputs(
     INDEXER,
     addressToScript(ckbAddress),
@@ -157,35 +156,27 @@ export const buildDepositTransaction = async (
     i.concat(collectedInputs.inputCells)
   );
 
-  // no change cell when deposit max
-  if (!depositMax) {
-    const outputCapacity = txSkeleton.outputs
-      .toArray()
-      .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
-    const changeCellCapacity =
-      collectedInputs.inputCapacity - outputCapacity - BigInt(TX_FEE);
-    let change: Cell = {
-      cellOutput: {
-        capacity: intToHex(changeCellCapacity),
-        lock: addressToScript(ckbAddress),
-      },
-      data: "0x",
-    };
-    txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
-  }
+  txSkeleton = addDefaultWitnessPlaceholders(txSkeleton);
 
-  // add witnesses
-  const emptyWitness = { lock: "", inputType: "", outputType: "" };
-  txSkeleton = txSkeleton.update("witnesses", (i) =>
-    i.push(serializeWitnessArgs(emptyWitness))
-  );
-  for (let i = 1; i < collectedInputs.inputCells.length; i++) {
-    txSkeleton = txSkeleton.update("witnesses", (i) => i.push("0x"));
-  }
+  // Regulating fee, and making a change cell
+  // 111 is the size difference adding the 1 anticipated change cell
+  const txSize = getTransactionSize(txSkeleton) + 111;
+  fee = calculateFeeCompatible(txSize, FEE_RATE).toNumber();
+  const outputCapacity = txSkeleton.outputs
+    .toArray()
+    .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
+  const changeCellCapacity =
+    collectedInputs.inputCapacity - outputCapacity - BigInt(fee);
+  let change: Cell = {
+    cellOutput: {
+      capacity: intToHex(changeCellCapacity),
+      lock: addressToScript(ckbAddress),
+    },
+    data: "0x",
+  };
 
-  // converting skeleton to CKB transaction
+  txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
   const daoDepositTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-
   return daoDepositTx as CKBTransaction;
 };
 
@@ -250,10 +241,10 @@ export const buildWithdrawTransaction = async (
   // generate the dao withdraw skeleton
   txSkeleton = await dao.withdraw(txSkeleton, daoDepositCell, ckbAddress);
 
-  // add fee cell and minimal change cell. Change cell is calculated in advance because
-  // if we tend to have a change cell, its capacity must be greater than 61ckb
+  // calculating fee for a really large dummy tx (^100 inputs) and adding input capacity cells
+  let fee = calculateFeeCompatible(MAX_TX_SIZE, FEE_RATE).toNumber();
   const requiredCapacity =
-    ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(TX_FEE);
+    ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(fee);
   const collectedInputs = await collectInputs(
     INDEXER,
     addressToScript(ckbAddress),
@@ -263,12 +254,20 @@ export const buildWithdrawTransaction = async (
     i.concat(collectedInputs.inputCells)
   );
 
-  // calculate change and add an output cell
+  txSkeleton = addDefaultWitnessPlaceholders(txSkeleton);
+
+  // Regulating fee, and making a change cell
+  // 111 is the size difference adding the 1 anticipated change cell
+  const txSize = getTransactionSize(txSkeleton) + 111;
+  fee = calculateFeeCompatible(txSize, FEE_RATE).toNumber();
+  const outputCapacity = txSkeleton.outputs
+    .toArray()
+    .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
   const inputCapacity = txSkeleton.inputs
     .toArray()
     .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
-  const outputCapacity = hexToInt(daoOutputCell.cellOutput.capacity);
-  const changeCellCapacity = inputCapacity - outputCapacity - BigInt(TX_FEE);
+  const changeCellCapacity =
+    inputCapacity - outputCapacity - BigInt(fee);
   let change: Cell = {
     cellOutput: {
       capacity: intToHex(changeCellCapacity),
@@ -276,18 +275,8 @@ export const buildWithdrawTransaction = async (
     },
     data: "0x",
   };
+
   txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
-
-  // add witnesses
-  const emptyWitness = { lock: "", inputType: "", outputType: "" };
-  txSkeleton = txSkeleton.update("witnesses", (i) =>
-    i.push(serializeWitnessArgs(emptyWitness))
-  );
-  for (let i = 1; i < txSkeleton.inputs.toArray().length; i++) {
-    txSkeleton = txSkeleton.update("witnesses", (i) => i.push("0x"));
-  }
-
-  // converting skeleton to CKB transaction
   const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
   return daoWithdrawTx as CKBTransaction;
 };
@@ -388,28 +377,6 @@ export const buildUnlockTransaction = async (
     length: BI.from(depositEpoch.length),
   };
   const minimalSince = epochSinceCompatible(minimalSinceEpoch);
-
-  const outputCapacity: HexString =
-    "0x" +
-    calculateMaximumWithdrawCompatible(
-      daoWithdrawalCell,
-      depositBlockHeader!.dao,
-      withdrawBlockHeader!.dao
-    ).toString(16);
-
-  txSkeleton = txSkeleton.update("outputs", (outputs) => {
-    return outputs.push({
-      cellOutput: {
-        capacity: intToHex(BigInt(parseInt(outputCapacity, 16) - TX_FEE)),
-        lock: addressToScript(ckbAddress),
-        type: undefined,
-      },
-      data: "0x",
-      outPoint: undefined,
-      blockHash: undefined,
-    });
-  });
-
   const since: PackedSince = "0x" + minimalSince.toString(16);
 
   // add header deps
@@ -428,19 +395,7 @@ export const buildUnlockTransaction = async (
     });
   }
 
-  // add witnesses place holder; inputType is 64-bit unsigned little-endian integer format
-  // of the deposit cell header index in header_deps, which is 0x0000000000000000 for index 0
-  const emptyWitness = {
-    lock: "",
-    inputType: "0x0000000000000000",
-    outputType: "",
-  };
-  txSkeleton = txSkeleton.update("witnesses", (i) =>
-    i.push(serializeWitnessArgs(emptyWitness))
-  );
-  for (let i = 1; i < txSkeleton.inputs.toArray().length; i++) {
-    txSkeleton = txSkeleton.update("witnesses", (i) => i.push("0x"));
-  }
+  txSkeleton = addDefaultWitnessPlaceholders(txSkeleton, true);
 
   // fix inputs / outputs / witnesses
   txSkeleton = txSkeleton.update("fixedEntries", (fixedEntries) => {
@@ -464,9 +419,33 @@ export const buildUnlockTransaction = async (
     );
   });
 
+  // substract fee based on fee rate from the deposit
+  const txSize = getTransactionSize(txSkeleton) + 111;
+  const fee = calculateFeeCompatible(txSize, FEE_RATE).toNumber();
+  const outputCapacity: HexString =
+    "0x" +
+    calculateMaximumWithdrawCompatible(
+      daoWithdrawalCell,
+      depositBlockHeader!.dao,
+      withdrawBlockHeader!.dao
+    ).toString(16);
+
+  txSkeleton = txSkeleton.update("outputs", (outputs) => {
+    return outputs.push({
+      cellOutput: {
+        capacity: intToHex(BigInt(parseInt(outputCapacity, 16) - fee)),
+        lock: addressToScript(ckbAddress),
+        type: undefined,
+      },
+      data: "0x",
+      outPoint: undefined,
+      blockHash: undefined,
+    });
+  });
+
   // converting skeleton to CKB transaction
-  const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-  return daoWithdrawTx as CKBTransaction;
+  const daoUnlockTx: Transaction = createTransactionFromSkeleton(txSkeleton);
+  return daoUnlockTx as CKBTransaction;
 };
 
 function epochSinceCompatible({
@@ -543,4 +522,27 @@ function parseEpochCompatible(epoch: BIish): {
     index: _epoch.shr(24).and(0xfff),
     number: _epoch.and(0xffffff),
   };
+}
+
+
+function getTransactionSize(txSkeleton: TransactionSkeletonType): number {
+  const tx = createTransactionFromSkeleton(txSkeleton);
+  return getTransactionSizeByTx(tx);
+}
+
+export function getTransactionSizeByTx(tx: Transaction): number {
+  const serializedTx = blockchain.Transaction.pack(tx);
+  // 4 is serialized offset bytesize
+  const size = serializedTx.byteLength + 4;
+  return size;
+}
+
+function calculateFeeCompatible(size: number, feeRate: BIish): BI {
+  const ratio = BI.from(1000);
+  const base = BI.from(size).mul(feeRate);
+  const fee = base.div(ratio);
+  if (fee.mul(ratio).lt(base)) {
+    return fee.add(1);
+  }
+  return BI.from(fee);
 }

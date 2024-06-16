@@ -1,8 +1,16 @@
 import { RPC } from "@ckb-lumos/lumos";
-import { Script, Address, Cell, Transaction, since} from "@ckb-lumos/base";
+import { Script, Address, Cell, Transaction, since, utils, blockchain } from "@ckb-lumos/base";
+const {computeScriptHash} = utils;
 const { parseSince } = since;
-import { NODE_URL, INDEXER_URL, CKB_SHANNON_RATIO, JOYID_CELLDEP } from "../config";
-import { addressToScript } from "@ckb-lumos/helpers";
+import {
+	NODE_URL,
+	INDEXER_URL,
+	CKB_SHANNON_RATIO,
+	JOYID_CELLDEP,
+	OMNILOCK_CELLDEP,
+	JOYID_SIGNATURE_PLACEHOLDER_DEFAULT,
+	OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT } from "../config";
+import { addressToScript, TransactionSkeletonType } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from '@ckb-lumos/ckb-indexer/src/type';
 import { TerminableCellFetcher } from '@ckb-lumos/ckb-indexer/src/type';
 import { CellCollector, Indexer} from "@ckb-lumos/ckb-indexer";
@@ -11,6 +19,7 @@ import { getConfig } from "@ckb-lumos/config-manager";
 import { dao }  from "@ckb-lumos/common-scripts";
 import { EpochSinceValue } from "@ckb-lumos/base/lib/since"
 import { BI, BIish } from "@ckb-lumos/bi";
+import {bytes} from "@ckb-lumos/codec"
 
 const INDEXER = new Indexer(INDEXER_URL);
 const rpc = new RPC(NODE_URL);
@@ -320,6 +329,50 @@ export const isJoyIdAddress = (address: string) => {
 	const config = getConfig();
 	return(addressToScript(address, { config }).codeHash == JOYID_CELLDEP.codeHash);
 }
+
+export const addDefaultWitnessPlaceholders = (
+  transaction: TransactionSkeletonType,
+  daoUnlock = false
+) => {
+  if (transaction.witnesses.size !== 0)
+    throw new Error(
+      "This function can only be used on an empty witnesses structure."
+    );
+
+  // Cycle through all inputs adding placeholders for unique locks, and empty witnesses in all other places.
+  let uniqueLocks = new Set();
+  for (const input of transaction.inputs) {
+    let witness = "0x";
+
+    const lockHash = computeScriptHash(input.cellOutput.lock);
+    if (!uniqueLocks.has(lockHash)) {
+      uniqueLocks.add(lockHash);
+
+      if (
+        input.cellOutput.lock.hashType === "type" &&
+        input.cellOutput.lock.codeHash === JOYID_CELLDEP.codeHash
+      ) {
+        witness = JOYID_SIGNATURE_PLACEHOLDER_DEFAULT;
+      } else if (
+        input.cellOutput.lock.hashType === "type" &&
+        input.cellOutput.lock.codeHash === OMNILOCK_CELLDEP.codeHash
+      ) {
+        witness = OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT;
+      }
+    }
+
+	if (daoUnlock) {
+		// add witnesses place holder; inputType is 64-bit unsigned little-endian integer format
+  		// of the deposit cell header index in header_deps, which is 0x0000000000000000 for index 0
+		witness = bytes.hexify(blockchain.WitnessArgs.pack({ lock: witness, inputType: "0x0000000000000000" }));
+	} else {
+    	witness = bytes.hexify(blockchain.WitnessArgs.pack({ lock: witness }));
+	}
+    transaction = transaction.update("witnesses", (w) => w.push(witness));
+  }
+
+  return transaction;
+};
 
 export default {
 	sendTransaction,

@@ -272,7 +272,7 @@ body {
   padding-right: 50px;
 }
 
-.max-deposit {
+/* .max-deposit {
   position: relative;
   left: -40px;
   cursor: pointer;
@@ -283,7 +283,7 @@ body {
 .max-deposit:hover {
   opacity: 1;
   animation: rainbow 5s linear infinite;
-}
+} */
 
 .container {
   display: flex;
@@ -700,9 +700,9 @@ button.cancel {
     max-width: 120px;
   }
 
-  .max-deposit {
+  /* .max-deposit {
     font-size: smaller;
-  }
+  } */
 
   .no-deposit-message {
     font-size: 1em;
