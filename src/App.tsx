@@ -720,7 +720,7 @@ const App = () => {
                 <div className='button'>
                   <button
                     className='proceed'
-                    // disabled={currentCell ? (!currentCell.isDeposit && !currentCell.ripe) : false}
+                    disabled={currentCell ? (!currentCell.isDeposit && !currentCell.ripe) : false}
                     onClick={() => {
                       if (currentCell) {
                         // if this is a deposit cell, allow for withdraw 
