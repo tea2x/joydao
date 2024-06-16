@@ -471,7 +471,7 @@ const App = () => {
                   joyIdConnect();
                 }}
               >
-                {/* JoyId Passkeys */}
+                JoyID Passkeys
               </button>
 
               <button

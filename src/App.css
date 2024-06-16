@@ -80,20 +80,20 @@ body {
 .signin-button:hover {
   transform: translateY(-3px);
   background-color: #000;
-  color: #A8E72F;
+  color: #505050;
 }
 
 .joyid-connect {
-  background-color: #8CDD00;
-  color: #000000;
+  background-color: #f8f8f8;
+  color: #505050;
+  justify-content: left;
   box-shadow: 
     2px 2px 0 #354f32,
     4px 4px 0 #2b5328;
-  width: 180px;
-  padding: 1px 1px;
-  background-image: url('./images/joyid-green.svg');
-  background-size: 180px;
-  background-position: right 0px center;
+  padding: 1px 20px;
+  background-image: url('./images/joyid-logo.png');
+  background-size: 30px;
+  background-position: right 10px center;
   background-repeat: no-repeat;
   top: 25px
 }
@@ -104,18 +104,18 @@ body {
 }
 
 .other-wallet-connect {
-  background: linear-gradient(3deg, #FF7F00, #FFFF00, #00FF00);
-  color: #000000;
+  background-color: #f8f8f8;
+  color: #505050;
   box-shadow: 
     2px 2px 0 #81773c,
     4px 4px 0 #694427;
   margin-top: 10%;
-  width: 180px;
   top: 30px
 }
 
 .other-wallet-connect:hover {
-  color: #000000;
+  background-color: #000;
+  color: #f8f8f8;
 }
 
 .account-button {
@@ -372,7 +372,7 @@ body {
 .loading-overlay {
   position: fixed;
   top: 0;
-  left: 0;
+  /* left: 0; */
   width: 100%;
   height: 100%;
   background-color: rgba(255, 255, 255, 0.8);
@@ -412,10 +412,10 @@ body {
 
 .description {
   position: relative;
-  top: -80px;
-  font-size: 13px;
+  top: -60px;
+  font-size: 17px;
   color: #cecece;
-  animation: blink 1s infinite;
+  /* animation: blink 1s infinite; */
   transform: rotate(-0.5deg);
 }
 
@@ -505,7 +505,7 @@ body {
   padding: 20px;
   background-color: #ffffff;
   border: none;
-  border-radius: 20px !important;
+  border-radius: 10px !important;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
   transition: transform 0.5s ease-in-out;
 
@@ -522,7 +522,7 @@ body {
 .modal-loading-overlay {
   position: absolute;
   top: 0;
-  left: 0;
+  /* left: 0; */
   width: 100%;
   height: 100%;
   background-color: rgba(255, 255, 255, 0.8);
@@ -600,12 +600,13 @@ button.cancel {
 }  
 
 .connect-wallet {
-  font-size: 1.5em;
+  font-size: 1.3em;
   font-weight: bold;
+  width: 200px;
 }
 
 .main-wallet-option {
-  position: relative;
+  /* position: relative; */
   top: 20px;
   min-height: 200px;
   max-height: 200px;
@@ -613,13 +614,14 @@ button.cancel {
 
 .headline-separation {
   border-top: 1px solid #000;
+  width: 180px;
   /* margin-bottom: 10px; */
 }
 
 @media only screen and (max-width: 768px) {
 
   .title {
-    font-size: 2em;
+    font-size: 2.4em;
     margin: 40px;
     height: 35px;
     font-weight: 600;
@@ -655,9 +657,10 @@ button.cancel {
   }
 
   .joyid-connect {
-    background-size: 150px;
     font-size: 1em;
     top: 25px;
+    padding: 1px 15px;
+    background-size: 30px;
   }
   
   .other-wallet-connect {
@@ -720,11 +723,6 @@ button.cancel {
   .ReactModal__Content {
     max-width: 40vh;
     padding: 20px;
-    background-color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
-    transition: transform 0.5s ease-in-out;
     min-width: 200px;
   }
 }
