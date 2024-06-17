@@ -420,7 +420,10 @@ const App = () => {
     const dummyCellWidthRandomizer = new SeededRandom(daoCellNum);
 
     return (
-      <div className={`container ${!ckbAddress ? 'entrance' : ''}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+      <div className="container" onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+        {!ckbAddress && (
+          <div className='entrance-decor'></div>
+        )}
         {isLoading && (
           <div className="loading-overlay">
             <div className="loading-circle-container">
@@ -686,7 +689,10 @@ const App = () => {
                   );
 
                 return (
-                  <div key={`extra-${index}`} className='dao-cell-dummy'
+                  <div 
+                    key={`extra-${index}`}
+                    className='dao-cell-dummy'
+                    onClick={(e) => hideDepositTextBoxAndDropDown(e)}
                     ref={el => {
                       if (el) {
                         el.style.setProperty('--cellWidth', `${cellWidth}px`);

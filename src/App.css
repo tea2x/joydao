@@ -75,8 +75,7 @@ body {
     4px 4px 0 #333;
   transition: transform 0.3s ease;
   position: relative;
-  top: 350px;
-  z-index: 2;
+  top: 40vh;
 }
 
 .signin-button:hover {
@@ -307,7 +306,7 @@ body {
   overflow: auto;
 }
 
-.container.entrance::after {
+.entrance-decor {
   content: '';
   position: absolute;
   top: 70px;
@@ -315,10 +314,10 @@ body {
   width: 100%;
   height: 100%;
   background-image: url('./images/poster.png');
-  background-size: 700px;
+  background-size: 90vh;
   background-position: center;
   background-repeat: no-repeat;
-  z-index: 0;
+  z-index: inherit;
 }
 
 .dao-link {
@@ -691,11 +690,11 @@ button.cancel {
     margin-top: 0px;
   }
 
-  .container.entrance::after {
+  .entrance-decor {
     content: '';
     position: absolute;
     top: 50px;
-    background-size: 500px;
+    background-size: 70vh;
   }
 
   .dao-cell-dummy {
