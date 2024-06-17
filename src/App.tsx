@@ -5,10 +5,11 @@ import { sendTransaction, waitForTransactionConfirmation,
   getTipEpoch, SeededRandom, isJoyIdAddress } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
-import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX, JOYID_URL } from "./config";
+import { TEST_NET_CONFIG, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX, JOYID_URL, CCC_MAINNET } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction,
   buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import { ccc } from "@ckb-ccc/connector-react";
+import { ClientPublicTestnet, ClientPublicMainnet } from "@ckb-ccc/core";
 import "./App.css";
 import Modal from 'react-modal';
 Modal.setAppElement('#root');
@@ -283,7 +284,7 @@ const App = () => {
     if (windowWidth <= 768) {
       return `${address.slice(0, 8)}...${address.slice(-5)}`;
     } else {
-      return `${address.slice(0, 8)}...${address.slice(-9)}`;
+      return `${address.slice(0, 8)}...${address.slice(-8)}`;
     }
   }
 
@@ -407,6 +408,13 @@ const App = () => {
   React.useEffect(() => {
     cccConnect();
   }, [ckbAddress]);
+
+  React.useEffect(() => {
+    if (CCC_MAINNET)
+      setClient(new ClientPublicMainnet);
+    else
+      setClient(new ClientPublicTestnet)
+  }, [setClient, CCC_MAINNET]);
 
   {
     const daoCellNum = [...depositCells, ...withdrawalCells].length;

@@ -1,9 +1,10 @@
-const isMainNet = true;
+const isMainNet = false;
 
 export const NODE_URL = isMainNet ? "https://mainnet.ckb.dev/" : "https://testnet.ckb.dev/";
 export const INDEXER_URL = isMainNet ? "https://mainnet.ckb.dev/indexer" : "https://testnet.ckb.dev/indexer";
 
 export const JOYID_URL = isMainNet ? "https://app.joy.id/" : "https://testnet.joyid.dev";
+export const CCC_MAINNET = isMainNet;
 export const JOYID_CELLDEP = isMainNet ? 
   {
     codeHash: "0xd00c84f0ec8fd441c38bc3f87a371f547190f2fcff88e642bc5bf54b9e318323",
