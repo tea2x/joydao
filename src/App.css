@@ -315,7 +315,7 @@ body {
   height: 100%;
   background-image: url('./images/poster.png');
   background-size: 90vh;
-  background-position: center;
+  background-position: top 55% center;
   background-repeat: no-repeat;
   z-index: inherit;
 }
@@ -665,6 +665,8 @@ button.cancel {
     padding-left: 2px;
     width: 180px;
     font-size: 1.5em;
+    position: relative;
+    top: 50vh;
   }
   
   .account-button .copy-sign {
@@ -693,8 +695,9 @@ button.cancel {
   .entrance-decor {
     content: '';
     position: absolute;
-    top: 50px;
+    top: 10px;
     background-size: 70vh;
+    background-position: top 50% center;
   }
 
   .dao-cell-dummy {
