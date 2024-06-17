@@ -5,7 +5,7 @@ To those who invest in CKB long term, wallet security is always the number 1 pri
 This project also support multiple other common wallet options like Metamask, Unisat, OKX, Brave ... via [CCC - Common chain wallet connector](https://github.com/ckb-ecofund/ccc) and [Omnilock](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0042-omnilock/0042-omnilock.md).
 
 # Demo
-https://joydao-9ax8zn0th-teas-projects-6b490beb.vercel.app/
+https://joydao.vercel.app/
 
 # In case you want to verify joyDao's integrity
 When we sign a transaction, we can check what it will trigger and whether it's malicious or not.
