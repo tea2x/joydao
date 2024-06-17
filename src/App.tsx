@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { connect, signRawTransaction } from '@joyid/ckb';
+import { initConfig, connect, signRawTransaction } from '@joyid/ckb';
 import { sendTransaction, waitForTransactionConfirmation, 
   queryBalance, Balance, enrichDaoCellInfo, DaoCell, 
   getTipEpoch, SeededRandom, isJoyIdAddress } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
-import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX } from "./config";
+import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX, JOYID_URL } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction,
   buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import { ccc } from "@ckb-ccc/connector-react";
@@ -36,6 +36,11 @@ const App = () => {
   const signer = ccc.useSigner();
   const { enqueueSnackbar } = useSnackbar();
 
+  initConfig({
+    name: "joyDAO",
+    logo: "https://fav.farm/🆔",
+    joyidAppURL: JOYID_URL,
+  });
   initializeConfig(TEST_NET_CONFIG as Config);
 
   const updateDaoList = async () => {
