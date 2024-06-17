@@ -420,7 +420,7 @@ const App = () => {
     const dummyCellWidthRandomizer = new SeededRandom(daoCellNum);
 
     return (
-      <div className="container" onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+      <div className={`container ${!ckbAddress ? 'entrance' : ''}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {isLoading && (
           <div className="loading-overlay">
             <div className="loading-circle-container">
