@@ -1,17 +1,20 @@
 import * as React from 'react';
-import { Cell } from "@ckb-lumos/base";
 import { connect, signRawTransaction } from '@joyid/ckb';
-import { sendTransaction, waitForTransactionConfirmation, queryBalance, Balance, enrichDaoCellInfo, DaoCell, getTipEpoch, SeededRandom } from './lib/helpers';
+import { sendTransaction, waitForTransactionConfirmation, 
+  queryBalance, Balance, enrichDaoCellInfo, DaoCell, 
+  getTipEpoch, SeededRandom, isJoyIdAddress } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
 import { TEST_NET_CONFIG, NODE_URL, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX } from "./config";
-import { buildDepositTransaction, buildWithdrawTransaction, buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
-import "./styles.css";
+import { buildDepositTransaction, buildWithdrawTransaction,
+  buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
+import { ccc } from "@ckb-ccc/connector-react";
+import "./App.css";
 import Modal from 'react-modal';
 Modal.setAppElement('#root');
+import { SnackbarProvider, useSnackbar } from 'notistack';
 
-export default function App() {
-  const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
+const App = () => {
   const [balance, setBalance] = React.useState<Balance | null>(null);
   const [depositCells, setDepositCells] = React.useState<DaoCell[]>([]);
   const [withdrawalCells, setWithdrawalCells] = React.useState<DaoCell[]>([]);
@@ -26,19 +29,23 @@ export default function App() {
   const [modalMessage, setModalMessage] = React.useState<string>();
   const [tipEpoch, setTipEpoch] = React.useState<number>();
   const [isModalMessageLoading, setIsModalMessageLoading] = React.useState(false);
+  const [ckbAddress, setCkbAddress] = React.useState("");
+  const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
+
+  const { wallet, open, disconnect, setClient } = ccc.useCcc();
+  const signer = ccc.useSigner();
+  const { enqueueSnackbar } = useSnackbar();
 
   initializeConfig(TEST_NET_CONFIG as Config);
 
   const updateDaoList = async () => {
-    const storedAuthData = localStorage.getItem('joyidInfo');
-    if (storedAuthData) {
+    const storedJoyidAddress = localStorage.getItem('joyIdAddress');
+    if (storedJoyidAddress) {
       try {
-        const authInfo = JSON.parse(storedAuthData);
-  
         const [balance, deposits, withdrawals, epoch] = await Promise.all([
-          queryBalance(authInfo.address),
-          collectDeposits(authInfo.address),
-          collectWithdrawals(authInfo.address),
+          queryBalance(storedJoyidAddress),
+          collectDeposits(storedJoyidAddress),
+          collectWithdrawals(storedJoyidAddress),
           getTipEpoch(),
         ]);
   
@@ -51,56 +58,84 @@ export default function App() {
         localStorage.setItem('balance', JSON.stringify(balance));
         localStorage.setItem('depositCells', JSON.stringify(deposits));
         localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
-      } catch (error: any) {
-        alert('Error: ' + error.message);
+      } catch (e: any) {
+        enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
       }
     }
-  };  
-  
+  };
+
+  const joyIdConnect = async () => {
+    try {
+      setConnectModalIsOpen(false);
+      const authData = await connect();
+      await settleUserInfo(authData.address);
+    } catch (e: any) {
+      enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
+    }
+  };
+
+  function cccConnect() {
+    if (ckbAddress)
+      settleUserInfo(ckbAddress);
+  }
+
   const onConnect = async () => {
+    setConnectModalIsOpen(true);
+  }
+
+  const settleUserInfo = async (ckbAddress: string) => {
     setIsLoading(true);
     try {
-      const authData = await connect();
       const [balance, deposits, withdrawals, epoch] = await Promise.all([
-        queryBalance(authData.address),
-        collectDeposits(authData.address),
-        collectWithdrawals(authData.address),
+        queryBalance(ckbAddress),
+        collectDeposits(ckbAddress),
+        collectWithdrawals(ckbAddress),
         getTipEpoch(),
       ]);
   
-      setJoyidInfo(authData);
+      setCkbAddress(ckbAddress);
       setBalance(balance);
       setDepositCells(deposits as DaoCell[]);
       setWithdrawalCells(withdrawals as DaoCell[]);
       setIsLoading(false);
       setTipEpoch(epoch);
   
-      localStorage.setItem('joyidInfo', JSON.stringify(authData));
+      localStorage.setItem('joyIdAddress', ckbAddress);
       localStorage.setItem('balance', JSON.stringify(balance));
       localStorage.setItem('depositCells', JSON.stringify(deposits));
       localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
-    } catch (error: any) {
-      alert('Error: ' + error.message);
+    } catch (e: any) {
+      enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
     }
-  };  
+  };
 
   const onDeposit = async () => {
     if (isDepositing) {
       try {
-        setDepositAmount(''); // Clear the input field
-        setIsDepositing(false); // Revert back to the deposit button //TODO
-
+        setIsDepositing(false);
         const amount = BigInt(depositAmount);
-        const daoTx = await buildDepositTransaction(joyidInfo.address, amount);
-        const signedTx = await signRawTransaction(
-          daoTx,
-          joyidInfo.address
-        );
-  
-        // Send the transaction to the RPC node.
-        const txid = await sendTransaction(signedTx);
-        alert(`Transaction Sent: ${txid}\n`);
-  
+        // reset state var
+        setDepositAmount('');
+        const daoTx = await buildDepositTransaction(ckbAddress, amount);
+
+        let signedTx;
+        let txid = "";
+        if (isJoyIdAddress(ckbAddress)) {
+          signedTx = await signRawTransaction(
+            daoTx,
+            ckbAddress
+          );
+          txid = await sendTransaction(signedTx);
+        } else {
+          if (signer) {
+            enqueueSnackbar(`Openning ${wallet.name} ...`, { variant: 'success' });
+            txid = await signer.sendTransaction(daoTx);
+          } else {
+            throw new Error('Wallet disconnected. Reconnect!');
+          }
+        }
+
+        enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: 'success' });
         setIsWaitingTxConfirm(true);
         setIsLoading(true);
 
@@ -111,8 +146,8 @@ export default function App() {
         setIsWaitingTxConfirm(false);
         await updateDaoList();
 
-      } catch (error:any) {
-        alert('Error: ' + error.message);
+      } catch (e:any) {
+        enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
       }
     } else {
       setIsDepositing(true);
@@ -132,18 +167,29 @@ export default function App() {
     setIsModalMessageLoading(false);
   };
   
-  const _onWithdraw = async (cell: Cell) => {
+  const _onWithdraw = async (cell: DaoCell) => {
     try {
-      const daoTx = await buildWithdrawTransaction(joyidInfo.address, cell);
+      const daoTx = await buildWithdrawTransaction(ckbAddress, cell);
 
-      const signedTx = await signRawTransaction(
-        daoTx,
-        joyidInfo.address
-      );
+      let signedTx;
+      let txid = "";
 
-      // Send the transaction to the RPC node.
-      const txid = await sendTransaction(signedTx);
-      alert(`Transaction Sent: ${txid}\n`);
+      if (isJoyIdAddress(ckbAddress)) {
+        signedTx = await signRawTransaction(
+          daoTx,
+          ckbAddress
+        );
+        // Send the transaction to the RPC node.
+        txid = await sendTransaction(signedTx);
+      } else {
+        if (signer) {
+          txid = await signer.sendTransaction(daoTx);
+        } else {
+          throw new Error('Wallet disconnected. Reconnect!');
+        }
+      }
+      
+      enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: 'success' });
 
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
@@ -155,8 +201,8 @@ export default function App() {
       setIsWaitingTxConfirm(false);
       await updateDaoList();
 
-    } catch(error:any) {
-      alert('Error: ' + error.message);
+    } catch(e:any) {
+      enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
     }
   }
 
@@ -173,19 +219,29 @@ export default function App() {
     setIsModalMessageLoading(false);
   };
 
-  const _onUnlock = async(withdrawalCell: Cell) => {
+  const _onUnlock = async(withdrawalCell: DaoCell) => {
     try {
-      const daoTx = await buildUnlockTransaction(joyidInfo.address, withdrawalCell);
+      const daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell);
 
-      const signedTx = await signRawTransaction(
-        daoTx,
-        joyidInfo.address
-      );
-      // console.log(">>>signedTx: ", JSON.stringify(signedTx, null, 2))
+      let signedTx;
+      let txid = "";
 
-      // Send the transaction to the RPC node.
-      const txid = await sendTransaction(signedTx);
-      alert(`Transaction Sent: ${txid}\n`);
+      if (isJoyIdAddress(ckbAddress)) {
+        signedTx = await signRawTransaction(
+          daoTx,
+          ckbAddress
+        );
+        // Send the transaction to the RPC node.
+        txid = await sendTransaction(signedTx);
+      } else {
+        if (signer) {
+          txid = await signer.sendTransaction(daoTx);
+        } else {
+          throw new Error('Wallet disconnected. Reconnect!');
+        }
+      }
+
+      enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: 'success' });
 
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
@@ -197,20 +253,21 @@ export default function App() {
       setIsWaitingTxConfirm(false);
       await updateDaoList();
       
-    } catch(error:any) {
-      alert('Error: ' + error.message);
+    } catch(e:any) {
+      enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
     }
   }
 
   const onSignOut = async () => {
-    setJoyidInfo(null);
+    disconnect();
+    setCkbAddress("");
     setBalance(null);
     setDepositCells([]);
     setWithdrawalCells([]);
     setShowDropdown(false);
     setIsLoading(false);
 
-    localStorage.removeItem('joyidInfo');
+    localStorage.removeItem('joyIdAddress');
     localStorage.removeItem('balance');
     localStorage.removeItem('depositCells');
     localStorage.removeItem('withdrawalCells');
@@ -218,7 +275,11 @@ export default function App() {
 
   const shortenAddress = (address: string) => {
     if (!address) return '';
-    return `${address.slice(0, 5)}...${address.slice(-7)}`;
+    if (windowWidth <= 768) {
+      return `${address.slice(0, 8)}...${address.slice(-5)}`;
+    } else {
+      return `${address.slice(0, 8)}...${address.slice(-9)}`;
+    }
   }
 
   const handleDepositKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => { //TODO
@@ -234,18 +295,18 @@ export default function App() {
       if (currentCell.isDeposit) {
         if (currentCell.ripe) {
           message = `Optimal withdrawal window reached! Withdraw now and unlock a total of ${Math.floor(step/180)} \
-            complete cycles in after ${(180 - (step%180))} epochs (approximately ${(180 - (step%180))*4} hours. \
-            Otherwise, your deposit will enter another 30-day lock cycle.`;
+            complete cycles in ${(180 - (step%180))} epochs (in ~ ${(180 - (step%180))*4} hours. \
+            After that, your deposit will enter another 30-day lock cycle.`;
         } else {
-          message = `You can wait until epoch ${(tipEpoch + 168 - step%180)} (in approximately \
-            ${((168 - step%180)/6).toFixed(2)} days) to maximize your rewards in this cycle. Do you wish to continue?`
+          message = `To maximize your reward in this cycle, please wait until epoch ${(tipEpoch + 168 - step%180)} (in ~ \
+            ${((168 - step%180)/6).toFixed(2)} days). Do you wish to continue?`
         }
       } else {
         if (currentCell.ripe) {
-          message = `You're now able to complete your Dao withdrawal, receiving a total of ${currentCell.maximumWithdraw} CKB.`;
+          message = `Completing withdrawal process, receiving a total of ~ ${(currentCell.maximumWithdraw/BigInt(CKB_SHANNON_RATIO))} CKB.`;
         } else {
           message = `Come back and unlock your withdrawal at epoch ${(tipEpoch + 181 - step%180)} \
-            (in approximately ${((181 - step%180)/6).toFixed(2)} days).`;
+            (in approximately ${((181 - step%180)/6).toFixed(2)} days) to receive ~ ${(currentCell.maximumWithdraw/BigInt(CKB_SHANNON_RATIO))} CKB.`;
         }
       }
       // display the message in modal
@@ -266,16 +327,39 @@ export default function App() {
     }
   }
 
+  const copyAddress = (address:string) => {
+    if (navigator.clipboard) {
+      // Clipboard API is available
+      navigator.clipboard.writeText(address).then(() => {
+        enqueueSnackbar('Address copied to clipboard', { variant: 'info' });
+      }).catch(err => {
+        enqueueSnackbar('Could not copy address', { variant: 'error' });
+      });
+    } else {
+      // Clipboard API is not available, use fallback
+      const textarea = document.createElement('textarea');
+      textarea.value = address;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        // enqueueSnackbar('Address copied to clipboard', { variant: 'info' });
+      } catch (err) {
+        enqueueSnackbar('Could not copy address', { variant: 'error' });
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
+  };
+  
+  // updating deposit info
   React.useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-
-    const storedAuthData = localStorage.getItem('joyidInfo');
+    const storedJoyidAddress = localStorage.getItem('joyIdAddress');
     const storedBalance = localStorage.getItem('balance');
     const storedDepositCells = localStorage.getItem('depositCells');
     const storedWithdrawalCells = localStorage.getItem('withdrawalCells');
-    if (storedAuthData) {
-      setJoyidInfo(JSON.parse(storedAuthData));
+    if (storedJoyidAddress) {
+      setCkbAddress(storedJoyidAddress);
     }
     if (storedBalance) {
       setBalance(JSON.parse(storedBalance));
@@ -294,8 +378,30 @@ export default function App() {
     if (currentCell && tipEpoch) {
       prepareMessage();
     }
-    return () => window.removeEventListener('resize', handleResize);
   }, [currentCell, tipEpoch]);
+
+  // check device window width
+  React.useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  });
+
+  // updating other chain wallets info
+  React.useEffect(() => {
+    if (!signer) {
+      return;
+    }
+
+    (async () => {
+      setCkbAddress(await signer.getRecommendedAddress());
+    })();
+  }, [signer]);
+
+  // calling cccConnect when ckbAddress varies
+  React.useEffect(() => {
+    cccConnect();
+  }, [ckbAddress]);
 
   {
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
@@ -314,14 +420,14 @@ export default function App() {
     const dummyCellWidthRandomizer = new SeededRandom(daoCellNum);
 
     return (
-      <div className={`container ${joyidInfo ? '' : 'background-image'}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+      <div className={`container ${!ckbAddress ? 'entrance' : ''}`} onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
         {isLoading && (
           <div className="loading-overlay">
             <div className="loading-circle-container">
               <div className="loading-circle"></div>
               {isWaitingTxConfirm && (
                 <p className="tx-confirmation-message">
-                  Your tx can take up a few minutes to process!
+                  Your tx can take a few minutes to process!
                 </p>
               )}
             </div>
@@ -332,67 +438,154 @@ export default function App() {
           await updateDaoList();
           window.location.reload();
         }}>
-          JoyDAO
+          joyDAO
         </h1>
 
-        {!joyidInfo && (
+        {!ckbAddress && (
           <div className='description'>
-            <p>Nervos DAO with JoyID Passkeys</p>
+            <p>Multi-chain Nervos DAO portal</p>
           </div>
         )}
 
-        {!joyidInfo && (
+        {!ckbAddress && (
           <button className='signin-button' onClick={onConnect}>
             Connect
           </button>
         )}
 
-        <div className='account-deposit-buttons' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
-          {joyidInfo && (
+        {(!ckbAddress || !signer) && (
+          <Modal
+            isOpen={connectModalIsOpen}
+            onRequestClose={() => {
+              // close the modal
+              setConnectModalIsOpen(false); 
+            }}
+          >
+            <div className='main-wallet-option'>
+              <div className="connect-wallet">Connect Wallet</div>
+              <div className='headline-separation'> </div>
+              <button
+                className="signin-button joyid-connect"
+                onClick={() => {
+                  setConnectModalIsOpen(false);
+                  joyIdConnect();
+                }}
+              >
+                JoyID Passkeys
+              </button>
+
+              <button
+                className="signin-button other-wallet-connect"
+                onClick={() => {
+                  setConnectModalIsOpen(false);
+                  try {
+                    open();
+                  } catch(e:any) {
+                    enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
+                  }
+                }}              
+              >
+                Others
+              </button>
+            </div>
+
+          </Modal>
+        )}
+
+        <div className='account-deposit-buttons'
+          onClick={(e) => hideDepositTextBoxAndDropDown(e)}
+        >
+          {ckbAddress && (
             <div className='dropdown-area'>
-              <button className='account-button' onClick={(e) => {setShowDropdown(!showDropdown); hideDepositTextBoxAndDropDown(e)}}>
-                {shortenAddress(joyidInfo.address)}
+              <button className='account-button'
+                onClick={(e) => {
+                  setShowDropdown(!showDropdown);
+                  hideDepositTextBoxAndDropDown(e)
+                }}
+              >
+                <span className="copy-sign"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyAddress(ckbAddress)
+                  }}
+                >
+                  ⧉
+                </span>
+                {shortenAddress(ckbAddress)}
               </button>
 
               {showDropdown && (
                 <div className='dropdown-menu'>
-                  <p>Available: {balance ? balance.available.toString() + ' CKB' : 'Loading...'}</p>
-                  <p>Deposited: {balance ? balance.occupied.toString() + ' CKB' : 'Loading...'}</p>
-                  <button className='signout-button' onClick={onSignOut}>
-                    Sign Out
-                  </button>
+                  <h5>
+                    <div>Available: {balance ? (BigInt(balance.available)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
+                    <div>Deposited: {balance ? (BigInt(balance.occupied)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
+                  </h5>
+
+                  {(!signer && !isJoyIdAddress(ckbAddress)) ? (
+                    <button className='dropdown-button'
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setConnectModalIsOpen(true)
+                      }}
+                    >
+                      Reconnect
+                    </button>
+
+                  ) : (
+                    <button className='dropdown-button' onClick={onSignOut}>
+                      Sign Out
+                    </button>
+                  )}
+
                 </div>
               )}
             </div>
           )}
 
-          {joyidInfo && (
+          {ckbAddress && (
             isDepositing ? (
-              <input
-                type="text"
-                value={depositAmount}
-                placeholder="Enter CKB amount!"
-                onChange={(e) => {
-                  if (e.target.value === 'Enter CKB amount') {
-                    setDepositAmount('');
-                  } else {
-                    setDepositAmount(e.target.value);
-                  }
-                }}
-                onKeyDown={(e) => e.key === 'Enter' && onDeposit()}
-                className='deposit-textbox'
-              />
+              <span>
+                <input
+                  type="text"
+                  value={depositAmount}
+                  placeholder="Enter CKB amount!"
+                  onChange={(e) => {
+                    if (e.target.value === 'Enter CKB amount') {
+                      setDepositAmount('');
+                    } else {
+                      setDepositAmount(e.target.value);
+                    }
+                  }}
+                  onKeyDown={(e) => e.key === 'Enter' && onDeposit()}
+                  className='deposit-textbox'
+                />
+                {/* <span className="max-deposit"
+                  onClick={(e) => {
+                    enqueueSnackbar('It\'s recommended to leave ^63 CKB to pay fee for future txs', { variant: 'info' });
+                    setDepositAmount(balance? (BigInt(balance.available)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '');
+                  }}
+                >
+                  Max
+                </span> */}
+              </span>
             ) : (
-              <button className='deposit-button' onClick={(e) => { onDeposit(); hideDepositTextBoxAndDropDown(e); }}>
+              <button className='deposit-button'
+                onClick={(e) => {
+                  onDeposit();
+                  hideDepositTextBoxAndDropDown(e);
+                }}
+              >
                 Deposit
               </button>
             )
           )}
         </div>
 
-        {joyidInfo && (
-          daoCellNum === 0 ? (
-            <div className='no-deposit-message' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+        {ckbAddress && (
+          (daoCellNum === 0 && isLoading == false) ? (
+            <div className='no-deposit-message'
+              onClick={(e) => hideDepositTextBoxAndDropDown(e)}
+            >
               <h2>Whoops, no deposits found!</h2>
             </div>
           ) : (
@@ -504,68 +697,79 @@ export default function App() {
                   </div>
                 );
               })}
-              
+
+              <Modal
+                isOpen={modalIsOpen}
+                onRequestClose={() => {
+                  // close the modal
+                  setModalIsOpen(false); 
+                  // clear the modal message
+                  setModalMessage("");
+                }}
+              >
+                {isModalMessageLoading && (
+                  <div className="modal-loading-overlay">
+                      <div className="modal-loading-circle-container">
+                          <div className="modal-loading-circle"></div>
+                      </div>
+                  </div>
+                )}
+            
+                <h3>Deposit Information</h3>
+                <p>{modalMessage}</p>
+                <div className='button'>
+                  <button
+                    className='proceed'
+                    disabled={currentCell ? (!currentCell.isDeposit && !currentCell.ripe) : false}
+                    onClick={() => {
+                      if (currentCell) {
+                        // if this is a deposit cell, allow for withdraw 
+                        // otherwise it's a withdrawl cell and allow for unlock check
+                        if (currentCell.isDeposit) {
+                          _onWithdraw(currentCell);
+                        } else {
+                          _onUnlock(currentCell);
+                        }
+                      }
+                      // close the modal
+                      setModalIsOpen(false);
+                      // clear the modal message
+                      setModalMessage("");
+                    }}
+                  >
+                    Proceed
+                  </button>
+
+                  <button
+                    className='cancel'
+                    onClick={() => {
+                      // close the modal
+                      setModalIsOpen(false);
+                      // clear the modal message
+                      setModalMessage("");
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </Modal>
+
             </div>
           )
         )}
-
-        <Modal
-          isOpen={modalIsOpen}
-          onRequestClose={() => {
-            // close the modal
-            setModalIsOpen(false); 
-            // clear the modal message
-            setModalMessage("");
-          }}
-        >
-          {isModalMessageLoading && (
-            <div className="modal-loading-overlay">
-                <div className="modal-loading-circle-container">
-                    <div className="modal-loading-circle"></div>
-                </div>
-            </div>
-          )}
-      
-          <h3>Deposit Information</h3>
-          <p>{modalMessage}</p>
-          <div className='button'>
-            <button
-              className='proceed'
-              disabled={currentCell ? (!currentCell.isDeposit && !currentCell.ripe) : false}
-              onClick={() => {
-                if (currentCell) {
-                  // if this is a deposit cell, allow for withdraw 
-                  // otherwise it's a withdrawl cell and allow for unlock check
-                  if (currentCell.isDeposit) {
-                    _onWithdraw(currentCell);
-                  } else {
-                    _onUnlock(currentCell);
-                  }
-                }
-                // close the modal
-                setModalIsOpen(false);
-                // clear the modal message
-                setModalMessage("");
-              }}
-            >
-              Proceed
-            </button>
-
-            <button
-              className='cancel'
-              onClick={() => {
-                // close the modal
-                setModalIsOpen(false);
-                // clear the modal message
-                setModalMessage("");
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </Modal>
-
       </div>
     )
   }
 }
+
+const cccWrappedApp = () => {
+  return (
+    <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+      <ccc.Provider>
+        <App />
+      </ccc.Provider>
+    </SnackbarProvider>
+  );
+};
+
+export default cccWrappedApp;

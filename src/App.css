@@ -1,38 +1,750 @@
-.App {
-  text-align: center;
+body {
+  background-color: #f2f2f2;
+  color: #333333;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+@keyframes wiggle {
+  0% {
+      transform: rotate(-2deg);
+  }
+  50% {
+      transform: rotate(2deg);
+  }
+  100% {
+      transform: rotate(-2deg);
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.title {
+  font-size: 3em;
+  color: #f8f8f8;
+  text-shadow: 
+    2px 2px 0 #505050,
+    4px 4px 0 #333;
+  transform: rotate(-0.5deg);
+  margin: 50px;
+  cursor: pointer;
+  border: 3px solid #505050;
+  padding: 5px;
+  background-color: #505050;
+  height: 65px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease, background-color 0.3s ease;
+  z-index: 0;
+}
+
+.title:hover {
+  color: #A8E72F;
+  background-color: #000;
+}
+
+.account-deposit-buttons {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 60px;
+}
+
+.dropdown-area {
+  position: relative;
+  margin-right: 20px;
+}
+
+.signin-button {
+  background-color: #f8f8f8;
+  color: #505050;
+  padding: 10px 20px;
+  border: 3px solid #505050;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 40px;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
+  transition: transform 0.3s ease;
+  position: relative;
+  top: 350px;
+  z-index: 2;
+}
+
+.signin-button:hover {
+  transform: translateY(-3px);
+  background-color: #000;
+  color: #f8f8f8;
+}
+
+.joyid-connect {
+  background-color: #f8f8f8;
+  color: #505050;
+  justify-content: left;
+  box-shadow: 
+    2px 2px 0 #354f32,
+    4px 4px 0 #2b5328;
+  padding: 1px 20px;
+  background-image: url('./images/joyid-logo.png');
+  background-size: 30px;
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  top: 25px
+}
+
+.joyid-connect:hover {
+  background-color: #000;
+  color: #f8f8f8;
+}
+
+.other-wallet-connect {
+  background-color: #f8f8f8;
+  color: #505050;
+  box-shadow: 
+    2px 2px 0 #81773c,
+    4px 4px 0 #694427;
+  margin-top: 10%;
+  top: 30px
+}
+
+.other-wallet-connect:hover {
+  background-color: #000;
+  color: #f8f8f8;
+}
+
+.account-button {
+  background-color: #f8f8f8;
+  color: #505050;
+  padding: 10px 10px 10px 10px;
+  border: 3px solid #505050;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(2px);
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  width: 200px;
+  height: 40px;
+  background-size: 25px;
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  font-weight: bold;
+  position: relative;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
+  transition: transform 0.3s ease;
+}
+
+.account-button .copy-sign {
+  position: absolute;
+  font-size: 25px;
+  color: #597415;
+  right: 5px;
+}
+
+.account-button .copy-sign:hover {
+  opacity: 1;
+  animation: rainbow 5s linear infinite;
+}
+
+@keyframes rainbow {
+  14% {color: orange;}
+  28% {color: yellow;}
+  42% {color: lime;}
+  71% {color: indigo;}
+  85% {color: violet;}
+}
+
+.account-button:hover {
+  transform: translateY(-3px);
+  background-color: #000;
+  color: #A8E72F;
+}
+
+.dropdown-button {
+  background-color: #f8f8f8;
+  color: #505050;
+  padding: 5px 10px;
+  border: 3px solid #505050;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(2px);
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
+  position: absolute;
+  bottom: 5px;
+}
+
+.dropdown-button:hover {
+  background-color: #000;
+  color: #A8E72F;
+}
+
+.dropdown-menu {
+  position: absolute;
+  background-color: #f9f9f9;
+  border: 1px solid #5b5b5b;
+  padding: 2px;
+  border-radius: 5px;
+  z-index: 1;
+  color: #2e2f22;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  animation: dropdownFadeIn 0.5s ease-in-out;
+  width: 200px;
+  height: 100px;
+  word-wrap: break-word;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+  justify-content: flex-start;
+}
+
+@keyframes dropdownFadeIn {
+  0% {
+      opacity: 0;
+      transform: scale(0.9);
+  }
+  100% {
+      opacity: 1;
+      transform: scale(1);
+  }
+}
+
+.deposit-button {
+  background-color: #f8f8f8;
+  color: #505050;
+  padding: 10px 20px;
+  border: 3px solid #505050;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(2px);
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: 25px;
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  font-weight: bold;
+  width: 200px;
+  height: 40px;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
+  transition: transform 0.3s ease;
+}
+
+.deposit-button:hover {
+  transform: translateY(-3px);
+  background-color: #000;
+  color: #A8E72F;
+}
+
+.deposit-textbox {
+  background-color: #ffffff;
+  color: #808080;
+  border: 2px solid #3d3d3d;
+  border-radius: 5px;
+  cursor: pointer;
+  animation: blink 1s infinite;
+  width: 200px;
+  height: 40px;
+  padding: 0px 5px;
+}
+
+/* .max-deposit {
+  position: relative;
+  left: -40px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #597415;
+}
+
+.max-deposit:hover {
+  opacity: 1;
+  animation: rainbow 5s linear infinite;
+} */
+
+.container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 60%;
+  background-color: #ffffff;
+  padding: 20px;
+  margin: 20px auto;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+  transition: transform 0.5s ease-in-out;
+  min-height: 90vh;
+  max-height: 100vh;
+  background-image: url('./images/plume-signin-background_portrait.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: auto;
+}
+
+.container.entrance::after {
+  content: '';
+  position: absolute;
+  top: 70px;
+  left: 10px;
+  width: 100%;
+  height: 100%;
+  background-image: url('./images/poster.png');
+  background-size: 700px;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+.dao-link {
+  color: textColor;
+  font-size: 1em;
+  position: absolute;
+  bottom: 35%;
+}
+
+.cell-grid {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  align-items: center;
+  max-width: 100%;
+  grid-gap: 0px;
+}
+
+@keyframes blink {
+  0% {
+      border-color: #bd491398;
+  }
+  50% {
+      border-color: #ffffff;
+  }
+  100% {
+      border-color: #00c891;
+  }
+}
+
+.no-deposit-message {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #f8f8f8;
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.3),
+    2px 2px 0 #505050;
+  background-color: #505050;
+  border-radius: 10px;
+  padding: 20px;
+  animation: bounce 1s ease-in-out infinite;
+  position: relative;
+  top: 100px;
+  border: 3px solid #505050;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.no-deposit-message:hover {
+  color: #A8E72F;
+  background-color: #000;
+}
+
+@keyframes bounce {
+  0%, 100% {
+      transform: translateY(0);
+  }
+  50% {
+      transform: translateY(-10px);
+  }
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  /* left: 0; */
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-circle {
+  border: 4px solid #333;
+  border-top-color: transparent;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-circle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tx-confirmation-message {
+  margin-top: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  animation: blink 1s infinite;
+}
+
+.description {
+  position: relative;
+  top: -60px;
+  font-size: 17px;
+  color: #cecece;
+  /* animation: blink 1s infinite; */
+  transform: rotate(-0.5deg);
+}
+
+@keyframes blink {
+  0% {
+      opacity: 1;
+  }
+  50% {
+      opacity: 0.5;
+  }
+  100% {
+      opacity: 1;
+  }
+}
+
+.dao-cell-dummy {
+  border: 1px solid #ddd;
+  padding: 5px;
+  margin: 5px;
+  border-radius: 15px;
+  width: var(--cellWidth);
+  height: var(--cellHeight);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f8f8;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+  position: relative;
+  opacity: 0.2;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
+}
+
+.dao-cell {
+  border: 1px solid var(--backgroundColor);
+  padding: 5px;
+  margin: 5px;
+  border-radius: 15px;
+  width: var(--cellWidth);
+  height: var(--cellHeight);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--backgroundColor);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+  transform: perspective(1000px) rotateY(1deg);
+  backface-visibility: hidden;
+  transition: transform 0.5s ease-in-out;
+  animation: dropdownFadeIn 0.5s ease-in-out;
+  font-size: 1.2em;
+  position: relative;
+  box-shadow: 
+    2px 2px 0 #555,
+    4px 4px 0 #333;
+}
+
+.dao-cell:hover {
+  /* transform: scale(1.05); */
+  transform: translateY(-3px);
+  color: textColor;
+  position: relative;
+}
+
+.dao-cell-button {
+  background-color: var(--buttonColor);
+  color: var(--buttonTextColor);
+  padding: 10px;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 0.8em;
+  position: absolute;
+  bottom: 5px;
+}
+
+.dao-cell-button:hover {
+  background-color: #000;
+  color: #738159;
+}
+
+.ReactModal__Content {
+  max-width: 300px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 10px !important;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+  transition: transform 0.5s ease-in-out;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  align-self: flex-start;
+  margin-top: 25vh;
+  min-height: 20vh;
+}
+
+.modal-loading-overlay {
+  position: absolute;
+  top: 0;
+  /* left: 0; */
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-loading-circle {
+  border: 4px solid #333;
+  border-top-color: transparent;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.modal-loading-circle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+button.proceed, button.cancel {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button.proceed {
+  background-color: #448635; /* Green */
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+button.proceed:disabled {
+  background-color: #cccccc; /* Gray */
+  cursor: not-allowed;
+}  
+
+button.cancel {
+  background-color: #b6382f; /* Red */
+  color: white;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+@keyframes shake {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  10% { transform: translate(-1px, -2px) rotate(-1deg); }
+  20% { transform: translate(-3px, 0px) rotate(1deg); }
+  30% { transform: translate(3px, 2px) rotate(0deg); }
+  40% { transform: translate(1px, -1px) rotate(1deg); }
+  50% { transform: translate(-1px, 2px) rotate(-1deg); }
+  60% { transform: translate(-3px, 1px) rotate(0deg); }
+  70% { transform: translate(3px, 1px) rotate(-1deg); }
+  80% { transform: translate(-1px, -1px) rotate(1deg); }
+  90% { transform: translate(1px, 2px) rotate(0deg); }
+  100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.dao-cell.shake {
+  animation: shake 0.5s;
+  animation-iteration-count: infinite;
+}  
+
+.connect-wallet {
+  font-size: 1.3em;
+  font-weight: bold;
+  width: 200px;
+}
+
+.main-wallet-option {
+  /* position: relative; */
+  top: 20px;
+  min-height: 200px;
+  max-height: 200px;
+}
+
+.headline-separation {
+  border-top: 1px solid #000;
+  width: 180px;
+  /* margin-bottom: 10px; */
+}
+
+@media only screen and (max-width: 768px) {
+
+  .title {
+    font-size: 2.4em;
+    margin: 40px;
+    height: 35px;
+    font-weight: 600;
   }
-  to {
-    transform: rotate(360deg);
+
+  .description {
+    top: -40px;
+  }
+
+  .account-deposit-buttons {
+    margin-bottom: 30px;
+  }
+
+  .signin-button, .account-button, .deposit-button {
+    width: 150px;
+    height: 45px;
+    padding: 5px 10px 5px 10px;
+    font-size: 14px;
+    margin-bottom: 30px;
+    font-weight: bold;
+  }
+
+  .signin-button {
+    background-position: right 10px center;
+    background-size: 35px;
+    padding-left: 2px;
+    width: 180px;
+    font-size: 1.5em;
+  }
+  
+  .account-button .copy-sign {
+    font-size: 20px;
+  }
+
+  .joyid-connect {
+    font-size: 1em;
+    top: 25px;
+    padding: 1px 15px;
+    background-size: 30px;
+  }
+  
+  .other-wallet-connect {
+    font-size: 1em;
+    top: 25px;
+  }
+  
+  .container {
+    width: 100%;
+    min-height: 800px;
+    padding: 0px;
+    margin-top: 0px;
+  }
+
+  .container.entrance::after {
+    content: '';
+    position: absolute;
+    top: 50px;
+    background-size: 500px;
+  }
+
+  .dao-cell-dummy {
+    padding: 3px;
+    margin: 3px;
+    font-size: 16px;
+    height: var(--cellHeight);
+  }
+
+  .dao-cell {
+    padding: 3px;
+    margin: 3px;
+    font-size: 16px;
+    height: var(--cellHeight);
+  }
+
+  .dao-cell-button {
+    font-size: 0.8em;
+  }
+
+  .deposit-textbox {
+    width: 150px;
+    height: 45px;
+    padding-left: 5px;
+    padding-right: 45px;
+    max-width: 120px;
+  }
+
+  /* .max-deposit {
+    font-size: smaller;
+  } */
+
+  .no-deposit-message {
+    font-size: 1em;
+  }
+
+  .tx-confirmation-message {
+    font-size: 14px;
+  }
+
+  .dropdown-menu {
+    margin-top: -30px;
+    width: 180px;
+    height: 100px;
+  }
+
+  .ReactModal__Content {
+    max-width: 40vh;
+    padding: 20px;
+    min-width: 200px;
   }
 }
