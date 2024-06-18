@@ -14,6 +14,16 @@ import "./App.css";
 import Modal from 'react-modal';
 Modal.setAppElement('#root');
 import { SnackbarProvider, useSnackbar } from 'notistack';
+import { CircularProgressbar } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
+import { CircularProgressbarWithChildren } from 'react-circular-progressbar';
+
+interface DepositlMessage {
+  completedCycles: number;
+  currentCycleProgress: number;
+  ripeInterval: number; //epoch
+  maximumWithdrawal?: BigInt;
+}
 
 const App = () => {
   const [balance, setBalance] = React.useState<Balance | null>(null);
@@ -27,7 +37,7 @@ const App = () => {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [modalIsOpen, setModalIsOpen] = React.useState(false);
   const [currentCell, setCurrentCell] = React.useState<DaoCell | null>(null);
-  const [modalMessage, setModalMessage] = React.useState<string>();
+  const [modalMessage, setModalMessage] = React.useState<DepositlMessage | null>(null);
   const [tipEpoch, setTipEpoch] = React.useState<number>();
   const [isModalMessageLoading, setIsModalMessageLoading] = React.useState(false);
   const [ckbAddress, setCkbAddress] = React.useState("");
@@ -295,30 +305,16 @@ const App = () => {
   }
 
   const prepareMessage = () => {
-    let message = '';
     if (currentCell && tipEpoch) {
       const step = tipEpoch - currentCell.depositEpoch;
-      if (currentCell.isDeposit) {
-        if (currentCell.ripe) {
-          message = `Optimal withdrawal window reached! Withdraw now and unlock a total of ${Math.floor(step/180)} \
-            complete cycles in ${(180 - (step%180))} epochs (in ~ ${(180 - (step%180))*4} hours. \
-            After that, your deposit will enter another 30-day lock cycle.`;
-        } else {
-          message = `To maximize your reward in this cycle, please wait until epoch ${(tipEpoch + 168 - step%180)} (in ~ \
-            ${((168 - step%180)/6).toFixed(2)} days). Do you wish to continue?`
-        }
-      } else {
-        if (currentCell.ripe) {
-          message = `Completing withdrawal process, receiving a total of ~ ${(currentCell.maximumWithdraw/BigInt(CKB_SHANNON_RATIO))} CKB.`;
-        } else {
-          message = `Come back and unlock your withdrawal at epoch ${(tipEpoch + 181 - step%180)} \
-            (in approximately ${((181 - step%180)/6).toFixed(2)} days) to receive ~ ${(currentCell.maximumWithdraw/BigInt(CKB_SHANNON_RATIO))} CKB.`;
-        }
-      }
-      // display the message in modal
-      setModalMessage(message);
+      const m:DepositlMessage = {completedCycles: 0, currentCycleProgress: 0, ripeInterval: 0};
+      m.completedCycles = Math.floor(step/180);
+      m.currentCycleProgress = Math.floor((step%180)*100/180);
+      m.ripeInterval = 180 - step%180;
+      m.maximumWithdrawal = currentCell.isDeposit ? undefined : currentCell.maximumWithdraw/BigInt(CKB_SHANNON_RATIO);
+      setModalMessage(m);
     } else {
-      message = 'The current dao deposit information can not be retrieved now. Try refreshing the page';
+      throw new Error('Deposit information cant be retrieved. Try refreshing the page');
     }
   };  
 
@@ -417,6 +413,7 @@ const App = () => {
   }, [setClient, CCC_MAINNET]);
 
   {
+    console.log(">>>modalMessage: ", modalMessage)
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
     const smallScreenDeviceMinCellWidth = 100;
     const largeScreenDeviceMinCellWidth = 120;
@@ -723,7 +720,7 @@ const App = () => {
                   // close the modal
                   setModalIsOpen(false); 
                   // clear the modal message
-                  setModalMessage("");
+                  setModalMessage(null);
                 }}
               >
                 {isModalMessageLoading && (
@@ -734,8 +731,36 @@ const App = () => {
                   </div>
                 )}
             
-                <h3>Deposit Information</h3>
-                <p>{modalMessage}</p>
+                <h3 className='deposit-message-head'>Deposit Information</h3>
+                <div className='deposit-cycle-progress-bar'>
+                  <CircularProgressbarWithChildren value={modalMessage?.currentCycleProgress!}>
+                    <p className='deposit-message'>Cycle: {modalMessage?.completedCycles! + 1}</p>
+                    <p className='deposit-message'>Progress: {modalMessage?.currentCycleProgress!}%</p>
+                    {!currentCell?.isDeposit && (
+                      <p className='deposit-message'>Total Return: {modalMessage?.maximumWithdrawal ? (modalMessage?.maximumWithdrawal!).toString() : ''} CKB</p>
+                    )}
+
+                    {!currentCell?.isDeposit ? (
+                      <p className='deposit-message'>
+                        Unlock in: {
+                          ((modalMessage?.ripeInterval! + 1) / 6) > 2 
+                            ? `${((modalMessage?.ripeInterval! + 1) / 6).toFixed(2)}d` 
+                            : `${(modalMessage?.ripeInterval! + 1) * 4}h`
+                        }
+                      </p>
+                    ) : (
+                      <p className='deposit-message'>
+                        Max Reward in: {
+                          ((modalMessage?.ripeInterval! - 12) / 6) > 2
+                            ? `${((modalMessage?.ripeInterval! - 12) / 6).toFixed(2)}d` 
+                            : `${(modalMessage?.ripeInterval! - 12) * 4}h`
+                        }
+                      </p>
+
+                    )}
+                  </CircularProgressbarWithChildren>
+                </div>
+
                 <div className='button'>
                   <button
                     className='proceed'
@@ -753,7 +778,7 @@ const App = () => {
                       // close the modal
                       setModalIsOpen(false);
                       // clear the modal message
-                      setModalMessage("");
+                      setModalMessage(null);
                     }}
                   >
                     Proceed
@@ -765,7 +790,7 @@ const App = () => {
                       // close the modal
                       setModalIsOpen(false);
                       // clear the modal message
-                      setModalMessage("");
+                      setModalMessage(null);
                     }}
                   >
                     Cancel

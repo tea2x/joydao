@@ -578,10 +578,11 @@ button.proceed, button.cancel {
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
+  margin: 5px;
 }
 
 button.proceed {
-  background-color: #448635; /* Green */
+  background-color: #24c842; /* Green */
   color: white;
 }
 
@@ -591,7 +592,7 @@ button.proceed:disabled {
 }  
 
 button.cancel {
-  background-color: #b6382f; /* Red */
+  background-color: #e55a03; /* Red */
   color: white;
 }
 
@@ -631,6 +632,24 @@ button.cancel {
   border-top: 1px solid #000;
   width: 180px;
   /* margin-bottom: 10px; */
+}
+
+.deposit-message-head {
+  border-bottom: 1px solid #000;
+  width: inherit;
+  margin: 0.3em;
+}
+.deposit-message {
+  margin: 0.1em;
+  font-size: 1em;
+  font-weight: bold;
+  color:cadetblue
+}
+
+.deposit-cycle-progress-bar {
+  width: 250px;
+  height: 250px;
+  margin: 10px;
 }
 
 @media only screen and (max-width: 768px) {
