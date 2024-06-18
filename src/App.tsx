@@ -309,14 +309,23 @@ const App = () => {
       const step = tipEpoch - currentCell.depositEpoch;
       const m:DepositlMessage = {completedCycles: 0, currentCycleProgress: 0, ripeInterval: 0};
       m.completedCycles = Math.floor(step/180);
-      m.currentCycleProgress = Math.floor((step%180)*100/180);
+      m.currentCycleProgress = currentCell.isDeposit
+        ? (currentCell.ripe
+            ? 100
+            : Math.floor((step%180)*100/(180 - 0))
+          )
+        : (currentCell.ripe
+            ? 100
+            : Math.floor((step%180)*100/180)
+        );
       m.ripeInterval = 180 - step%180;
       m.maximumWithdrawal = currentCell.isDeposit ? undefined : currentCell.maximumWithdraw/BigInt(CKB_SHANNON_RATIO);
+      // display the message in modal
       setModalMessage(m);
     } else {
       throw new Error('Deposit information cant be retrieved. Try refreshing the page');
     }
-  };  
+  }; 
 
   const hideDepositTextBoxAndDropDown = (e:any) => {
     e.stopPropagation(); // Prevent event propagation
@@ -734,30 +743,64 @@ const App = () => {
                 <h3 className='deposit-message-head'>Deposit Information</h3>
                 <div className='deposit-cycle-progress-bar'>
                   <CircularProgressbarWithChildren value={modalMessage?.currentCycleProgress!}>
-                    <p className='deposit-message'>Cycle: {modalMessage?.completedCycles! + 1}</p>
+                    <p className='deposit-message'>
+                      Cycle: {
+                        (!currentCell?.isDeposit && currentCell?.ripe)
+                          ?  modalMessage?.completedCycles!
+                          : modalMessage?.completedCycles! + 1
+                      }
+                    </p>
                     <p className='deposit-message'>Progress: {modalMessage?.currentCycleProgress!}%</p>
                     {!currentCell?.isDeposit && (
-                      <p className='deposit-message'>Total Return: {modalMessage?.maximumWithdrawal ? (modalMessage?.maximumWithdrawal!).toString() : ''} CKB</p>
+                      <p className='deposit-message'>
+                        Total Return: {
+                          modalMessage?.maximumWithdrawal 
+                            ? (modalMessage?.maximumWithdrawal!).toString() 
+                            : ''
+                        } CKB
+                      </p>
                     )}
 
-                    {!currentCell?.isDeposit ? (
-                      <p className='deposit-message'>
-                        Unlock in: {
-                          ((modalMessage?.ripeInterval! + 1) / 6) > 2 
-                            ? `${((modalMessage?.ripeInterval! + 1) / 6).toFixed(2)}d` 
-                            : `${(modalMessage?.ripeInterval! + 1) * 4}h`
-                        }
-                      </p>
-                    ) : (
-                      <p className='deposit-message'>
-                        Max Reward in: {
-                          ((modalMessage?.ripeInterval! - 12) / 6) > 2
-                            ? `${((modalMessage?.ripeInterval! - 12) / 6).toFixed(2)}d` 
-                            : `${(modalMessage?.ripeInterval! - 12) * 4}h`
-                        }
-                      </p>
-
+                    {!currentCell?.isDeposit && (
+                      !currentCell?.ripe ? (
+                        <p className='deposit-message highlight'>
+                          Unlock in: {
+                            ((modalMessage?.ripeInterval! + 1) / 6) > 2 
+                              ? `${((modalMessage?.ripeInterval! + 1) / 6).toFixed(2)}d` 
+                              : `${(modalMessage?.ripeInterval! + 1) * 4}h`
+                          }
+                        </p>
+                      ) : (
+                        <p className='deposit-message highlight'>
+                          Unlock now!
+                        </p>
+                      )
                     )}
+
+                    {
+                      (currentCell?.isDeposit && (
+                        !currentCell.ripe ? (
+                          <p className='deposit-message highlight'>
+                            Max Reward in: {
+                              ((modalMessage?.ripeInterval! >=12) && ((modalMessage?.ripeInterval! - 12) / 6) > 2)
+                                ? `${((modalMessage?.ripeInterval! - 12) / 6).toFixed(2)}d` 
+                                : `${(modalMessage?.ripeInterval! - 12) * 4}h`
+                            }
+                          </p>
+                        ) : (
+                          <p className='deposit-message highlight'>
+                            Withdraw now!
+                          </p>
+                        )
+                      ))
+                    }
+
+                    {(currentCell?.isDeposit && currentCell.ripe) && (
+                      <p className='deposit-message highlight'>
+                        New Lock Cycle in: {(modalMessage?.ripeInterval!) * 4}h
+                      </p>
+                    )}
+
                   </CircularProgressbarWithChildren>
                 </div>
 
