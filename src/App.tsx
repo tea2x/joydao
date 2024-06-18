@@ -14,14 +14,13 @@ import "./App.css";
 import Modal from 'react-modal';
 Modal.setAppElement('#root');
 import { SnackbarProvider, useSnackbar } from 'notistack';
-import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import { CircularProgressbarWithChildren } from 'react-circular-progressbar';
+import { CircularProgressbarWithChildren, buildStyles } from 'react-circular-progressbar';
 
 interface DepositlMessage {
   completedCycles: number;
   currentCycleProgress: number;
-  ripeInterval: number; //epoch
+  cycleEndInterval: number; //epoch
   maximumWithdrawal?: BigInt;
 }
 
@@ -307,18 +306,10 @@ const App = () => {
   const prepareMessage = () => {
     if (currentCell && tipEpoch) {
       const step = tipEpoch - currentCell.depositEpoch;
-      const m:DepositlMessage = {completedCycles: 0, currentCycleProgress: 0, ripeInterval: 0};
+      const m:DepositlMessage = {completedCycles: 0, currentCycleProgress: 0, cycleEndInterval: 0};
       m.completedCycles = Math.floor(step/180);
-      m.currentCycleProgress = currentCell.isDeposit
-        ? (currentCell.ripe
-            ? 100
-            : Math.floor((step%180)*100/(180 - 0))
-          )
-        : (currentCell.ripe
-            ? 100
-            : Math.floor((step%180)*100/180)
-        );
-      m.ripeInterval = 180 - step%180;
+      m.currentCycleProgress = Math.floor((step%180)*100/180);
+      m.cycleEndInterval = 180 - step%180;
       m.maximumWithdrawal = currentCell.isDeposit ? undefined : currentCell.maximumWithdraw/BigInt(CKB_SHANNON_RATIO);
       // display the message in modal
       setModalMessage(m);
@@ -422,7 +413,6 @@ const App = () => {
   }, [setClient, CCC_MAINNET]);
 
   {
-    console.log(">>>modalMessage: ", modalMessage)
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
     const smallScreenDeviceMinCellWidth = 100;
     const largeScreenDeviceMinCellWidth = 120;
@@ -742,7 +732,12 @@ const App = () => {
             
                 <h3 className='deposit-message-head'>Deposit Information</h3>
                 <div className='deposit-cycle-progress-bar'>
-                  <CircularProgressbarWithChildren value={modalMessage?.currentCycleProgress!}>
+                  <CircularProgressbarWithChildren
+                    value={modalMessage?.currentCycleProgress!}
+                    styles={buildStyles({
+                      pathColor: modalMessage?.currentCycleProgress! < 93 ? '#99c824' : '#e58603',
+                    })}
+                  >
                     <p className='deposit-message'>
                       Cycle: {
                         (!currentCell?.isDeposit && currentCell?.ripe)
@@ -765,9 +760,9 @@ const App = () => {
                       !currentCell?.ripe ? (
                         <p className='deposit-message highlight'>
                           Unlock in: {
-                            ((modalMessage?.ripeInterval! + 1) / 6) > 2 
-                              ? `${((modalMessage?.ripeInterval! + 1) / 6).toFixed(2)}d` 
-                              : `${(modalMessage?.ripeInterval! + 1) * 4}h`
+                            ((modalMessage?.cycleEndInterval! + 1) / 6) > 2 
+                              ? `${((modalMessage?.cycleEndInterval! + 1) / 6).toFixed(2)}d` 
+                              : `${(modalMessage?.cycleEndInterval! + 1) * 4}h`
                           }
                         </p>
                       ) : (
@@ -782,9 +777,9 @@ const App = () => {
                         !currentCell.ripe ? (
                           <p className='deposit-message highlight'>
                             Max Reward in: {
-                              ((modalMessage?.ripeInterval! >=12) && ((modalMessage?.ripeInterval! - 12) / 6) > 2)
-                                ? `${((modalMessage?.ripeInterval! - 12) / 6).toFixed(2)}d` 
-                                : `${(modalMessage?.ripeInterval! - 12) * 4}h`
+                              ((modalMessage?.cycleEndInterval! >=12) && ((modalMessage?.cycleEndInterval! - 12) / 6) > 2)
+                                ? `${((modalMessage?.cycleEndInterval! - 12) / 6).toFixed(2)}d` 
+                                : `${(modalMessage?.cycleEndInterval! - 12) * 4}h`
                             }
                           </p>
                         ) : (
@@ -797,7 +792,7 @@ const App = () => {
 
                     {(currentCell?.isDeposit && currentCell.ripe) && (
                       <p className='deposit-message highlight'>
-                        New Lock Cycle in: {(modalMessage?.ripeInterval!) * 4}h
+                        New Lock Cycle in: {(modalMessage?.cycleEndInterval!) * 4}h
                       </p>
                     )}
 
