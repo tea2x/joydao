@@ -308,7 +308,12 @@ const App = () => {
       const step = tipEpoch - currentCell.depositEpoch;
       const m:DepositlMessage = {completedCycles: 0, currentCycleProgress: 0, cycleEndInterval: 0};
       m.completedCycles = Math.floor(step/180);
-      m.currentCycleProgress = Math.floor((step%180)*100/180);
+      if (currentCell.isDeposit == false && currentCell.ripe) {
+        // when unlocking period arrives, current cycle halt at 100%
+        m.currentCycleProgress = 100;
+      } else {
+        m.currentCycleProgress = Math.floor((step%180)*100/180);
+      }
       m.cycleEndInterval = 180 - step%180;
       m.maximumWithdrawal = currentCell.isDeposit ? undefined : currentCell.maximumWithdraw/BigInt(CKB_SHANNON_RATIO);
       // display the message in modal

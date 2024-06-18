@@ -738,15 +738,11 @@ button.cancel {
   }
 
   .dao-cell-dummy {
-    padding: 3px;
-    margin: 3px;
     font-size: 16px;
     height: var(--cellHeight);
   }
 
   .dao-cell {
-    padding: 3px;
-    margin: 3px;
     font-size: 16px;
     height: var(--cellHeight);
   }
