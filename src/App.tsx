@@ -479,8 +479,8 @@ const App = () => {
             }}
           >
             <div className='main-wallet-option'>
-              <div className="connect-wallet">Connect Wallet</div>
-              <div className='headline-separation'> </div>
+              <h3 className="connect-wallet">Connect Wallet</h3>
+              <h3 className='headline-separation'> </h3>
               <button
                 className="signin-button joyid-connect"
                 onClick={() => {

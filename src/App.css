@@ -96,7 +96,8 @@ body {
   background-size: 30px;
   background-position: right 10px center;
   background-repeat: no-repeat;
-  top: 25px
+  top: 25px;
+  margin: 0 auto 20px auto;
 }
 
 .joyid-connect:hover {
@@ -111,7 +112,8 @@ body {
     2px 2px 0 #81773c,
     4px 4px 0 #694427;
   margin-top: 10%;
-  top: 30px
+  top: 30px;
+  margin: 20px auto 12px auto;
 }
 
 .other-wallet-connect:hover {
@@ -517,7 +519,7 @@ body {
 .ReactModal__Content {
   max-width: 300px;
   margin: 20px auto;
-  padding: 20px;
+  padding: 10px;
   background-color: #ffffff;
   border: none;
   border-radius: 10px !important;
@@ -532,6 +534,10 @@ body {
   align-self: flex-start;
   margin-top: 25vh;
   min-height: 20vh;
+}
+
+.ReactModal__Overlay {
+  background-color: rgba(18, 19, 24, 0.7) !important;
 }
 
 .modal-loading-overlay {
@@ -582,7 +588,7 @@ button.proceed, button.cancel {
 }
 
 button.proceed {
-  background-color: #24c842; /* Green */
+  background-color: #6ec824; /* Green */
   color: white;
 }
 
@@ -592,7 +598,7 @@ button.proceed:disabled {
 }  
 
 button.cancel {
-  background-color: #e55a03; /* Red */
+  background-color: #e54303; /* Red */
   color: white;
 }
 
@@ -619,19 +625,20 @@ button.cancel {
   font-size: 1.3em;
   font-weight: bold;
   width: 200px;
+  text-align: center;
+  margin: 5px 10px;
 }
 
 .main-wallet-option {
-  /* position: relative; */
   top: 20px;
-  min-height: 200px;
   max-height: 200px;
+  min-height: 170px;
 }
 
 .headline-separation {
   border-top: 1px solid #000;
   width: 180px;
-  /* margin-bottom: 10px; */
+  margin: 0 auto;
 }
 
 .deposit-message-head {

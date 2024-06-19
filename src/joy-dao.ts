@@ -423,7 +423,7 @@ export const buildUnlockTransaction = async (
   const fee = calculateFeeCompatible(txSize, FEE_RATE).toNumber();
   const outputCapacity: HexString =
     "0x" +
-    calculateMaximumWithdrawCompatible(
+    dao.calculateMaximumWithdrawCompatible(
       daoWithdrawalCell,
       depositBlockHeader!.dao,
       withdrawBlockHeader!.dao
@@ -465,25 +465,6 @@ function epochSinceCompatible({
     .add(_index.shl(24))
     .add(_number);
 }
-
-export function calculateMaximumWithdrawCompatible(
-  withdrawCell: Cell,
-  depositDao: PackedDao,
-  withdrawDao: PackedDao
-): BI {
-  const depositAR = BI.from(extractDaoDataCompatible(depositDao).ar);
-  const withdrawAR = BI.from(extractDaoDataCompatible(withdrawDao).ar);
-
-  const occupiedCapacity = BI.from(minimalCellCapacityCompatible(withdrawCell));
-  const outputCapacity = BI.from(withdrawCell.cellOutput.capacity);
-  const countedCapacity = outputCapacity.sub(occupiedCapacity);
-  const withdrawCountedCapacity = countedCapacity
-    .mul(withdrawAR)
-    .div(depositAR);
-
-  return withdrawCountedCapacity.add(occupiedCapacity);
-}
-
 export function extractDaoDataCompatible(dao: PackedDao): {
   [key: string]: BI;
 } {
