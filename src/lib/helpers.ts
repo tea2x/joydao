@@ -330,6 +330,7 @@ export const isJoyIdAddress = (address: string) => {
 	return(addressToScript(address, { config }).codeHash == JOYID_CELLDEP.codeHash);
 }
 
+// this function is only for joyID lock and omnilock
 export const addDefaultWitnessPlaceholders = (
   transaction: TransactionSkeletonType,
   daoUnlock = false
@@ -343,6 +344,8 @@ export const addDefaultWitnessPlaceholders = (
   let uniqueLocks = new Set();
   for (const input of transaction.inputs) {
     let witness = "0x";
+	let lockScriptWitness = "0x";
+	let inputTypeScriptWitness = "0x";
 
     const lockHash = computeScriptHash(input.cellOutput.lock);
     if (!uniqueLocks.has(lockHash)) {
@@ -352,22 +355,21 @@ export const addDefaultWitnessPlaceholders = (
         input.cellOutput.lock.hashType === "type" &&
         input.cellOutput.lock.codeHash === JOYID_CELLDEP.codeHash
       ) {
-        witness = JOYID_SIGNATURE_PLACEHOLDER_DEFAULT;
+        lockScriptWitness = JOYID_SIGNATURE_PLACEHOLDER_DEFAULT;
       } else if (
         input.cellOutput.lock.hashType === "type" &&
         input.cellOutput.lock.codeHash === OMNILOCK_CELLDEP.codeHash
       ) {
-        witness = OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT;
+        lockScriptWitness = OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT;
       }
-    }
+	  
+	  // will fall on the the first input - deposit cell
+	  if (daoUnlock) {
+		inputTypeScriptWitness = "0x0000000000000000";
+	  }
 
-	if (daoUnlock) {
-		// add witnesses place holder; inputType is 64-bit unsigned little-endian integer format
-  		// of the deposit cell header index in header_deps, which is 0x0000000000000000 for index 0
-		witness = bytes.hexify(blockchain.WitnessArgs.pack({ lock: witness, inputType: "0x0000000000000000" }));
-	} else {
-    	witness = bytes.hexify(blockchain.WitnessArgs.pack({ lock: witness }));
-	}
+	  witness = bytes.hexify(blockchain.WitnessArgs.pack({ lock: lockScriptWitness, inputType: inputTypeScriptWitness }));
+    }
     transaction = transaction.update("witnesses", (w) => w.push(witness));
   }
 

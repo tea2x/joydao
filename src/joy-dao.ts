@@ -136,7 +136,7 @@ export const buildDepositTransaction = async (
       })
     );
   } else {
-    throw new Error("Only joyId lock and omnilock are allowed");
+    throw new Error("Only joyId and omnilock addresses are supported");
   }
 
   // calculating fee for a really large dummy tx (^100 inputs) and adding input capacity cells
@@ -221,6 +221,8 @@ export const buildWithdrawTransaction = async (
         depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType,
       })
     );
+  } else {
+    throw new Error("Only joyId and omnilock addresses are supported");
   }
 
   // add dao input cell
@@ -308,6 +310,11 @@ export const buildUnlockTransaction = async (
     depType: template.DEP_TYPE,
   };
 
+  // dao cell dep
+  txSkeleton = txSkeleton.update("cellDeps", (i) =>
+    i.push(daoCellDep as CellDep)
+  );
+
   const fromScript = addressToScript(ckbAddress, { config });
   if (fromScript.codeHash == JOYID_CELLDEP.codeHash) {
     txSkeleton = txSkeleton.update("cellDeps", (i) =>
@@ -334,11 +341,8 @@ export const buildUnlockTransaction = async (
         depType: config.SCRIPTS.SECP256K1_BLAKE160?.DEP_TYPE as DepType,
       })
     );
-
-    // dao cell dep
-    txSkeleton = txSkeleton.update("cellDeps", (i) =>
-      i.push(daoCellDep as CellDep)
-    );
+  } else {
+    throw new Error("Only joyId and omnilock addresses are supported");
   }
 
   // find the deposit cell and
@@ -386,7 +390,7 @@ export const buildUnlockTransaction = async (
     );
   });
 
-  // adding dao withdrawal cell as input
+  // adding dao withdrawal cell as the first input
   txSkeleton = txSkeleton.update("inputs", (i) => i.push(daoWithdrawalCell));
   if (since) {
     txSkeleton = txSkeleton.update("inputSinces", (inputSinces) => {
@@ -395,28 +399,6 @@ export const buildUnlockTransaction = async (
   }
 
   txSkeleton = addDefaultWitnessPlaceholders(txSkeleton, true);
-
-  // fix inputs / outputs / witnesses
-  txSkeleton = txSkeleton.update("fixedEntries", (fixedEntries) => {
-    return fixedEntries.push(
-      {
-        field: "inputs",
-        index: txSkeleton.get("inputs").size - 1,
-      },
-      {
-        field: "outputs",
-        index: txSkeleton.get("outputs").size - 1,
-      },
-      {
-        field: "witnesses",
-        index: txSkeleton.get("witnesses").size - 1,
-      },
-      {
-        field: "headerDeps",
-        index: txSkeleton.get("headerDeps").size - 2,
-      }
-    );
-  });
 
   // substract fee based on fee rate from the deposit
   const txSize = getTransactionSize(txSkeleton) + 111;
