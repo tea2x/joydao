@@ -26,20 +26,21 @@ interface DepositlMessage {
 
 const App = () => {
   const [balance, setBalance] = React.useState<Balance | null>(null);
+  const [ckbAddress, setCkbAddress] = React.useState("");
   const [depositCells, setDepositCells] = React.useState<DaoCell[]>([]);
   const [withdrawalCells, setWithdrawalCells] = React.useState<DaoCell[]>([]);
+  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
+
   const [showDropdown, setShowDropdown] = React.useState(false);
   const [depositAmount, setDepositAmount] = React.useState('');
   const [isDepositing, setIsDepositing] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isWaitingTxConfirm, setIsWaitingTxConfirm] = React.useState(false);
-  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [modalIsOpen, setModalIsOpen] = React.useState(false);
   const [currentCell, setCurrentCell] = React.useState<DaoCell | null>(null);
   const [modalMessage, setModalMessage] = React.useState<DepositlMessage | null>(null);
   const [tipEpoch, setTipEpoch] = React.useState<number>();
   const [isModalMessageLoading, setIsModalMessageLoading] = React.useState(false);
-  const [ckbAddress, setCkbAddress] = React.useState("");
   const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
@@ -54,13 +55,13 @@ const App = () => {
   initializeConfig(TEST_NET_CONFIG as Config);
 
   const updateDaoList = async () => {
-    const storedJoyidAddress = localStorage.getItem('joyIdAddress');
-    if (storedJoyidAddress) {
+    const storedCkbAddress = localStorage.getItem('ckbAddress');
+    if (storedCkbAddress) {
       try {
         const [balance, deposits, withdrawals, epoch] = await Promise.all([
-          queryBalance(storedJoyidAddress),
-          collectDeposits(storedJoyidAddress),
-          collectWithdrawals(storedJoyidAddress),
+          queryBalance(storedCkbAddress),
+          collectDeposits(storedCkbAddress),
+          collectWithdrawals(storedCkbAddress),
           getTipEpoch(),
         ]);
   
@@ -115,7 +116,7 @@ const App = () => {
       setIsLoading(false);
       setTipEpoch(epoch);
   
-      localStorage.setItem('joyIdAddress', ckbAddress);
+      localStorage.setItem('ckbAddress', ckbAddress);
       localStorage.setItem('balance', JSON.stringify(balance));
       localStorage.setItem('depositCells', JSON.stringify(deposits));
       localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
@@ -282,7 +283,7 @@ const App = () => {
     setShowDropdown(false);
     setIsLoading(false);
 
-    localStorage.removeItem('joyIdAddress');
+    localStorage.removeItem('ckbAddress');
     localStorage.removeItem('balance');
     localStorage.removeItem('depositCells');
     localStorage.removeItem('withdrawalCells');
@@ -361,12 +362,12 @@ const App = () => {
   
   // updating deposit info
   React.useEffect(() => {
-    const storedJoyidAddress = localStorage.getItem('joyIdAddress');
+    const storedCkbAddress = localStorage.getItem('ckbAddress');
     const storedBalance = localStorage.getItem('balance');
     const storedDepositCells = localStorage.getItem('depositCells');
     const storedWithdrawalCells = localStorage.getItem('withdrawalCells');
-    if (storedJoyidAddress) {
-      setCkbAddress(storedJoyidAddress);
+    if (storedCkbAddress) {
+      setCkbAddress(storedCkbAddress);
     }
     if (storedBalance) {
       setBalance(JSON.parse(storedBalance));
@@ -666,6 +667,7 @@ const App = () => {
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
+                      hideDepositTextBoxAndDropDown(e);
                       window.open(TESTNET_EXPLORER_PREFIX + `${cell.outPoint?.txHash}`, '_blank', 'noreferrer');
                     }}
                   >
@@ -681,6 +683,7 @@ const App = () => {
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
+                        hideDepositTextBoxAndDropDown(e);
                         isDeposit ? onWithdraw(cell) : onUnlock(cell);
                       }}
                     >
@@ -851,7 +854,7 @@ const App = () => {
 
 const cccWrappedApp = () => {
   return (
-    <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+    <SnackbarProvider className='notif' anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
       <ccc.Provider>
         <App />
       </ccc.Provider>
