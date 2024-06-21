@@ -345,7 +345,7 @@ export const addDefaultWitnessPlaceholders = (
   for (const input of transaction.inputs) {
     let witness = "0x";
 	let lockScriptWitness = "0x";
-	let inputTypeScriptWitness = "0x";
+	let inputTypeScriptWitness;
 
     const lockHash = computeScriptHash(input.cellOutput.lock);
     if (!uniqueLocks.has(lockHash)) {

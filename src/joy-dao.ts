@@ -54,12 +54,12 @@ const INDEXER = new Indexer(INDEXER_URL);
 */
 export const collectDeposits = async (ckbAddress: Address): Promise<Cell[]> => {
   let depositCells: Cell[] = [];
-  const daoDepositedCellCollector = new dao.CellCollector(
+  const daoCellCollector = new dao.CellCollector(
     ckbAddress,
     INDEXER,
     "deposit"
   );
-  for await (const inputCell of daoDepositedCellCollector.collect()) {
+  for await (const inputCell of daoCellCollector.collect()) {
     depositCells.push(inputCell);
   }
   return depositCells;
@@ -74,12 +74,12 @@ export const collectWithdrawals = async (
   ckbAddress: Address
 ): Promise<Cell[]> => {
   let depositCells: Cell[] = [];
-  const daoDepositedCellCollector = new dao.CellCollector(
+  const daoCellCollector = new dao.CellCollector(
     ckbAddress,
     INDEXER,
     "withdraw"
   );
-  for await (const inputCell of daoDepositedCellCollector.collect()) {
+  for await (const inputCell of daoCellCollector.collect()) {
     depositCells.push(inputCell);
   }
   return depositCells;
