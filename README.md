@@ -2,10 +2,14 @@
 
 To those who invest in CKB long term, wallet security is always the number 1 priority. Currently locking their CKB to the DAO with a hardware wallet seems best because it offers high security. Ledger stands out to be the only hardware wallet that supports Nervos but there was a big scandal about how they manage user's seed phrase shards. As we know CKB blockchain can support a very high locking standard called Passkeys SECP256r1 and [joyID has already leveraged that](https://discord.com/channels/1065112455170228314/1065116735797215332/1191939677440180335).
 
+To those who are not familiar with Nervos DAO, check https://medium.com/nervosnetwork/understanding-the-nervos-dao-and-cell-model-d68f38272c24
 This project also support multiple other common wallet options like Metamask, Unisat, OKX, Brave ... via [CCC - Common chain wallet connector](https://github.com/ckb-ecofund/ccc) and [Omnilock](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0042-omnilock/0042-omnilock.md).
 
 # Demo
 https://joydao.vercel.app/
+
+<img width="1464" alt="Screenshot 2024-06-23 at 18 23 05" src="https://github.com/tea2x/nervos-dao-with-joyid/assets/70423834/18e4b84d-9c53-4ab6-8047-f7e67112c666">
+withdraw/unlock buttons are actually progressbars for the deposits in DAO.
 
 # In case you want to verify joyDao's integrity
 When we sign a transaction, we can check what it will trigger and whether it's malicious or not.
