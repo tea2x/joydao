@@ -6,28 +6,54 @@ body {
   padding: 0;
 }
 
-@keyframes wiggle {
-  0% {
-      transform: rotate(-2deg);
-  }
-  50% {
-      transform: rotate(2deg);
-  }
-  100% {
-      transform: rotate(-2deg);
-  }
+.info-board {
+  position: relative;
+  font-size: large;
+  font-family: sans-serif;
+  font-weight: bold;
+  padding: 10px;
+  color: rgb(86, 43, 27);
+  border-radius: 10px;
+  background: hsla(0, 0%, 72%, 0.5);
+  margin-bottom: 30px;
+  width: 330px;
+}
+
+.deposit-field {
+  font-size: 16px;
+}
+
+.underline {
+  display: inline-block;
+  border-bottom: 1px solid rgb(0, 0, 0);
+  width: 220px;
+  cursor: pointer;
+  outline: none;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-bottom: -5px;
+}
+
+.text-based-info {
+  font-weight: bold;
+  padding: 0px;
+  margin: 0 auto;
+}
+
+.notif {
+  z-index: 9999;
 }
 
 .title {
-  font-size: 3em;
+  font-size: 2.5em;
   color: #f8f8f8;
   text-shadow: 
-    2px 2px 0 #505050,
-    4px 4px 0 #333;
+    1px 1px 0 #505050,
+    2px 2px 0 #333;
   transform: rotate(-0.5deg);
   margin: 50px;
   cursor: pointer;
-  border: 3px solid #505050;
+  border: 1px solid #505050;
   padding: 5px;
   background-color: #505050;
   height: 65px;
@@ -51,16 +77,11 @@ body {
   margin-bottom: 60px;
 }
 
-.dropdown-area {
-  position: relative;
-  margin-right: 20px;
-}
-
 .signin-button {
   background-color: #f8f8f8;
   color: #505050;
   padding: 10px 20px;
-  border: 3px solid #505050;
+  border: 1px solid #505050;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
@@ -71,8 +92,8 @@ body {
   width: 200px;
   height: 40px;
   box-shadow: 
-    2px 2px 0 #555,
-    4px 4px 0 #333;
+    1px 1px 0 #555,
+    2px 2px 0 #333;
   transition: transform 0.3s ease;
   position: relative;
   top: 40vh;
@@ -126,7 +147,7 @@ body {
   color: #505050;
   padding: 10px 10px 10px 10px;
   border: 3px solid #505050;
-  border-radius: 10px;
+  border-radius: 5px;
   cursor: pointer;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   transform: translateY(2px);
@@ -143,21 +164,23 @@ body {
   font-weight: bold;
   position: relative;
   box-shadow: 
-    2px 2px 0 #555,
-    4px 4px 0 #333;
+    1px 1px 0 #555,
+    2px 2px 0 #333;
   transition: transform 0.3s ease;
 }
 
-.account-button .copy-sign {
-  position: absolute;
+.copy-sign {
+  position: relative;
   font-size: 25px;
-  color: #597415;
-  right: 5px;
+  font-weight: bolder;
+  color: rgb(126, 78, 9);
+  left: 10px;
 }
 
-.account-button .copy-sign:hover {
+.copy-sign:hover {
   opacity: 1;
   animation: rainbow 5s linear infinite;
+  cursor: pointer;
 }
 
 @keyframes rainbow {
@@ -174,51 +197,36 @@ body {
   color: #A8E72F;
 }
 
-.dropdown-button {
+.account-button {
   background-color: #f8f8f8;
   color: #505050;
   padding: 5px 10px;
-  border: 3px solid #505050;
+  border: 1px solid #505050;
   border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   transform: translateY(2px);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 
-    2px 2px 0 #555,
-    4px 4px 0 #333;
-  position: absolute;
-  bottom: 5px;
+    1px 1px 0 #555,
+    2px 2px 0 #333;
+  position: relative;
+  margin-right: 20px;
+  width: 200px;
+  height: 40px;
 }
 
-.dropdown-button:hover {
+.account-button:hover {
   background-color: #000;
   color: #A8E72F;
 }
 
-.dropdown-menu {
-  position: absolute;
-  background-color: #f9f9f9;
-  border: 1px solid #5b5b5b;
-  padding: 2px;
-  border-radius: 5px;
-  z-index: 1;
-  color: #2e2f22;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-  animation: dropdownFadeIn 0.5s ease-in-out;
-  width: 200px;
-  height: 100px;
-  word-wrap: break-word;
-  box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
-  justify-content: flex-start;
-}
-
-@keyframes dropdownFadeIn {
+@keyframes fadeIntro {
   0% {
       opacity: 0;
       transform: scale(0.9);
@@ -233,14 +241,12 @@ body {
   background-color: #f8f8f8;
   color: #505050;
   padding: 10px 20px;
-  border: 3px solid #505050;
-  border-radius: 10px;
+  border: 1px solid #505050;
+  border-radius: 5px;
   cursor: pointer;
-  transition: transform 0.2s ease;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   transform: translateY(2px);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -251,8 +257,8 @@ body {
   width: 200px;
   height: 40px;
   box-shadow: 
-    2px 2px 0 #555,
-    4px 4px 0 #333;
+    1px 1px 0 #555,
+    2px 2px 0 #333;
   transition: transform 0.3s ease;
 }
 
@@ -291,15 +297,16 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 60%;
+  width: 100%;
+  height: 100%;
   background-color: #ffffff;
   padding: 20px;
-  margin: 20px auto;
+  /* margin: 20px auto; */
   border: none;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
   transition: transform 0.5s ease-in-out;
-  min-height: 90vh;
+  min-height: 100vh;
   max-height: 100vh;
   background-image: url('./images/plume-signin-background_portrait.png');
   background-size: cover;
@@ -311,8 +318,7 @@ body {
 .entrance-decor {
   content: '';
   position: absolute;
-  top: 70px;
-  left: 10px;
+  left: 3%;
   width: 100%;
   height: 100%;
   background-image: url('./images/poster.png');
@@ -368,7 +374,7 @@ body {
   animation: bounce 1s ease-in-out infinite;
   position: relative;
   top: 100px;
-  border: 3px solid #505050;
+  border: 1px solid #505050;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -396,7 +402,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 999;
 }
 
 .loading-circle {
@@ -424,7 +430,6 @@ body {
   font-size: 16px;
   font-weight: bold;
   color: #333;
-  animation: blink 1s infinite;
 }
 
 .description {
@@ -460,12 +465,11 @@ body {
   justify-content: center;
   align-items: center;
   background-color: #f8f8f8;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
   position: relative;
   opacity: 0.2;
   box-shadow: 
-    2px 2px 0 #555,
-    4px 4px 0 #333;
+    1px 1px 0 #555,
+    2px 2px 0 #333;
 }
 
 .dao-cell {
@@ -480,17 +484,17 @@ body {
   justify-content: center;
   align-items: center;
   background-color: var(--backgroundColor);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
   transform: perspective(1000px) rotateY(1deg);
   backface-visibility: hidden;
   transition: transform 0.5s ease-in-out;
-  animation: dropdownFadeIn 0.5s ease-in-out;
+  animation: fadeIntro 0.5s ease-in-out;
   font-size: 1.2em;
   position: relative;
   box-shadow: 
-    2px 2px 0 #555,
-    4px 4px 0 #333;
+    1px 1px 0 #555,
+    2px 2px 0 #333;
 }
+
 
 .dao-cell:hover {
   /* transform: scale(1.05); */
@@ -500,20 +504,43 @@ body {
 }
 
 .dao-cell-button {
-  background-color: var(--buttonColor);
-  color: var(--buttonTextColor);
-  padding: 10px;
-  border: none;
-  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+  background-color: linear-gradient(transparent var(--backgroundColor));
+  color: #000000;
+  border-width: 0.1px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 0.8em;
   position: absolute;
-  bottom: 5px;
+  bottom: 3px;
+  width: 120px;
+  height: 35px;
+  margin: 0px auto;
+  z-index: 1;
+  transition: transform 0.2s ease;
+}
+
+.dao-cell-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(to right, var(--progressColor) var(--progressPercentage), transparent var(--progressPercentage));
+  z-index: -1;
+  transform-origin: top center;
+  animation: fadeIntro 2s ease-in-out;
 }
 
 .dao-cell-button:hover {
-  background-color: #000;
-  color: #738159;
+  transform: translateY(-3px);
+}
+
+.dao-cell-button.progressing {
+  animation: shake 2s;
+  animation-iteration-count: infinite;
 }
 
 .ReactModal__Content {
@@ -534,6 +561,7 @@ body {
   align-self: flex-start;
   margin-top: 25vh;
   min-height: 20vh;
+  animation: fadeIntro 0.5s ease-in-out;
 }
 
 .ReactModal__Overlay {
@@ -580,16 +608,22 @@ body {
 
 button.proceed, button.cancel {
   padding: 10px 20px;
-  border: none;
+  /* border: none; */
+  border-width: 0.5px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   margin: 5px;
+  transition: transform 0.3s ease;
 }
 
 button.proceed {
   background-color: #6ec824; /* Green */
-  color: white;
+  color: rgb(0, 0, 0);
+}
+
+button.proceed:hover {
+  transform: translateY(-3px);
 }
 
 button.proceed:disabled {
@@ -598,8 +632,12 @@ button.proceed:disabled {
 }  
 
 button.cancel {
-  background-color: #e54303; /* Red */
-  color: white;
+  background-color: #e55603; /* Red */
+  color: rgb(0, 0, 0);
+}
+
+button.cancel:hover {
+  transform: translateY(-3px);
 }
 
 @keyframes shake {
@@ -616,7 +654,7 @@ button.cancel {
   100% { transform: translate(1px, -2px) rotate(-1deg); }
 }
 
-.dao-cell.shake {
+.dao-cell.ripe {
   animation: shake 0.5s;
   animation-iteration-count: infinite;
 }  
@@ -679,6 +717,11 @@ button.cancel {
 
 @media only screen and (max-width: 768px) {
 
+  .info-board {
+    font-size: medium;
+    width: 290px;
+  }
+
   .title {
     font-size: 2.4em;
     margin: 40px;
@@ -713,7 +756,7 @@ button.cancel {
     top: 50vh;
   }
   
-  .account-button .copy-sign {
+  .copy-sign {
     font-size: 20px;
   }
 
@@ -731,7 +774,8 @@ button.cancel {
   
   .container {
     width: 100%;
-    min-height: 800px;
+    min-height: 105vh;
+    max-height: 105vh;
     padding: 0px;
     margin-top: 0px;
   }
@@ -739,23 +783,33 @@ button.cancel {
   .entrance-decor {
     content: '';
     position: absolute;
-    top: 10px;
+    top: 50px;
+    left: 1%;
     background-size: 70vh;
     background-position: top 50% center;
   }
 
   .dao-cell-dummy {
+    border-radius: 10px;
     font-size: 16px;
     height: var(--cellHeight);
   }
 
   .dao-cell {
+    border-radius: 10px;
     font-size: 16px;
     height: var(--cellHeight);
   }
 
   .dao-cell-button {
     font-size: 0.8em;
+    border-radius: 7px;
+    width: 100px;
+    height: 28px;
+  }
+
+  .dao-cell-button::before {
+    border-radius: 7px;
   }
 
   .deposit-textbox {
@@ -776,12 +830,6 @@ button.cancel {
 
   .tx-confirmation-message {
     font-size: 14px;
-  }
-
-  .dropdown-menu {
-    margin-top: -30px;
-    width: 180px;
-    height: 100px;
   }
 
   .ReactModal__Content {

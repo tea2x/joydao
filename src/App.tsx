@@ -5,7 +5,7 @@ import { sendTransaction, waitForTransactionConfirmation,
   getTipEpoch, SeededRandom, isJoyIdAddress } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
-import { TEST_NET_CONFIG, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX, JOYID_URL, CCC_MAINNET } from "./config";
+import { TEST_NET_CONFIG, CKB_SHANNON_RATIO, EXPLORER_PREFIX, JOYID_URL, CCC_MAINNET } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction,
   buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import { ccc } from "@ckb-ccc/connector-react";
@@ -17,29 +17,23 @@ import { SnackbarProvider, useSnackbar } from 'notistack';
 import 'react-circular-progressbar/dist/styles.css';
 import { CircularProgressbarWithChildren, buildStyles } from 'react-circular-progressbar';
 
-interface DepositlMessage {
-  completedCycles: number;
-  currentCycleProgress: number;
-  cycleEndInterval: number; //epoch
-  maximumWithdrawal?: BigInt;
-}
-
 const App = () => {
   const [balance, setBalance] = React.useState<Balance | null>(null);
+  const [ckbAddress, setCkbAddress] = React.useState("");
   const [depositCells, setDepositCells] = React.useState<DaoCell[]>([]);
   const [withdrawalCells, setWithdrawalCells] = React.useState<DaoCell[]>([]);
-  const [showDropdown, setShowDropdown] = React.useState(false);
+  const depositCellsRef = React.useRef(depositCells);
+  const withdrawalCellsRef = React.useRef(withdrawalCells);
+  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
+  const [renderKick, setRenderKick] = React.useState<number>(0);
+
   const [depositAmount, setDepositAmount] = React.useState('');
-  const [isDepositing, setIsDepositing] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isWaitingTxConfirm, setIsWaitingTxConfirm] = React.useState(false);
-  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [modalIsOpen, setModalIsOpen] = React.useState(false);
   const [currentCell, setCurrentCell] = React.useState<DaoCell | null>(null);
-  const [modalMessage, setModalMessage] = React.useState<DepositlMessage | null>(null);
   const [tipEpoch, setTipEpoch] = React.useState<number>();
   const [isModalMessageLoading, setIsModalMessageLoading] = React.useState(false);
-  const [ckbAddress, setCkbAddress] = React.useState("");
   const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
@@ -53,26 +47,73 @@ const App = () => {
   });
   initializeConfig(TEST_NET_CONFIG as Config);
 
-  const updateDaoList = async () => {
-    const storedJoyidAddress = localStorage.getItem('joyIdAddress');
-    if (storedJoyidAddress) {
+  const sumDeposit = () => {
+    const sum = [...depositCells].reduce(
+      (sum, c) => sum + parseInt(c.cellOutput.capacity, 16),
+      0
+    );
+    return sum;
+  }
+
+  const sumLocked = () => {
+    const sum = [...withdrawalCells].reduce(
+      (sum, c) => sum + parseInt(c.cellOutput.capacity, 16),
+      0
+    );
+    return sum;
+  }
+
+  const updateDaoList = async (daoType: "all" | "deposit" | "withdraw") => {
+    const storedCkbAddress = localStorage.getItem('ckbAddress');
+    if (storedCkbAddress) {
       try {
-        const [balance, deposits, withdrawals, epoch] = await Promise.all([
-          queryBalance(storedJoyidAddress),
-          collectDeposits(storedJoyidAddress),
-          collectWithdrawals(storedJoyidAddress),
-          getTipEpoch(),
-        ]);
-  
-        setBalance(balance);
-        setDepositCells(deposits as DaoCell[]);
-        setWithdrawalCells(withdrawals as DaoCell[]);
-        setIsLoading(false);
-        setTipEpoch(epoch);
-  
-        localStorage.setItem('balance', JSON.stringify(balance));
-        localStorage.setItem('depositCells', JSON.stringify(deposits));
-        localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
+        let balance, deposits, withdrawals, epoch;
+        if (daoType == "all") {
+          [balance, deposits, withdrawals, epoch] = await Promise.all([
+            queryBalance(storedCkbAddress),
+            collectDeposits(storedCkbAddress),
+            collectWithdrawals(storedCkbAddress),
+            getTipEpoch(),
+          ]);
+    
+          setBalance(balance);
+          setDepositCells(deposits as DaoCell[]);
+          setWithdrawalCells(withdrawals as DaoCell[]);
+          setIsLoading(false);
+          setTipEpoch(epoch);
+    
+          localStorage.setItem('balance', JSON.stringify(balance));
+          localStorage.setItem('depositCells', JSON.stringify(deposits));
+          localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
+        } else if (daoType == "deposit") {
+          [balance, deposits, epoch] = await Promise.all([
+            queryBalance(storedCkbAddress),
+            collectDeposits(storedCkbAddress),
+            getTipEpoch(),
+          ]);
+    
+          setBalance(balance);
+          setDepositCells(deposits as DaoCell[]);
+          setIsLoading(false);
+          setTipEpoch(epoch);
+    
+          localStorage.setItem('balance', JSON.stringify(balance));
+          localStorage.setItem('depositCells', JSON.stringify(deposits));
+        } else if (daoType == "withdraw") {
+          [balance, withdrawals, epoch] = await Promise.all([
+            queryBalance(storedCkbAddress),
+            collectWithdrawals(storedCkbAddress),
+            getTipEpoch(),
+          ]);
+    
+          setBalance(balance);
+          setWithdrawalCells(withdrawals as DaoCell[]);
+          setIsLoading(false);
+          setTipEpoch(epoch);
+    
+          localStorage.setItem('balance', JSON.stringify(balance));
+          localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
+        }
       } catch (e: any) {
         enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
       }
@@ -115,7 +156,7 @@ const App = () => {
       setIsLoading(false);
       setTipEpoch(epoch);
   
-      localStorage.setItem('joyIdAddress', ckbAddress);
+      localStorage.setItem('ckbAddress', ckbAddress);
       localStorage.setItem('balance', JSON.stringify(balance));
       localStorage.setItem('depositCells', JSON.stringify(deposits));
       localStorage.setItem('withdrawalCells', JSON.stringify(withdrawals));
@@ -123,49 +164,48 @@ const App = () => {
       enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
     }
   };
-
   const onDeposit = async () => {
-    if (isDepositing) {
-      try {
-        setIsDepositing(false);
-        const amount = BigInt(depositAmount);
-        // reset state var
-        setDepositAmount('');
-        const daoTx = await buildDepositTransaction(ckbAddress, amount);
+    if (depositAmount == '') {
+      enqueueSnackbar('Please input amount!', { variant: 'error' });
+      return;
+    }
+    try {
+      const amount = BigInt(depositAmount);
+      // reset state var
+      // setDepositAmount('');
+      const daoTx = await buildDepositTransaction(ckbAddress, amount);
 
-        let signedTx;
-        let txid = "";
-        if (isJoyIdAddress(ckbAddress)) {
-          signedTx = await signRawTransaction(
-            daoTx,
-            ckbAddress
-          );
-          txid = await sendTransaction(signedTx);
+      let signedTx;
+      let txid = "";
+      if (isJoyIdAddress(ckbAddress)) {
+        signedTx = await signRawTransaction(
+          daoTx,
+          ckbAddress
+        );
+        txid = await sendTransaction(signedTx);
+      } else {
+        if (signer) {
+          enqueueSnackbar(`Openning ${wallet.name} ...`, { variant: 'success' });
+          txid = await signer.sendTransaction(daoTx);
         } else {
-          if (signer) {
-            enqueueSnackbar(`Openning ${wallet.name} ...`, { variant: 'success' });
-            txid = await signer.sendTransaction(daoTx);
-          } else {
-            throw new Error('Wallet disconnected. Reconnect!');
-          }
+          throw new Error('Wallet disconnected. Reconnect!');
         }
-
-        enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: 'success' });
-        setIsWaitingTxConfirm(true);
-        setIsLoading(true);
-
-        // Wait for the transaction to confirm.
-        await waitForTransactionConfirmation(txid);
-
-        // update deposit/withdrawal list and balance
-        setIsWaitingTxConfirm(false);
-        await updateDaoList();
-
-      } catch (e:any) {
-        enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
       }
-    } else {
-      setIsDepositing(true);
+
+      enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: 'success' });
+      setIsWaitingTxConfirm(true);
+      setIsLoading(true);
+
+      // Wait for the transaction to confirm.
+      await waitForTransactionConfirmation(txid);
+
+      // update deposit/withdrawal list and balance
+      setIsWaitingTxConfirm(false);
+      setDepositAmount('');
+      await updateDaoList("deposit");
+
+    } catch (e:any) {
+      enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
     }
   }
 
@@ -173,9 +213,6 @@ const App = () => {
     // Open the modal 
     setModalIsOpen(true);
     setIsModalMessageLoading(true);
-
-    // enrich the deposit dao cell info
-    await enrichDaoCellInfo(cell, true, tipEpoch!);
 
     // Save the cell for later
     setCurrentCell(cell);
@@ -214,7 +251,7 @@ const App = () => {
 
       // update deposit/withdrawal list and balance
       setIsWaitingTxConfirm(false);
-      await updateDaoList();
+      await updateDaoList("all");
 
     } catch(e:any) {
       enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
@@ -225,9 +262,6 @@ const App = () => {
     // Open the modal 
     setModalIsOpen(true);
     setIsModalMessageLoading(true);
-
-    // enrich the withdrawal dao cell info
-    await enrichDaoCellInfo(cell, false, tipEpoch!);
 
     // Save the cell for later
     setCurrentCell(cell);
@@ -266,7 +300,7 @@ const App = () => {
 
       // update deposit/withdrawal list and balance
       setIsWaitingTxConfirm(false);
-      await updateDaoList();
+      await updateDaoList("withdraw");
       
     } catch(e:any) {
       enqueueSnackbar('Error: ' + e.message, { variant: 'error' });
@@ -279,10 +313,9 @@ const App = () => {
     setBalance(null);
     setDepositCells([]);
     setWithdrawalCells([]);
-    setShowDropdown(false);
     setIsLoading(false);
 
-    localStorage.removeItem('joyIdAddress');
+    localStorage.removeItem('ckbAddress');
     localStorage.removeItem('balance');
     localStorage.removeItem('depositCells');
     localStorage.removeItem('withdrawalCells');
@@ -297,42 +330,26 @@ const App = () => {
     }
   }
 
-  const handleDepositKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => { //TODO
+  const shortenAddressNew = (address: string) => {
+    if (!address) return '';
+    if (windowWidth <= 768) {
+      return `${address.slice(0, 10)}...${address.slice(-10)}`;
+    } else {
+      return `${address.slice(0, 10)}...${address.slice(-10)}`;
+    }
+  }
+
+  const shortenAddressNew1 = (address: string) => {
+    if (!address) return '';
+    return `${address.slice(0, 4)}...${address.slice(-5)}`;
+  }
+
+  const handleDepositKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
+      event.preventDefault();
       onDeposit();
     }
-  }
-
-  const prepareMessage = () => {
-    if (currentCell && tipEpoch) {
-      const step = tipEpoch - currentCell.depositEpoch;
-      const m:DepositlMessage = {completedCycles: 0, currentCycleProgress: 0, cycleEndInterval: 0};
-      m.completedCycles = Math.floor(step/180);
-      if (currentCell.isDeposit == false && currentCell.ripe) {
-        // when unlocking period arrives, current cycle halt at 100%
-        m.currentCycleProgress = 100;
-      } else {
-        m.currentCycleProgress = Math.floor((step%180)*100/180);
-      }
-      m.cycleEndInterval = 180 - step%180;
-      m.maximumWithdrawal = currentCell.isDeposit ? undefined : currentCell.maximumWithdraw/BigInt(CKB_SHANNON_RATIO);
-      // display the message in modal
-      setModalMessage(m);
-    } else {
-      throw new Error('Deposit information cant be retrieved. Try refreshing the page');
-    }
-  }; 
-
-  const hideDepositTextBoxAndDropDown = (e:any) => {
-    e.stopPropagation(); // Prevent event propagation
-    if (isDepositing && e.target === e.currentTarget) {
-      setDepositAmount('');
-      setIsDepositing(false);
-    }
-    if (showDropdown && e.target === e.currentTarget) {
-      setShowDropdown(false);
-    }
-  }
+  };
 
   const copyAddress = (address:string) => {
     if (navigator.clipboard) {
@@ -350,7 +367,6 @@ const App = () => {
       textarea.select();
       try {
         document.execCommand('copy');
-        // enqueueSnackbar('Address copied to clipboard', { variant: 'info' });
       } catch (err) {
         enqueueSnackbar('Could not copy address', { variant: 'error' });
       } finally {
@@ -358,15 +374,38 @@ const App = () => {
       }
     }
   };
+
+  // enriching dao cell info
+  React.useEffect(() => {
+    if (depositCellsRef.current !== depositCells) {
+      Promise.all(depositCells.map(async (cell) => {
+        await enrichDaoCellInfo(cell as DaoCell, true, tipEpoch!);
+      })).then(() => {
+        depositCellsRef.current = depositCells;
+        // kick re-renderring when enriching process's done
+        setRenderKick((prevRenderKick) => prevRenderKick + 1);
+      });
+    }
   
+    if (withdrawalCellsRef.current !== withdrawalCells) {
+      Promise.all(withdrawalCells.map(async (cell) => {
+        await enrichDaoCellInfo(cell as DaoCell, false, tipEpoch!);
+      })).then(() => {
+        withdrawalCellsRef.current = withdrawalCells;
+        // kick re-renderring when enriching process's done
+        setRenderKick((prevRenderKick) => prevRenderKick + 1);
+      });
+    }
+  }, [depositCells, withdrawalCells, tipEpoch]);
+
   // updating deposit info
   React.useEffect(() => {
-    const storedJoyidAddress = localStorage.getItem('joyIdAddress');
+    const storedCkbAddress = localStorage.getItem('ckbAddress');
     const storedBalance = localStorage.getItem('balance');
     const storedDepositCells = localStorage.getItem('depositCells');
     const storedWithdrawalCells = localStorage.getItem('withdrawalCells');
-    if (storedJoyidAddress) {
-      setCkbAddress(storedJoyidAddress);
+    if (storedCkbAddress) {
+      setCkbAddress(storedCkbAddress);
     }
     if (storedBalance) {
       setBalance(JSON.parse(storedBalance));
@@ -377,15 +416,7 @@ const App = () => {
     if (storedWithdrawalCells) {
       setWithdrawalCells(JSON.parse(storedWithdrawalCells));
     }
-
-    (async () => {
-      await updateDaoList();
-    })();  
-
-    if (currentCell && tipEpoch) {
-      prepareMessage();
-    }
-  }, [currentCell, tipEpoch]);
+  }, []);
 
   // check device window width
   React.useEffect(() => {
@@ -410,6 +441,7 @@ const App = () => {
     cccConnect();
   }, [ckbAddress]);
 
+  // cc wallet
   React.useEffect(() => {
     if (CCC_MAINNET)
       setClient(new ClientPublicMainnet);
@@ -428,13 +460,13 @@ const App = () => {
       smallScreenDeviceMinCellWidth : 
       largeScreenDeviceMinCellWidth;
 
-    // in case there're too few deposit, fill up
+    // in case there're too few deposit, fill up dummy cells
     const fillerNum = (windowWidth <= 768) ? 12 : 20;
     const maxDummyCellWidth = 150;
     const dummyCellWidthRandomizer = new SeededRandom(daoCellNum);
 
     return (
-      <div className="container" onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+      <div className="container">
         {!ckbAddress && (
           <div className='entrance-decor'></div>
         )}
@@ -451,12 +483,42 @@ const App = () => {
           </div>
         )}
 
-        <h1 className='title' onClick={async () => {
-          await updateDaoList();
-          window.location.reload();
-        }}>
-          joyDAO
-        </h1>
+        {!ckbAddress && (
+          <h1 className='title' onClick={async () => {
+            await updateDaoList("all");
+            window.location.reload();
+          }}>
+            joyDAO
+          </h1>
+        )}
+
+        {ckbAddress && (
+          <div className='info-board'>
+            <div>Account: {shortenAddressNew(ckbAddress)}
+              <span className="copy-sign"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  copyAddress(ckbAddress)
+                }}
+              >
+                ⧉
+              </span>
+            </div>
+            <div>Deposited: {balance ? (sumDeposit()/CKB_SHANNON_RATIO).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
+            <div>Locked: {balance ? (sumLocked()/CKB_SHANNON_RATIO).toString().toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
+            {/* <div>Estimated rewards:</div>
+            <div>Total rewards:</div> */}
+            <div>Free: {balance ? (BigInt(balance.available)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
+            Deposit: <span
+              className="underline"
+              contentEditable
+              onInput={(e) => setDepositAmount(e.currentTarget.innerText)}
+              onKeyDown={handleDepositKeyDown}
+            >
+              {/* Input CKB amount! */}
+            </span>
+          </div>
+        )}
 
         {!ckbAddress && (
           <div className='description'>
@@ -474,7 +536,6 @@ const App = () => {
           <Modal
             isOpen={connectModalIsOpen}
             onRequestClose={() => {
-              // close the modal
               setConnectModalIsOpen(false); 
             }}
           >
@@ -509,104 +570,39 @@ const App = () => {
           </Modal>
         )}
 
-        <div className='account-deposit-buttons'
-          onClick={(e) => hideDepositTextBoxAndDropDown(e)}
-        >
+        <div className='account-deposit-buttons'>
           {ckbAddress && (
-            <div className='dropdown-area'>
+            (!signer && !isJoyIdAddress(ckbAddress)) ? (
               <button className='account-button'
-                onClick={(e) => {
-                  setShowDropdown(!showDropdown);
-                  hideDepositTextBoxAndDropDown(e)
+                onClick={() => {
+                  setConnectModalIsOpen(true)
                 }}
               >
-                <span className="copy-sign"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    copyAddress(ckbAddress)
-                  }}
-                >
-                  ⧉
-                </span>
-                {shortenAddress(ckbAddress)}
+                Reconnect
               </button>
 
-              {showDropdown && (
-                <div className='dropdown-menu'>
-                  <h5>
-                    <div>Available: {balance ? (BigInt(balance.available)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
-                    <div>Deposited: {balance ? (BigInt(balance.occupied)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
-                  </h5>
-
-                  {(!signer && !isJoyIdAddress(ckbAddress)) ? (
-                    <button className='dropdown-button'
-                      onClick={() => {
-                        setShowDropdown(false);
-                        setConnectModalIsOpen(true)
-                      }}
-                    >
-                      Reconnect
-                    </button>
-
-                  ) : (
-                    <button className='dropdown-button' onClick={onSignOut}>
-                      Sign Out
-                    </button>
-                  )}
-
-                </div>
-              )}
-            </div>
-          )}
-
-          {ckbAddress && (
-            isDepositing ? (
-              <span>
-                <input
-                  type="text"
-                  value={depositAmount}
-                  placeholder="Enter CKB amount!"
-                  onChange={(e) => {
-                    if (e.target.value === 'Enter CKB amount') {
-                      setDepositAmount('');
-                    } else {
-                      setDepositAmount(e.target.value);
-                    }
-                  }}
-                  onKeyDown={(e) => e.key === 'Enter' && onDeposit()}
-                  className='deposit-textbox'
-                />
-                {/* <span className="max-deposit"
-                  onClick={(e) => {
-                    enqueueSnackbar('It\'s recommended to leave ^63 CKB to pay fee for future txs', { variant: 'info' });
-                    setDepositAmount(balance? (BigInt(balance.available)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '');
-                  }}
-                >
-                  Max
-                </span> */}
-              </span>
             ) : (
-              <button className='deposit-button'
-                onClick={(e) => {
-                  onDeposit();
-                  hideDepositTextBoxAndDropDown(e);
-                }}
-              >
-                Deposit
+              <button className='account-button' onClick={onSignOut}>
+                Sign Out
               </button>
             )
           )}
+          {ckbAddress && (
+            <button className='deposit-button'
+                onClick={(e) => {onDeposit();}}
+              >
+                Deposit
+              </button>
+          )}
         </div>
-
+        
         {ckbAddress && (
           (daoCellNum === 0 && isLoading == false) ? (
-            <div className='no-deposit-message'
-              onClick={(e) => hideDepositTextBoxAndDropDown(e)}
-            >
+            <div className='no-deposit-message'>
               <h2>Whoops, no deposits found!</h2>
             </div>
           ) : (
-            <div className='cell-grid' onClick={(e) => hideDepositTextBoxAndDropDown(e)}>
+            <div className='cell-grid'>
               {[...depositCells, ...withdrawalCells].sort((a, b) => {
                 const aBlkNum = parseInt(a.blockNumber!, 16);
                 const bBlkNum = parseInt(b.blockNumber!, 16);
@@ -653,10 +649,9 @@ const App = () => {
                   c => c.outPoint?.txHash === cell.outPoint?.txHash
                 );
                 const backgroundColor = isDeposit ? '#99c824' : '#e58603';
-                const buttonColor = isDeposit ? '#5c6e00' : '#003d66';
-                const buttonTextColor = isDeposit ? '#99c824' : '#e58603';
+                const buttonColor = '#2d4858';
                 return (
-                  <div key={index} className='dao-cell' //{`dao-cell ${currentCell && currentCell.ripe ? 'shake' : ''}`}
+                  <div key={index} className={`dao-cell ${cell.ripe ? 'ripe' : ''}`}
                     ref={el => {
                       if (el) {
                         el.style.setProperty('--cellWidth', `${cellWidth}px`);
@@ -665,18 +660,17 @@ const App = () => {
                       }
                     }}
                     onClick={(e) => {
-                      e.stopPropagation();
-                      window.open(TESTNET_EXPLORER_PREFIX + `${cell.outPoint?.txHash}`, '_blank', 'noreferrer');
+                      window.open(EXPLORER_PREFIX + `${cell.outPoint?.txHash}`, '_blank', 'noreferrer');
                     }}
                   >
                     <p className='dao-link'>
                       {(capacity / CKB_SHANNON_RATIO).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
                     </p>
-                    <button className='dao-cell-button'
+                    <button className={`dao-cell-button ${(cell.currentCycleProgress === undefined) ? 'progressing' : ''}`}
                       ref={el => {
                         if (el) {
-                          el.style.setProperty('--buttonColor', buttonColor);
-                          el.style.setProperty('--buttonTextColor', buttonTextColor);
+                          el.style.setProperty('--progressColor', buttonColor);
+                          el.style.setProperty('--progressPercentage', `${cell.currentCycleProgress}%`);
                         }
                       }}
                       onClick={(e) => {
@@ -706,7 +700,6 @@ const App = () => {
                   <div 
                     key={`extra-${index}`}
                     className='dao-cell-dummy'
-                    onClick={(e) => hideDepositTextBoxAndDropDown(e)}
                     ref={el => {
                       if (el) {
                         el.style.setProperty('--cellWidth', `${cellWidth}px`);
@@ -721,10 +714,7 @@ const App = () => {
               <Modal
                 isOpen={modalIsOpen}
                 onRequestClose={() => {
-                  // close the modal
                   setModalIsOpen(false); 
-                  // clear the modal message
-                  setModalMessage(null);
                 }}
               >
                 {isModalMessageLoading && (
@@ -738,26 +728,22 @@ const App = () => {
                 <h3 className='deposit-message-head'>Deposit Information</h3>
                 <div className='deposit-cycle-progress-bar'>
                   <CircularProgressbarWithChildren
-                    value={modalMessage?.currentCycleProgress!}
+                    value={currentCell?.currentCycleProgress!}
                     styles={buildStyles({
-                      pathColor: modalMessage?.currentCycleProgress! < 93 ? '#99c824' : '#e58603',
+                      pathColor: currentCell?.currentCycleProgress! < 93 ? '#99c824' : '#e58603',
                     })}
                   >
                     <p className='deposit-message'>
                       Cycle: {
                         (!currentCell?.isDeposit && currentCell?.ripe)
-                          ?  modalMessage?.completedCycles!
-                          : modalMessage?.completedCycles! + 1
+                          ?  currentCell?.completedCycles!
+                          : currentCell?.completedCycles! + 1
                       }
                     </p>
-                    <p className='deposit-message'>Progress: {modalMessage?.currentCycleProgress!}%</p>
+                    <p className='deposit-message'>Progress: {currentCell?.currentCycleProgress!}%</p>
                     {!currentCell?.isDeposit && (
                       <p className='deposit-message'>
-                        Total Return: {
-                          modalMessage?.maximumWithdrawal 
-                            ? (modalMessage?.maximumWithdrawal!).toString() 
-                            : ''
-                        } CKB
+                        Total Return: {currentCell?.maximumWithdraw} CKB
                       </p>
                     )}
 
@@ -765,9 +751,9 @@ const App = () => {
                       !currentCell?.ripe ? (
                         <p className='deposit-message highlight'>
                           Unlock in: {
-                            ((modalMessage?.cycleEndInterval! + 1) / 6) > 2 
-                              ? `${((modalMessage?.cycleEndInterval! + 1) / 6).toFixed(2)}d` 
-                              : `${(modalMessage?.cycleEndInterval! + 1) * 4}h`
+                            ((currentCell?.cycleEndInterval! + 1) / 6) > 2 
+                              ? `${((currentCell?.cycleEndInterval! + 1) / 6).toFixed(2)}d` 
+                              : `${(currentCell?.cycleEndInterval! + 1) * 4}h`
                           }
                         </p>
                       ) : (
@@ -782,9 +768,9 @@ const App = () => {
                         !currentCell.ripe ? (
                           <p className='deposit-message highlight'>
                             Max Reward in: {
-                              ((modalMessage?.cycleEndInterval! >=12) && ((modalMessage?.cycleEndInterval! - 12) / 6) > 2)
-                                ? `${((modalMessage?.cycleEndInterval! - 12) / 6).toFixed(2)}d` 
-                                : `${(modalMessage?.cycleEndInterval! - 12) * 4}h`
+                              ((currentCell?.cycleEndInterval! >=12) && ((currentCell?.cycleEndInterval! - 12) / 6) > 2)
+                                ? `${((currentCell?.cycleEndInterval! - 12) / 6).toFixed(2)}d` 
+                                : `${(currentCell?.cycleEndInterval! - 12) * 4}h`
                             }
                           </p>
                         ) : (
@@ -797,7 +783,7 @@ const App = () => {
 
                     {(currentCell?.isDeposit && currentCell.ripe) && (
                       <p className='deposit-message highlight'>
-                        New Lock Cycle in: {(modalMessage?.cycleEndInterval!) * 4}h
+                        New Lock Cycle in: {(currentCell?.cycleEndInterval!) * 4}h
                       </p>
                     )}
 
@@ -810,18 +796,13 @@ const App = () => {
                     disabled={currentCell ? (!currentCell.isDeposit && !currentCell.ripe) : false}
                     onClick={() => {
                       if (currentCell) {
-                        // if this is a deposit cell, allow for withdraw 
-                        // otherwise it's a withdrawl cell and allow for unlock check
                         if (currentCell.isDeposit) {
                           _onWithdraw(currentCell);
                         } else {
                           _onUnlock(currentCell);
                         }
                       }
-                      // close the modal
                       setModalIsOpen(false);
-                      // clear the modal message
-                      setModalMessage(null);
                     }}
                   >
                     Proceed
@@ -830,10 +811,7 @@ const App = () => {
                   <button
                     className='cancel'
                     onClick={() => {
-                      // close the modal
                       setModalIsOpen(false);
-                      // clear the modal message
-                      setModalMessage(null);
                     }}
                   >
                     Cancel
@@ -851,7 +829,7 @@ const App = () => {
 
 const cccWrappedApp = () => {
   return (
-    <SnackbarProvider anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+    <SnackbarProvider className='notif' anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
       <ccc.Provider>
         <App />
       </ccc.Provider>
