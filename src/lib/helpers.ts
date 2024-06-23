@@ -342,7 +342,7 @@ export const isJoyIdAddress = (address: string) => {
 }
 
 // this function is only for joyID lock and omnilock
-export const addDefaultWitnessPlaceholders = (
+export const addWitnessPlaceHolder = (
   transaction: TransactionSkeletonType,
   daoUnlock = false
 ) => {
@@ -386,6 +386,21 @@ export const addDefaultWitnessPlaceholders = (
 
   return transaction;
 };
+
+export const extraFeeCheck = (transaction: TransactionSkeletonType) => {
+	const inputCapacity = transaction.inputs
+		.toArray()
+		.reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
+
+	const outputCapacity = transaction.outputs
+		.toArray()
+		.reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
+
+	const fee = inputCapacity - outputCapacity;
+
+	if (fee > 1*CKB_SHANNON_RATIO)
+		throw new Error("You're paying more than 1 CKB as transaction fee!");
+}
 
 export default {
 	sendTransaction,

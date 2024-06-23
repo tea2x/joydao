@@ -5,7 +5,7 @@ import { sendTransaction, waitForTransactionConfirmation,
   getTipEpoch, SeededRandom, isJoyIdAddress } from './lib/helpers';
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from './types';
-import { TEST_NET_CONFIG, CKB_SHANNON_RATIO, TESTNET_EXPLORER_PREFIX, JOYID_URL, CCC_MAINNET } from "./config";
+import { TEST_NET_CONFIG, CKB_SHANNON_RATIO, EXPLORER_PREFIX, JOYID_URL, CCC_MAINNET } from "./config";
 import { buildDepositTransaction, buildWithdrawTransaction,
   buildUnlockTransaction, collectDeposits, collectWithdrawals } from "./joy-dao";
 import { ccc } from "@ckb-ccc/connector-react";
@@ -660,7 +660,7 @@ const App = () => {
                       }
                     }}
                     onClick={(e) => {
-                      window.open(TESTNET_EXPLORER_PREFIX + `${cell.outPoint?.txHash}`, '_blank', 'noreferrer');
+                      window.open(EXPLORER_PREFIX + `${cell.outPoint?.txHash}`, '_blank', 'noreferrer');
                     }}
                   >
                     <p className='dao-link'>
@@ -674,6 +674,7 @@ const App = () => {
                         }
                       }}
                       onClick={(e) => {
+                        e.stopPropagation();
                         isDeposit ? onWithdraw(cell) : onUnlock(cell);
                       }}
                     >

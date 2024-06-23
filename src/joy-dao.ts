@@ -24,7 +24,6 @@ import {
   addressToScript,
   TransactionSkeleton,
   createTransactionFromSkeleton,
-  minimalCellCapacityCompatible,
   TransactionSkeletonType,
 } from "@ckb-lumos/helpers";
 import { dao } from "@ckb-lumos/common-scripts";
@@ -36,7 +35,8 @@ import {
   hexToInt,
   collectInputs,
   findDepositCellWith,
-  addDefaultWitnessPlaceholders,
+  addWitnessPlaceHolder,
+  extraFeeCheck
 } from "./lib/helpers";
 import { number } from "@ckb-lumos/codec";
 import { getConfig, Config } from "@ckb-lumos/config-manager";
@@ -155,7 +155,7 @@ export const buildDepositTransaction = async (
     i.concat(collectedInputs.inputCells)
   );
 
-  txSkeleton = addDefaultWitnessPlaceholders(txSkeleton);
+  txSkeleton = addWitnessPlaceHolder(txSkeleton);
 
   // Regulating fee, and making a change cell
   // 111 is the size difference adding the 1 anticipated change cell
@@ -175,6 +175,9 @@ export const buildDepositTransaction = async (
   };
 
   txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
+  // safe check
+  extraFeeCheck(txSkeleton);
+
   const daoDepositTx: Transaction = createTransactionFromSkeleton(txSkeleton);
   return daoDepositTx as CKBTransaction;
 };
@@ -255,7 +258,7 @@ export const buildWithdrawTransaction = async (
     i.concat(collectedInputs.inputCells)
   );
 
-  txSkeleton = addDefaultWitnessPlaceholders(txSkeleton);
+  txSkeleton = addWitnessPlaceHolder(txSkeleton);
 
   // Regulating fee, and making a change cell
   // 111 is the size difference adding the 1 anticipated change cell
@@ -278,6 +281,9 @@ export const buildWithdrawTransaction = async (
   };
 
   txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
+  // safe check
+  extraFeeCheck(txSkeleton);
+
   const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
   return daoWithdrawTx as CKBTransaction;
 };
@@ -398,7 +404,7 @@ export const buildUnlockTransaction = async (
     });
   }
 
-  txSkeleton = addDefaultWitnessPlaceholders(txSkeleton, true);
+  txSkeleton = addWitnessPlaceHolder(txSkeleton, true);
 
   // substract fee based on fee rate from the deposit
   const txSize = getTransactionSize(txSkeleton) + 111;
@@ -424,6 +430,8 @@ export const buildUnlockTransaction = async (
     });
   });
 
+  // safe check
+  extraFeeCheck(txSkeleton);
   // converting skeleton to CKB transaction
   const daoUnlockTx: Transaction = createTransactionFromSkeleton(txSkeleton);
   return daoUnlockTx as CKBTransaction;

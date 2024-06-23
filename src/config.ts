@@ -110,4 +110,4 @@ export const CKB_SHANNON_RATIO = 100_000_000;
 export const JOYID_SIGNATURE_PLACEHOLDER_DEFAULT = '0x' + '0'.repeat(694); //joyid lock signature length is 347 bytes
 export const OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT = '0x' + '0'.repeat(170); //joyid lock signature length is 85 bytes
 
-export const TESTNET_EXPLORER_PREFIX = isMainNet ? "https://explorer.nervos.org/transaction/" : "https://pudge.explorer.nervos.org/transaction/";
+export const EXPLORER_PREFIX = isMainNet ? "https://explorer.nervos.org/transaction/" : "https://pudge.explorer.nervos.org/transaction/";
