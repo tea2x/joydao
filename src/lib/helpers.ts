@@ -28,12 +28,12 @@ const lightClientRPC = new LightClientRPC(NODE_URL);
 export interface DaoCell extends Cell {
 	isDeposit: boolean,
 	depositEpoch: number,
-	// tipEpoch: number,
 	sinceEpoch: number,
-	// sinceLength: number,
-	// sinceIndex: number,
-	maximumWithdraw: bigint
+	maximumWithdraw: string
 	ripe: boolean,
+	completedCycles: number;
+	currentCycleProgress: number;
+	cycleEndInterval: number; //epoch
 }
 
 export async function getBlockHash(blockNumber: string) {
@@ -292,9 +292,20 @@ export const enrichDaoCellInfo = async (cell:DaoCell, deposit: boolean, tipEpoch
 			const earliestSince = dao.calculateDaoEarliestSince(depositBlockHeader.epoch, withdrawBlockHeader.epoch);
 			const parsedSince = parseSince(earliestSince.toString());
 			cell.sinceEpoch = (parsedSince.value as EpochSinceValue).number;
-			cell.maximumWithdraw = dao.calculateMaximumWithdraw(cell, depositBlockHeader.dao, withdrawBlockHeader.dao);
+			cell.maximumWithdraw = (dao.calculateMaximumWithdraw(cell, depositBlockHeader.dao, withdrawBlockHeader.dao)/BigInt(CKB_SHANNON_RATIO)).toString();
 			cell.ripe = (tipEpoch > cell.sinceEpoch);
 		}
+
+		// enrich deposit info
+		const step = tipEpoch - cell.depositEpoch;
+		cell.completedCycles = Math.floor(step/180);
+		if (deposit == false && cell.ripe) {
+			// when unlocking period arrives, current cycle halt at 100%
+			cell.currentCycleProgress = 100;
+		} else {
+			cell.currentCycleProgress = Math.floor((step%180)*100/180);
+		}
+		cell.cycleEndInterval = 180 - step%180;
 	}
 }
 

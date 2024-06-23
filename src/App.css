@@ -6,16 +6,9 @@ body {
   padding: 0;
 }
 
-@keyframes wiggle {
-  0% {
-      transform: rotate(-2deg);
-  }
-  50% {
-      transform: rotate(2deg);
-  }
-  100% {
-      transform: rotate(-2deg);
-  }
+.account-info {
+  padding: 10px;
+  margin: 0 auto;
 }
 
 .notif {
@@ -185,7 +178,7 @@ body {
   border: 3px solid #505050;
   border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   transform: translateY(2px);
   font-size: 15px;
@@ -196,8 +189,8 @@ body {
   box-shadow: 
     2px 2px 0 #555,
     4px 4px 0 #333;
-  position: absolute;
-  bottom: 5px;
+  position: relative;
+  margin: 5px 0 5px 0;
 }
 
 .dropdown-button:hover {
@@ -216,7 +209,6 @@ body {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   animation: fadeIntro 0.5s ease-in-out;
   width: 200px;
-  height: 100px;
   word-wrap: break-word;
   box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
   justify-content: flex-start;
@@ -240,7 +232,6 @@ body {
   border: 3px solid #505050;
   border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.2s ease;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   transform: translateY(2px);
   font-size: 15px;
@@ -295,10 +286,10 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 60%;
+  width: 100%;
   background-color: #ffffff;
   padding: 20px;
-  margin: 20px auto;
+  /* margin: 20px auto; */
   border: none;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
@@ -495,6 +486,7 @@ body {
     4px 4px 0 #333;
 }
 
+
 .dao-cell:hover {
   /* transform: scale(1.05); */
   transform: translateY(-3px);
@@ -503,20 +495,44 @@ body {
 }
 
 .dao-cell-button {
-  background-color: var(--buttonColor);
-  color: var(--buttonTextColor);
-  padding: 10px;
-  border: none;
-  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+  background-color: linear-gradient(transparent var(--backgroundColor));
+  color: #000000;
+  border-width: 1px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 0.8em;
   position: absolute;
-  bottom: 5px;
+  bottom: 3px;
+  width: 120px;
+  height: 35px;
+  margin: 0px auto;
+  z-index: 1;
+  transition: transform 0.2s ease;
+}
+
+.dao-cell-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(to right, var(--progressColor) var(--progressPercentage), transparent var(--progressPercentage));
+  z-index: -1;
+  transform-origin: top center;
+  transform: rotate(0deg);
+  transition: transform 0.5s ease-in-out;
 }
 
 .dao-cell-button:hover {
-  background-color: #000;
-  color: #738159;
+  transform: translateY(-3px);
+}
+
+.dao-cell-button.progressing {
+  animation: shake 1s;
+  animation-iteration-count: infinite;
 }
 
 .ReactModal__Content {
@@ -584,16 +600,22 @@ body {
 
 button.proceed, button.cancel {
   padding: 10px 20px;
-  border: none;
+  /* border: none; */
+  border-width: 0.5px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   margin: 5px;
+  transition: transform 0.3s ease;
 }
 
 button.proceed {
   background-color: #6ec824; /* Green */
-  color: white;
+  color: rgb(0, 0, 0);
+}
+
+button.proceed:hover {
+  transform: translateY(-3px);
 }
 
 button.proceed:disabled {
@@ -602,8 +624,12 @@ button.proceed:disabled {
 }  
 
 button.cancel {
-  background-color: #e54303; /* Red */
-  color: white;
+  background-color: #e55603; /* Red */
+  color: rgb(0, 0, 0);
+}
+
+button.cancel:hover {
+  transform: translateY(-3px);
 }
 
 @keyframes shake {
@@ -620,7 +646,7 @@ button.cancel {
   100% { transform: translate(1px, -2px) rotate(-1deg); }
 }
 
-.dao-cell.shake {
+.dao-cell.ripe {
   animation: shake 0.5s;
   animation-iteration-count: infinite;
 }  
@@ -760,6 +786,8 @@ button.cancel {
 
   .dao-cell-button {
     font-size: 0.8em;
+    width: 100px;
+    height: 28px;
   }
 
   .deposit-textbox {
