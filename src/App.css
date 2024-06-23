@@ -18,12 +18,27 @@ body {
   color: rgb(86, 43, 27);
   border-radius: 10px;
   background: hsla(0, 0%, 72%, 0.834);
+  margin-top: 20px;
   margin-bottom: 30px;
   width: 330px;
 }
 
 .deposit-field {
   font-size: 16px;
+}
+
+.deposit-textbox {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 220px;
+  padding: 3px;
+
+  position: relative;
+  font-size: large;
+  font-family: sans-serif;
+  font-weight: bold;
+  color: rgb(86, 43, 27);
 }
 
 .underline {
@@ -35,6 +50,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   margin-bottom: -5px;
+  cursor: text;
 }
 
 .text-based-info {
@@ -271,18 +287,6 @@ body {
   color: #A8E72F;
 }
 
-.deposit-textbox {
-  background-color: #ffffff;
-  color: #808080;
-  border: 2px solid #3d3d3d;
-  border-radius: 5px;
-  cursor: pointer;
-  animation: blink 1s infinite;
-  width: 200px;
-  height: 40px;
-  padding: 0px 5px;
-}
-
 /* .max-deposit {
   position: relative;
   left: -40px;
@@ -344,7 +348,7 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  max-width: 100%;
+  max-width: 80%;
   grid-gap: 0px;
 }
 
@@ -365,7 +369,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  height: 5%;
   font-size: 1.2em;
   font-weight: bold;
   color: #f8f8f8;
@@ -776,8 +780,7 @@ button.cancel:hover {
   
   .container {
     width: 100%;
-    min-height: 105vh;
-    max-height: 105vh;
+    min-height: 100vh;
     padding: 0px;
     margin-top: 0px;
   }
@@ -789,6 +792,10 @@ button.cancel:hover {
     left: 1%;
     background-size: 70vh;
     background-position: top 50% center;
+  }
+
+  .cell-grid {
+    max-width: 100%;
   }
 
   .dao-cell-dummy {
@@ -812,14 +819,6 @@ button.cancel:hover {
 
   .dao-cell-button::before {
     border-radius: 7px;
-  }
-
-  .deposit-textbox {
-    width: 150px;
-    height: 45px;
-    padding-left: 5px;
-    padding-right: 45px;
-    max-width: 120px;
   }
 
   /* .max-deposit {

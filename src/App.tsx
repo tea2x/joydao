@@ -165,10 +165,15 @@ const App = () => {
     }
   };
   const onDeposit = async () => {
+    // verify input
     if (depositAmount == '') {
       enqueueSnackbar('Please input amount!', { variant: 'error' });
       return;
+    } else if (! /^[0-9]+$/.test(depositAmount)) {
+      enqueueSnackbar('Please input a valid numeric amount!', { variant: 'error' });
+      return;
     }
+
     try {
       const amount = BigInt(depositAmount);
       // reset state var
@@ -506,16 +511,15 @@ const App = () => {
             </div>
             <div>Deposited: {balance ? (sumDeposit()/CKB_SHANNON_RATIO).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
             <div>Locked: {balance ? (sumLocked()/CKB_SHANNON_RATIO).toString().toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
-            {/* <div>Estimated rewards:</div>
-            <div>Total rewards:</div> */}
             <div>Free: {balance ? (BigInt(balance.available)/BigInt(CKB_SHANNON_RATIO)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + ' CKB' : 'Loading...'}</div>
-            Deposit: <span
-              className="underline"
-              contentEditable
-              onInput={(e) => setDepositAmount(e.currentTarget.innerText)}
-              onKeyDown={handleDepositKeyDown}
-            >
-              {/* Input CKB amount! */}
+            Deposit: <span className="underline">
+              <input
+                type="text"
+                className='deposit-textbox'
+                value={depositAmount}
+                onChange={(e) => setDepositAmount(e.target.value)}
+                onKeyDown={handleDepositKeyDown}
+              />
             </span>
           </div>
         )}
