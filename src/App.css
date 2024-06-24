@@ -1,12 +1,18 @@
 body {
-  background-color: #f2f2f2;
-  color: #333333;
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+  min-height: 100%;
+  border: none;
+  border-radius: 10px;
+  background-image: url("./images/plume-signin-background_portrait.png");
+  background-size: auto;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  overflow: auto;
+  position: absolute;
 }
 
 .info-board {
@@ -18,8 +24,7 @@ body {
   color: rgb(86, 43, 27);
   border-radius: 10px;
   background: hsla(0, 0%, 72%, 0.834);
-  margin-top: 20px;
-  margin-bottom: 30px;
+  margin: 20px auto;
   width: 330px;
 }
 
@@ -54,8 +59,9 @@ body {
 }
 
 .text-based-info {
-  font-weight: bold;
-  padding: 0px;
+  display: inline-flexbox;
+  font-weight: bolder;
+  padding: 2px;
   margin: 0 auto;
 }
 
@@ -112,6 +118,7 @@ body {
   transition: transform 0.3s ease;
   position: relative;
   top: 40vh;
+  margin: 0 auto;
 }
 
 .signin-button:hover {
@@ -180,10 +187,11 @@ body {
 
 .copy-sign {
   position: relative;
-  font-size: 25px;
+  font-size: 20px;
   font-weight: bolder;
   color: rgb(126, 78, 9);
   left: 10px;
+  margin: 0 auto;
 }
 
 .copy-sign:hover {
@@ -296,34 +304,10 @@ body {
   animation: rainbow 5s linear infinite;
 } */
 
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 97%;
-  height: 100%;
-  background-color: #ffffff;
-  padding: 20px;
-  /* margin: 20px auto; */
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1),
-    0 0 30px rgba(0, 0, 0, 0.15);
-  transition: transform 0.5s ease-in-out;
-  min-height: 90vh;
-  background-image: url("./images/plume-signin-background_portrait.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  overflow: auto;
-  position: absolute;
-  left: 0;
-}
-
 .entrance-decor {
   content: "";
   position: absolute;
-  left: 1%;
+  left: 0.5%;
   width: 100%;
   height: 100%;
   background-image: url("./images/poster.png");
@@ -347,6 +331,7 @@ body {
   align-items: center;
   max-width: 80%;
   grid-gap: 0px;
+  margin: 0 auto 20px auto;
 }
 
 @keyframes blink {
@@ -396,13 +381,20 @@ body {
   }
 }
 
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  /* left: 0; */
+.signin-loading-overlay {
+  position: sticky;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(224, 224, 224, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -410,12 +402,38 @@ body {
 }
 
 .loading-circle {
-  border: 4px solid #333;
-  border-top-color: transparent;
+  border: 5px solid transparent;
   border-radius: 50%;
   width: 80px;
   height: 80px;
-  animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite, loading-rainbow 5s linear infinite;
+  z-index: 999;
+}
+
+@keyframes loading-rainbow {
+  0% { border-top-color: red; }
+  16.67% { border-top-color: yellow; }
+  33.33% { border-top-color: green; }
+  50% { border-top-color: cyan; }
+  66.67% { border-top-color: blue; }
+  83.33% { border-top-color: magenta; }
+  100% { border-top-color: red; }
+
+  0% { border-right-color: red; }
+  16.67% { border-right-color: yellow; }
+  33.33% { border-right-color: green; }
+  50% { border-right-color: cyan; }
+  66.67% { border-right-color: blue; }
+  83.33% { border-right-color: magenta; }
+  100% { border-right-color: red; }
+
+  0% { border-left-color: red; }
+  16.67% { border-left-color: yellow; }
+  33.33% { border-left-color: green; }
+  50% { border-left-color: cyan; }
+  66.67% { border-left-color: blue; }
+  83.33% { border-left-color: magenta; }
+  100% { border-left-color: red; }
 }
 
 @keyframes spin {
@@ -431,6 +449,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: fixed;
+  top: 40vh;
 }
 
 .tx-confirmation-message {
@@ -442,10 +462,10 @@ body {
 
 .description {
   position: relative;
-  top: -60px;
-  font-size: 17px;
+  top: -40px;
+  font-size: 20px;
+  font-family: Arial, Helvetica, sans-serif;
   color: #cecece;
-  /* animation: blink 1s infinite; */
   transform: rotate(-0.5deg);
 }
 
@@ -500,7 +520,6 @@ body {
 }
 
 .dao-cell:hover {
-  /* transform: scale(1.05); */
   transform: translateY(-3px);
   color: textColor;
   position: relative;
@@ -620,7 +639,6 @@ body {
 button.proceed,
 button.cancel {
   padding: 10px 20px;
-  /* border: none; */
   border-width: 0.5px;
   border-radius: 5px;
   cursor: pointer;
@@ -745,7 +763,7 @@ button.cancel:hover {
   }
   100% {
     color: rgb(255, 123, 0);
-    transform: scale(1.1); /* Slightly larger */
+    transform: scale(1.1);
   }
 }
 
@@ -753,6 +771,10 @@ button.cancel:hover {
   .info-board {
     font-size: medium;
     width: 290px;
+  }
+
+  .underline {
+    width: 200px;
   }
 
   .title {
@@ -763,7 +785,7 @@ button.cancel:hover {
   }
 
   .description {
-    top: -40px;
+    top: -30px;
   }
 
   .account-deposit-buttons {
@@ -792,7 +814,7 @@ button.cancel:hover {
   }
 
   .copy-sign {
-    font-size: 20px;
+    font-size: 16px;
   }
 
   .joyid-connect {
@@ -807,18 +829,11 @@ button.cancel:hover {
     top: 25px;
   }
 
-  .container {
-    width: 100%;
-    min-height: 100vh;
-    padding: 0px;
-    margin-top: 0px;
-  }
-
   .entrance-decor {
     content: "";
     position: absolute;
     top: 50px;
-    left: 1%;
+    left: 2%;
     background-size: 70vh;
     background-position: top 50% center;
   }

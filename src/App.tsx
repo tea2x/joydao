@@ -493,10 +493,10 @@ const App = () => {
     const dummyCellWidthRandomizer = new SeededRandom(daoCellNum);
 
     return (
-      <div className="container">
+      <>
         {!ckbAddress && <div className="entrance-decor"></div>}
         {isLoading && (
-          <div className="loading-overlay">
+          <div className={isWaitingTxConfirm ? "loading-overlay" : "signin-loading-overlay"}>
             <div className="loading-circle-container">
               <div className="loading-circle"></div>
               {isWaitingTxConfirm && (
@@ -522,8 +522,8 @@ const App = () => {
 
         {ckbAddress && (
           <div className="info-board">
-            <div>
-              Account: {shortenAddressNew(ckbAddress)}
+            <div className="text-based-info">
+              • Account: {shortenAddressNew(ckbAddress)}
               <span
                 className="copy-sign"
                 onClick={(e) => {
@@ -534,16 +534,16 @@ const App = () => {
                 ⧉
               </span>
             </div>
-            <div>
-              Deposited:{" "}
+            <div className="text-based-info">
+              • Deposited:{" "}
               {balance
                 ? (sumDeposit() / CKB_SHANNON_RATIO)
                     .toString()
                     .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
                 : "Loading..."}
             </div>
-            <div>
-              Locked:{" "}
+            <div className="text-based-info">
+              • Locked:{" "}
               {balance
                 ? (sumLocked() / CKB_SHANNON_RATIO)
                     .toString()
@@ -551,24 +551,27 @@ const App = () => {
                     .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
                 : "Loading..."}
             </div>
-            <div>
-              Free:{" "}
+            <div className="text-based-info">
+              • Free:{" "}
               {balance
                 ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
                     .toString()
                     .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
                 : "Loading..."}
             </div>
-            Deposit:{" "}
-            <span className="underline">
-              <input
-                type="text"
-                className="deposit-textbox"
-                value={depositAmount}
-                onChange={(e) => setDepositAmount(e.target.value)}
-                onKeyDown={handleDepositKeyDown}
-              />
-            </span>
+
+            <div className="text-based-info">
+              • Deposit:{" "}
+              <span className="underline">
+                <input
+                  type="text"
+                  className="deposit-textbox"
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
+                  onKeyDown={handleDepositKeyDown}
+                />
+              </span>
+            </div>
           </div>
         )}
 
@@ -927,7 +930,7 @@ const App = () => {
               </Modal>
             </div>
           ))}
-      </div>
+      </>
     );
   }
 };
