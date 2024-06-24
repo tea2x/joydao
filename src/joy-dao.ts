@@ -36,7 +36,7 @@ import {
   collectInputs,
   findDepositCellWith,
   addWitnessPlaceHolder,
-  extraFeeCheck
+  extraFeeCheck,
 } from "./lib/helpers";
 import { number } from "@ckb-lumos/codec";
 import { getConfig, Config } from "@ckb-lumos/config-manager";
@@ -142,9 +142,7 @@ export const buildDepositTransaction = async (
   // calculating fee for a really large dummy tx (^100 inputs) and adding input capacity cells
   let fee = calculateFeeCompatible(MAX_TX_SIZE, FEE_RATE).toNumber();
   const requiredCapacity =
-      amount +
-      ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) +
-      BigInt(fee);
+    amount + ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(fee);
 
   const collectedInputs = await collectInputs(
     INDEXER,
@@ -270,8 +268,7 @@ export const buildWithdrawTransaction = async (
   const inputCapacity = txSkeleton.inputs
     .toArray()
     .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
-  const changeCellCapacity =
-    inputCapacity - outputCapacity - BigInt(fee);
+  const changeCellCapacity = inputCapacity - outputCapacity - BigInt(fee);
   let change: Cell = {
     cellOutput: {
       capacity: intToHex(changeCellCapacity),
@@ -411,11 +408,13 @@ export const buildUnlockTransaction = async (
   const fee = calculateFeeCompatible(txSize, FEE_RATE).toNumber();
   const outputCapacity: HexString =
     "0x" +
-    dao.calculateMaximumWithdrawCompatible(
-      daoWithdrawalCell,
-      depositBlockHeader!.dao,
-      withdrawBlockHeader!.dao
-    ).toString(16);
+    dao
+      .calculateMaximumWithdrawCompatible(
+        daoWithdrawalCell,
+        depositBlockHeader!.dao,
+        withdrawBlockHeader!.dao
+      )
+      .toString(16);
 
   txSkeleton = txSkeleton.update("outputs", (outputs) => {
     return outputs.push({
@@ -493,7 +492,6 @@ function parseEpochCompatible(epoch: BIish): {
     number: _epoch.and(0xffffff),
   };
 }
-
 
 function getTransactionSize(txSkeleton: TransactionSkeletonType): number {
   const tx = createTransactionFromSkeleton(txSkeleton);

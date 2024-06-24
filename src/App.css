@@ -66,9 +66,7 @@ body {
 .title {
   font-size: 2.5em;
   color: #f8f8f8;
-  text-shadow: 
-    1px 1px 0 #505050,
-    2px 2px 0 #333;
+  text-shadow: 1px 1px 0 #505050, 2px 2px 0 #333;
   transform: rotate(-0.5deg);
   margin: 50px;
   cursor: pointer;
@@ -85,7 +83,7 @@ body {
 }
 
 .title:hover {
-  color: #A8E72F;
+  color: #a8e72f;
   background-color: #000;
 }
 
@@ -110,9 +108,7 @@ body {
   justify-content: center;
   width: 200px;
   height: 40px;
-  box-shadow: 
-    1px 1px 0 #555,
-    2px 2px 0 #333;
+  box-shadow: 1px 1px 0 #555, 2px 2px 0 #333;
   transition: transform 0.3s ease;
   position: relative;
   top: 40vh;
@@ -128,11 +124,9 @@ body {
   background-color: #f8f8f8;
   color: #505050;
   justify-content: left;
-  box-shadow: 
-    2px 2px 0 #354f32,
-    4px 4px 0 #2b5328;
+  box-shadow: 2px 2px 0 #354f32, 4px 4px 0 #2b5328;
   padding: 1px 20px;
-  background-image: url('./images/joyid-logo.png');
+  background-image: url("./images/joyid-logo.png");
   background-size: 30px;
   background-position: right 10px center;
   background-repeat: no-repeat;
@@ -148,9 +142,7 @@ body {
 .other-wallet-connect {
   background-color: #f8f8f8;
   color: #505050;
-  box-shadow: 
-    2px 2px 0 #81773c,
-    4px 4px 0 #694427;
+  box-shadow: 2px 2px 0 #81773c, 4px 4px 0 #694427;
   margin-top: 10%;
   top: 30px;
   margin: 20px auto 12px auto;
@@ -182,9 +174,7 @@ body {
   background-repeat: no-repeat;
   font-weight: bold;
   position: relative;
-  box-shadow: 
-    1px 1px 0 #555,
-    2px 2px 0 #333;
+  box-shadow: 1px 1px 0 #555, 2px 2px 0 #333;
   transition: transform 0.3s ease;
 }
 
@@ -203,17 +193,27 @@ body {
 }
 
 @keyframes rainbow {
-  14% {color: orange;}
-  28% {color: yellow;}
-  42% {color: lime;}
-  71% {color: indigo;}
-  85% {color: violet;}
+  14% {
+    color: orange;
+  }
+  28% {
+    color: yellow;
+  }
+  42% {
+    color: lime;
+  }
+  71% {
+    color: indigo;
+  }
+  85% {
+    color: violet;
+  }
 }
 
 .account-button:hover {
   transform: translateY(-3px);
   background-color: #000;
-  color: #A8E72F;
+  color: #a8e72f;
 }
 
 .account-button {
@@ -231,9 +231,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 
-    1px 1px 0 #555,
-    2px 2px 0 #333;
+  box-shadow: 1px 1px 0 #555, 2px 2px 0 #333;
   position: relative;
   margin-right: 20px;
   width: 200px;
@@ -242,17 +240,17 @@ body {
 
 .account-button:hover {
   background-color: #000;
-  color: #A8E72F;
+  color: #a8e72f;
 }
 
 @keyframes fadeIntro {
   0% {
-      opacity: 0;
-      transform: scale(0.9);
+    opacity: 0;
+    transform: scale(0.9);
   }
   100% {
-      opacity: 1;
-      transform: scale(1);
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -275,16 +273,14 @@ body {
   font-weight: bold;
   width: 200px;
   height: 40px;
-  box-shadow: 
-    1px 1px 0 #555,
-    2px 2px 0 #333;
+  box-shadow: 1px 1px 0 #555, 2px 2px 0 #333;
   transition: transform 0.3s ease;
 }
 
 .deposit-button:hover {
   transform: translateY(-3px);
   background-color: #000;
-  color: #A8E72F;
+  color: #a8e72f;
 }
 
 /* .max-deposit {
@@ -311,10 +307,11 @@ body {
   /* margin: 20px auto; */
   border: none;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1),
+    0 0 30px rgba(0, 0, 0, 0.15);
   transition: transform 0.5s ease-in-out;
   min-height: 90vh;
-  background-image: url('./images/plume-signin-background_portrait.png');
+  background-image: url("./images/plume-signin-background_portrait.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -324,12 +321,12 @@ body {
 }
 
 .entrance-decor {
-  content: '';
+  content: "";
   position: absolute;
   left: 1%;
   width: 100%;
   height: 100%;
-  background-image: url('./images/poster.png');
+  background-image: url("./images/poster.png");
   background-size: 90vh;
   background-position: top 55% center;
   background-repeat: no-repeat;
@@ -354,13 +351,13 @@ body {
 
 @keyframes blink {
   0% {
-      border-color: #bd491398;
+    border-color: #bd491398;
   }
   50% {
-      border-color: #ffffff;
+    border-color: #ffffff;
   }
   100% {
-      border-color: #00c891;
+    border-color: #00c891;
   }
 }
 
@@ -373,9 +370,7 @@ body {
   font-size: 1.2em;
   font-weight: bold;
   color: #f8f8f8;
-  text-shadow: 
-    2px 2px 4px rgba(0, 0, 0, 0.3),
-    2px 2px 0 #505050;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 2px 2px 0 #505050;
   background-color: #505050;
   border-radius: 10px;
   padding: 20px;
@@ -387,16 +382,17 @@ body {
 }
 
 .no-deposit-message:hover {
-  color: #A8E72F;
+  color: #a8e72f;
   background-color: #000;
 }
 
 @keyframes bounce {
-  0%, 100% {
-      transform: translateY(0);
+  0%,
+  100% {
+    transform: translateY(0);
   }
   50% {
-      transform: translateY(-10px);
+    transform: translateY(-10px);
   }
 }
 
@@ -423,8 +419,12 @@ body {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-circle-container {
@@ -451,13 +451,13 @@ body {
 
 @keyframes blink {
   0% {
-      opacity: 1;
+    opacity: 1;
   }
   50% {
-      opacity: 0.5;
+    opacity: 0.5;
   }
   100% {
-      opacity: 1;
+    opacity: 1;
   }
 }
 
@@ -475,9 +475,7 @@ body {
   background-color: #f8f8f8;
   position: relative;
   opacity: 0.2;
-  box-shadow: 
-    1px 1px 0 #555,
-    2px 2px 0 #333;
+  box-shadow: 1px 1px 0 #555, 2px 2px 0 #333;
 }
 
 .dao-cell {
@@ -498,11 +496,8 @@ body {
   animation: fadeIntro 0.5s ease-in-out;
   font-size: 1.2em;
   position: relative;
-  box-shadow: 
-    1px 1px 0 #555,
-    2px 2px 0 #333;
+  box-shadow: 1px 1px 0 #555, 2px 2px 0 #333;
 }
-
 
 .dao-cell:hover {
   /* transform: scale(1.05); */
@@ -512,7 +507,8 @@ body {
 }
 
 .dao-cell-button {
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1),
+    0 0 30px rgba(0, 0, 0, 0.15);
   background-color: linear-gradient(transparent var(--backgroundColor));
   color: #000000;
   border-width: 0.1px;
@@ -536,7 +532,11 @@ body {
   width: 100%;
   height: 100%;
   border-radius: 10px;
-  background: linear-gradient(to right, var(--progressColor) var(--progressPercentage), transparent var(--progressPercentage));
+  background: linear-gradient(
+    to right,
+    var(--progressColor) var(--progressPercentage),
+    transparent var(--progressPercentage)
+  );
   z-index: -1;
   transform-origin: top center;
   animation: fadeIntro 2s ease-in-out;
@@ -558,7 +558,8 @@ body {
   background-color: #ffffff;
   border: none;
   border-radius: 10px !important;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05), 0 0 20px rgba(0, 0, 0, 0.1),
+    0 0 30px rgba(0, 0, 0, 0.15);
   transition: transform 0.5s ease-in-out;
 
   display: flex;
@@ -597,8 +598,12 @@ body {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .modal-loading-circle-container {
@@ -612,7 +617,8 @@ body {
   justify-content: space-around;
 }
 
-button.proceed, button.cancel {
+button.proceed,
+button.cancel {
   padding: 10px 20px;
   /* border: none; */
   border-width: 0.5px;
@@ -635,7 +641,7 @@ button.proceed:hover {
 button.proceed:disabled {
   background-color: #cccccc; /* Gray */
   cursor: not-allowed;
-}  
+}
 
 button.cancel {
   background-color: #e55603; /* Red */
@@ -647,23 +653,45 @@ button.cancel:hover {
 }
 
 @keyframes shake {
-  0% { transform: translate(1px, 1px) rotate(0deg); }
-  10% { transform: translate(-1px, -2px) rotate(-1deg); }
-  20% { transform: translate(-3px, 0px) rotate(1deg); }
-  30% { transform: translate(3px, 2px) rotate(0deg); }
-  40% { transform: translate(1px, -1px) rotate(1deg); }
-  50% { transform: translate(-1px, 2px) rotate(-1deg); }
-  60% { transform: translate(-3px, 1px) rotate(0deg); }
-  70% { transform: translate(3px, 1px) rotate(-1deg); }
-  80% { transform: translate(-1px, -1px) rotate(1deg); }
-  90% { transform: translate(1px, 2px) rotate(0deg); }
-  100% { transform: translate(1px, -2px) rotate(-1deg); }
+  0% {
+    transform: translate(1px, 1px) rotate(0deg);
+  }
+  10% {
+    transform: translate(-1px, -2px) rotate(-1deg);
+  }
+  20% {
+    transform: translate(-3px, 0px) rotate(1deg);
+  }
+  30% {
+    transform: translate(3px, 2px) rotate(0deg);
+  }
+  40% {
+    transform: translate(1px, -1px) rotate(1deg);
+  }
+  50% {
+    transform: translate(-1px, 2px) rotate(-1deg);
+  }
+  60% {
+    transform: translate(-3px, 1px) rotate(0deg);
+  }
+  70% {
+    transform: translate(3px, 1px) rotate(-1deg);
+  }
+  80% {
+    transform: translate(-1px, -1px) rotate(1deg);
+  }
+  90% {
+    transform: translate(1px, 2px) rotate(0deg);
+  }
+  100% {
+    transform: translate(1px, -2px) rotate(-1deg);
+  }
 }
 
 .dao-cell.ripe {
   animation: shake 0.5s;
   animation-iteration-count: infinite;
-}  
+}
 
 .connect-wallet {
   font-size: 1.3em;
@@ -694,7 +722,7 @@ button.cancel:hover {
   margin: 0.1em;
   font-size: 1em;
   font-weight: bold;
-  color:cadetblue
+  color: cadetblue;
 }
 
 .deposit-cycle-progress-bar {
@@ -711,18 +739,17 @@ button.cancel:hover {
 }
 
 @keyframes warningAnimation {
-  0% { 
-    color: cadetblue; 
-    transform: scale(1); 
+  0% {
+    color: cadetblue;
+    transform: scale(1);
   }
-  100% { 
-    color: rgb(255, 123, 0); 
+  100% {
+    color: rgb(255, 123, 0);
     transform: scale(1.1); /* Slightly larger */
   }
 }
 
 @media only screen and (max-width: 768px) {
-
   .info-board {
     font-size: medium;
     width: 290px;
@@ -743,7 +770,9 @@ button.cancel:hover {
     margin-bottom: 30px;
   }
 
-  .signin-button, .account-button, .deposit-button {
+  .signin-button,
+  .account-button,
+  .deposit-button {
     width: 150px;
     height: 45px;
     padding: 5px 10px 5px 10px;
@@ -761,7 +790,7 @@ button.cancel:hover {
     position: relative;
     top: 50vh;
   }
-  
+
   .copy-sign {
     font-size: 20px;
   }
@@ -772,12 +801,12 @@ button.cancel:hover {
     padding: 1px 15px;
     background-size: 30px;
   }
-  
+
   .other-wallet-connect {
     font-size: 1em;
     top: 25px;
   }
-  
+
   .container {
     width: 100%;
     min-height: 100vh;
@@ -786,7 +815,7 @@ button.cancel:hover {
   }
 
   .entrance-decor {
-    content: '';
+    content: "";
     position: absolute;
     top: 50px;
     left: 1%;
