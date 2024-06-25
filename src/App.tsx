@@ -86,6 +86,14 @@ const App = () => {
     return sum;
   };
 
+  const calculateCompensation = (cell:DaoCell):string => {
+    if (!cell.maximumWithdraw)
+      return '';
+
+    const compensation = parseInt(cell?.maximumWithdraw) - parseInt(cell?.cellOutput.capacity,16);
+    return (compensation/CKB_SHANNON_RATIO).toFixed(2).toString() + " CKB";
+  }
+
   const updateDaoList = async (daoType: "all" | "deposit" | "withdraw") => {
     const storedCkbAddress = localStorage.getItem("ckbAddress");
     if (storedCkbAddress) {
@@ -343,24 +351,10 @@ const App = () => {
   const shortenAddress = (address: string) => {
     if (!address) return "";
     if (windowWidth <= 768) {
-      return `${address.slice(0, 8)}...${address.slice(-5)}`;
+      return `${address.slice(0, 7)}...${address.slice(-10)}`;
     } else {
-      return `${address.slice(0, 8)}...${address.slice(-8)}`;
+      return `${address.slice(0, 7)}...${address.slice(-10)}`;
     }
-  };
-
-  const shortenAddressNew = (address: string) => {
-    if (!address) return "";
-    if (windowWidth <= 768) {
-      return `${address.slice(0, 10)}...${address.slice(-10)}`;
-    } else {
-      return `${address.slice(0, 10)}...${address.slice(-10)}`;
-    }
-  };
-
-  const shortenAddressNew1 = (address: string) => {
-    if (!address) return "";
-    return `${address.slice(0, 4)}...${address.slice(-5)}`;
   };
 
   const handleDepositKeyDown = (
@@ -523,7 +517,7 @@ const App = () => {
         {ckbAddress && (
           <div className="info-board">
             <div className="text-based-info">
-              • Account: {shortenAddressNew(ckbAddress)}
+              • Account: {shortenAddress(ckbAddress)}
               <span
                 className="copy-sign"
                 onClick={(e) => {
@@ -534,6 +528,16 @@ const App = () => {
                 ⧉
               </span>
             </div>
+
+            <div className="text-based-info">
+              • Free:{" "}
+              {balance
+                ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
+                    .toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+                : "Loading..."}
+            </div>
+
             <div className="text-based-info">
               • Deposited:{" "}
               {balance
@@ -542,19 +546,12 @@ const App = () => {
                     .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
                 : "Loading..."}
             </div>
+
             <div className="text-based-info">
-              • Locked:{" "}
+              • Withdrawing:{" "}
               {balance
                 ? (sumLocked() / CKB_SHANNON_RATIO)
                     .toString()
-                    .toString()
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-                : "Loading..."}
-            </div>
-            <div className="text-based-info">
-              • Free:{" "}
-              {balance
-                ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
                     .toString()
                     .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
                 : "Loading..."}
@@ -661,13 +658,16 @@ const App = () => {
             </div>
           ) : (
             <div className="cell-grid">
-              {[...depositCells, ...withdrawalCells]
-                .sort((a, b) => {
-                  const aBlkNum = parseInt(a.blockNumber!, 16);
-                  const bBlkNum = parseInt(b.blockNumber!, 16);
-                  return bBlkNum - aBlkNum;
-                })
-                .map((cell, index) => {
+              {[
+                ...depositCells.sort(
+                  (a, b) =>
+                    parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
+                ),
+                ...withdrawalCells.sort(
+                  (a, b) =>
+                    parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
+                ),
+              ].map((cell, index) => {
                   const scalingStep = 3;
 
                   let scaleFactorSmall;
@@ -722,6 +722,28 @@ const App = () => {
                   );
                   const backgroundColor = isDeposit ? "#99c824" : "#e58603";
                   const buttonColor = "#2d4858";
+
+                  // calculate progress bar params
+                  let backgroundPos = '';
+                  const targetBtnSize = {
+                    width: windowWidth <= 768 ? 102 : 120,
+                    height: windowWidth <= 768 ? 42 : 52,
+                  };
+                  const deltaH = windowWidth <= 768 ? 2 : 2;
+                  const deltaW = windowWidth <= 768 ? 2 : 2;
+                  const totalLength = (targetBtnSize.width + targetBtnSize.height)*2;
+                  const borderLen = (cell.currentCycleProgress / 100) * totalLength;
+                  console.log(borderLen);
+                  if (borderLen <= targetBtnSize.width) {
+                    backgroundPos = '' + (-targetBtnSize.width + borderLen) + 'px 0px, ' + (targetBtnSize.width - deltaW) + 'px -' + targetBtnSize.height + 'px, ' + targetBtnSize.width + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height + 'px';
+                  } else if (borderLen <= (targetBtnSize.width + targetBtnSize.height)) {
+                    backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px ' + (-targetBtnSize.height + (borderLen - targetBtnSize.width)) + 'px, ' + targetBtnSize.width + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height + 'px';
+                  } else if (borderLen <= (targetBtnSize.width * 2 + targetBtnSize.height)) {
+                    backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px 0px, ' + (targetBtnSize.width - (borderLen - targetBtnSize.width - targetBtnSize.height)) + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height +'px';
+                  } else {
+                    backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px 0px, 0px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + (targetBtnSize.height - (borderLen - (targetBtnSize.width * 2) - targetBtnSize.height)) + 'px';
+                  }
+
                   return (
                     <div
                       key={index}
@@ -761,10 +783,10 @@ const App = () => {
                         }`}
                         ref={(el) => {
                           if (el) {
-                            el.style.setProperty(
-                              "--progressColor",
-                              buttonColor
-                            );
+                            // el.style.setProperty(
+                            //   "--progressColor",
+                            //   buttonColor
+                            // );
                             el.style.setProperty(
                               "--progressPercentage",
                               `${cell.currentCycleProgress}%`
@@ -776,8 +798,29 @@ const App = () => {
                           isDeposit ? onWithdraw(cell) : onUnlock(cell);
                         }}
                       >
-                        {isDeposit ? "Withdraw" : "Unlock"}
+                        {isDeposit ?  "Withdraw" : (cell.ripe ? "Complete" : "Withdrawal processing ...")}
                       </button>
+
+                      {cell.currentCycleProgress > 0 && (
+                        <div
+                          className="progress"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            isDeposit ? onWithdraw(cell) : onUnlock(cell);
+                          }}
+                          ref={(el) => {
+                            if (el) {
+                              el.style.setProperty(
+                                "--backgroundPos",
+                                backgroundPos
+                              );
+                            }
+                          }}
+                        >
+                          {/* hello */}
+                        </div>
+                      )}
+                      
                     </div>
                   );
                 })}
@@ -829,7 +872,7 @@ const App = () => {
                   </div>
                 )}
 
-                <h3 className="deposit-message-head">Deposit Information</h3>
+                {/* <h3 className="deposit-message-head">Deposit Information</h3> */}
                 <div className="deposit-cycle-progress-bar">
                   <CircularProgressbarWithChildren
                     value={currentCell?.currentCycleProgress!}
@@ -851,14 +894,14 @@ const App = () => {
                     </p>
                     {!currentCell?.isDeposit && (
                       <p className="deposit-message">
-                        Total Return: {currentCell?.maximumWithdraw} CKB
+                        Compensation: {currentCell ? calculateCompensation(currentCell) : ''}
                       </p>
                     )}
 
                     {!currentCell?.isDeposit &&
                       (!currentCell?.ripe ? (
                         <p className="deposit-message highlight">
-                          Unlock in:{" "}
+                          Complete in:{" "}
                           {(currentCell?.cycleEndInterval! + 1) / 6 > 2
                             ? `${(
                                 (currentCell?.cycleEndInterval! + 1) /

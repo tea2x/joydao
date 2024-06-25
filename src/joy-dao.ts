@@ -458,6 +458,7 @@ function epochSinceCompatible({
     .add(_index.shl(24))
     .add(_number);
 }
+
 export function extractDaoDataCompatible(dao: PackedDao): {
   [key: string]: BI;
 } {

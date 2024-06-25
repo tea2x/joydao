@@ -330,13 +330,13 @@ export const enrichDaoCellInfo = async (
       );
       const parsedSince = parseSince(earliestSince.toString());
       cell.sinceEpoch = (parsedSince.value as EpochSinceValue).number;
-      cell.maximumWithdraw = (
-        dao.calculateMaximumWithdraw(
+      cell.maximumWithdraw = dao
+        .calculateMaximumWithdraw(
           cell,
           depositBlockHeader.dao,
           withdrawBlockHeader.dao
-        ) / BigInt(CKB_SHANNON_RATIO)
-      ).toString();
+        )
+        .toString();
       cell.ripe = tipEpoch > cell.sinceEpoch;
     }
 
