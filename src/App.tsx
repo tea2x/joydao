@@ -60,6 +60,7 @@ const App = () => {
     React.useState(false);
   const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
   const [compensation, setCompensation] = React.useState<number>();
+  const [percentageLoading, setPercentageLoading] = React.useState<number>(0);
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
@@ -495,6 +496,42 @@ const App = () => {
     fetchData();
   }, [tipEpoch, currentCell]);
 
+  // creating a loafin effect on deposit button
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setPercentageLoading((prevPercentage) => {
+        return prevPercentage === 100 ? 1 : prevPercentage + 1;
+      });
+    }, 5);
+
+    return () => clearInterval(interval); // Clean up the interval
+  }, []);
+
+  // calculate background position for an overlay,
+  // showing cycle progress bar on top of each deposit
+  function calculateButtonBorderProgressBar(percentage: number) {
+    let backgroundPos = '';
+    const targetBtnSize = {
+      width: windowWidth <= 768 ? 90 : 110,
+      height: windowWidth <= 768 ? 30 : 30,
+    };
+    const deltaH = windowWidth <= 768 ? 1 : 2;
+    const deltaW = windowWidth <= 768 ? 1 : 2;
+    const totalLength = (targetBtnSize.width + targetBtnSize.height)*2;
+    const borderLen = (percentage / 100) * totalLength;
+
+    if (borderLen <= targetBtnSize.width) {
+      backgroundPos = '' + (-targetBtnSize.width + borderLen) + 'px 0px, ' + (targetBtnSize.width - deltaW) + 'px -' + targetBtnSize.height + 'px, ' + targetBtnSize.width + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height + 'px';
+    } else if (borderLen <= (targetBtnSize.width + targetBtnSize.height)) {
+      backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px ' + (-targetBtnSize.height + (borderLen - targetBtnSize.width)) + 'px, ' + targetBtnSize.width + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height + 'px';
+    } else if (borderLen <= (targetBtnSize.width * 2 + targetBtnSize.height)) {
+      backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px 0px, ' + (targetBtnSize.width - (borderLen - targetBtnSize.width - targetBtnSize.height)) + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height +'px';
+    } else {
+      backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px 0px, 0px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + (targetBtnSize.height - (borderLen - (targetBtnSize.width * 2) - targetBtnSize.height)) + 'px';
+    }
+    return backgroundPos;
+  }
+
   {
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
     const smallScreenDeviceMinCellWidth = 100;
@@ -749,31 +786,10 @@ const App = () => {
                   const backgroundColor = isDeposit ? "#99c824" : "#e58603";
                   const buttonColor = "#2d4858";
 
-                  // calculate progress bar params
-                  let backgroundPos = '';
-                  const targetBtnSize = {
-                    width: windowWidth <= 768 ? 90 : 110,
-                    height: windowWidth <= 768 ? 30 : 30,
-                  };
-                  const deltaH = windowWidth <= 768 ? 2 : 2;
-                  const deltaW = windowWidth <= 768 ? 2 : 2;
-                  const totalLength = (targetBtnSize.width + targetBtnSize.height)*2;
-                  const borderLen = (cell.currentCycleProgress / 100) * totalLength;
-
-                  if (borderLen <= targetBtnSize.width) {
-                    backgroundPos = '' + (-targetBtnSize.width + borderLen) + 'px 0px, ' + (targetBtnSize.width - deltaW) + 'px -' + targetBtnSize.height + 'px, ' + targetBtnSize.width + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height + 'px';
-                  } else if (borderLen <= (targetBtnSize.width + targetBtnSize.height)) {
-                    backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px ' + (-targetBtnSize.height + (borderLen - targetBtnSize.width)) + 'px, ' + targetBtnSize.width + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height + 'px';
-                  } else if (borderLen <= (targetBtnSize.width * 2 + targetBtnSize.height)) {
-                    backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px 0px, ' + (targetBtnSize.width - (borderLen - targetBtnSize.width - targetBtnSize.height)) + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height +'px';
-                  } else {
-                    backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px 0px, 0px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + (targetBtnSize.height - (borderLen - (targetBtnSize.width * 2) - targetBtnSize.height)) + 'px';
-                  }
-
                   return (
                     <div
                       key={index}
-                      className={`dao-cell ${cell.ripe ? "ripe" : ""}`}
+                      className={`dao-cell`}
                       ref={(el) => {
                         if (el) {
                           el.style.setProperty("--cellWidth", `${cellWidth}px`);
@@ -802,11 +818,7 @@ const App = () => {
                         CKB
                       </p>
                       <button
-                        className={`dao-cell-button ${
-                          cell.currentCycleProgress === undefined
-                            ? "progressing"
-                            : ""
-                        }`}
+                        className={`dao-cell-button ${cell.ripe ? "ripe" : ''}`}
                         ref={(el) => {
                           if (el) {
                             el.style.setProperty(
@@ -833,9 +845,10 @@ const App = () => {
                         {isDeposit ?  "Withdraw" : (cell.ripe ? "Complete" : "Processing ...")}
                       </button>
 
-                      {cell.currentCycleProgress > 0 && (
+                      {/*placing a layer of progress bar over each deposit button*/}
+                      {cell.currentCycleProgress ? (cell.currentCycleProgress > 0 && (
                         <div
-                          className="progress"
+                          className={`button-border-progress-bar ${cell.ripe ? "ripe" : ""}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             isDeposit ? onWithdraw(cell) : onUnlock(cell);
@@ -844,14 +857,32 @@ const App = () => {
                             if (el) {
                               el.style.setProperty(
                                 "--backgroundPos",
-                                backgroundPos
+                                calculateButtonBorderProgressBar(cell.currentCycleProgress)
                               );
                             }
                           }}
                         >
                           {/* hello */}
                         </div>
-                      )}
+                      )) : ((cell.currentCycleProgress === undefined) && (
+                        <div
+                          className="button-border-progress-bar"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            isDeposit ? onWithdraw(cell) : onUnlock(cell);
+                          }}
+                          ref={(el) => {
+                            if (el) {
+                              el.style.setProperty(
+                                "--backgroundPos",
+                                calculateButtonBorderProgressBar(percentageLoading!)
+                              );
+                            }
+                          }}
+                        >
+                          {/* hello */}
+                        </div>
+                      ))}
                       
                     </div>
                   );
