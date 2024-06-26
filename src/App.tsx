@@ -10,6 +10,7 @@ import {
   getTipEpoch,
   SeededRandom,
   isJoyIdAddress,
+  estimateReturn,
 } from "./lib/helpers";
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from "./types";
@@ -58,6 +59,7 @@ const App = () => {
   const [isModalMessageLoading, setIsModalMessageLoading] =
     React.useState(false);
   const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
+  const [compensation, setCompensation] = React.useState<number>();
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
@@ -86,9 +88,9 @@ const App = () => {
     return sum;
   };
 
-  const calculateCompensation = (cell:DaoCell):string => {
+  const getCompensation = (cell:DaoCell):string => {
     if (!cell.maximumWithdraw)
-      return '';
+      return ' ~ CKB';
 
     const compensation = parseInt(cell?.maximumWithdraw) - parseInt(cell?.cellOutput.capacity,16);
     return (compensation/CKB_SHANNON_RATIO).toFixed(2).toString() + " CKB";
@@ -395,28 +397,36 @@ const App = () => {
 
   // enriching dao cell info
   React.useEffect(() => {
-    if (depositCellsRef.current !== depositCells) {
-      Promise.all(
-        depositCells.map(async (cell) => {
-          await enrichDaoCellInfo(cell as DaoCell, true, tipEpoch!);
-        })
-      ).then(() => {
-        depositCellsRef.current = depositCells;
-        // kick re-renderring when enriching process's done
-        setRenderKick((prevRenderKick) => prevRenderKick + 1);
-      });
-    }
-
-    if (withdrawalCellsRef.current !== withdrawalCells) {
-      Promise.all(
-        withdrawalCells.map(async (cell) => {
-          await enrichDaoCellInfo(cell as DaoCell, false, tipEpoch!);
-        })
-      ).then(() => {
-        withdrawalCellsRef.current = withdrawalCells;
-        // kick re-renderring when enriching process's done
-        setRenderKick((prevRenderKick) => prevRenderKick + 1);
-      });
+    try {
+      if (depositCellsRef.current !== depositCells) {
+        Promise.all(
+          depositCells.map(async (cell) => {
+            await enrichDaoCellInfo(cell as DaoCell, true, tipEpoch!);
+          })
+        ).then(() => {
+          depositCellsRef.current = depositCells;
+          // kick re-renderring when enriching process's done
+          setRenderKick((prevRenderKick) => prevRenderKick + 1);
+        });
+      }
+  
+      if (withdrawalCellsRef.current !== withdrawalCells) {
+        Promise.all(
+          withdrawalCells.map(async (cell) => {
+            await enrichDaoCellInfo(cell as DaoCell, false, tipEpoch!);
+          })
+        ).then(() => {
+          withdrawalCellsRef.current = withdrawalCells;
+          // kick re-renderring when enriching process's done
+          setRenderKick((prevRenderKick) => prevRenderKick + 1);
+        });
+      }
+    } catch(e:any) {
+      if (e.message.includes("Network request failed")) {
+        enqueueSnackbar("joyDAO is chasing down your data. Refresh and give it another go!", { variant: "info" });
+      } else {
+        enqueueSnackbar("Error: " + e.message, { variant: "error" });
+      }
     }
   }, [depositCells, withdrawalCells, tipEpoch]);
 
@@ -469,6 +479,22 @@ const App = () => {
     else setClient(new ClientPublicTestnet());
   }, [setClient, CCC_MAINNET]);
 
+  // estimate return
+  React.useEffect(() => {
+    if (!(tipEpoch && currentCell))
+      return;
+
+    if (!currentCell.isDeposit)
+      return;
+    
+    const fetchData = async () => {
+      const totalReturn = await estimateReturn(currentCell, tipEpoch);
+      const compensation = (totalReturn - parseInt(currentCell.cellOutput.capacity, 16)/CKB_SHANNON_RATIO);
+      setCompensation(compensation);
+    };
+    fetchData();
+  }, [tipEpoch, currentCell]);
+
   {
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
     const smallScreenDeviceMinCellWidth = 100;
@@ -495,7 +521,7 @@ const App = () => {
               <div className="loading-circle"></div>
               {isWaitingTxConfirm && (
                 <p className="tx-confirmation-message">
-                  Your tx can take a few minutes to process!
+                  Your transaction can take a few minutes to process!
                 </p>
               )}
             </div>
@@ -726,14 +752,14 @@ const App = () => {
                   // calculate progress bar params
                   let backgroundPos = '';
                   const targetBtnSize = {
-                    width: windowWidth <= 768 ? 102 : 120,
-                    height: windowWidth <= 768 ? 42 : 52,
+                    width: windowWidth <= 768 ? 90 : 110,
+                    height: windowWidth <= 768 ? 30 : 30,
                   };
                   const deltaH = windowWidth <= 768 ? 2 : 2;
                   const deltaW = windowWidth <= 768 ? 2 : 2;
                   const totalLength = (targetBtnSize.width + targetBtnSize.height)*2;
                   const borderLen = (cell.currentCycleProgress / 100) * totalLength;
-                  console.log(borderLen);
+
                   if (borderLen <= targetBtnSize.width) {
                     backgroundPos = '' + (-targetBtnSize.width + borderLen) + 'px 0px, ' + (targetBtnSize.width - deltaW) + 'px -' + targetBtnSize.height + 'px, ' + targetBtnSize.width + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height + 'px';
                   } else if (borderLen <= (targetBtnSize.width + targetBtnSize.height)) {
@@ -783,10 +809,16 @@ const App = () => {
                         }`}
                         ref={(el) => {
                           if (el) {
-                            // el.style.setProperty(
-                            //   "--progressColor",
-                            //   buttonColor
-                            // );
+                            el.style.setProperty(
+                              "--buttonColor",
+                              buttonColor
+                            );
+
+                            el.style.setProperty(
+                              "--textColor",
+                              backgroundColor
+                            );
+
                             el.style.setProperty(
                               "--progressPercentage",
                               `${cell.currentCycleProgress}%`
@@ -798,7 +830,7 @@ const App = () => {
                           isDeposit ? onWithdraw(cell) : onUnlock(cell);
                         }}
                       >
-                        {isDeposit ?  "Withdraw" : (cell.ripe ? "Complete" : "Withdrawal processing ...")}
+                        {isDeposit ?  "Withdraw" : (cell.ripe ? "Complete" : "Processing ...")}
                       </button>
 
                       {cell.currentCycleProgress > 0 && (
@@ -823,7 +855,8 @@ const App = () => {
                       
                     </div>
                   );
-                })}
+                })
+              }
 
               {[...Array(Math.max(0, fillerNum - daoCellNum))].map(
                 (_, index) => {
@@ -894,7 +927,7 @@ const App = () => {
                     </p>
                     {!currentCell?.isDeposit && (
                       <p className="deposit-message">
-                        Compensation: {currentCell ? calculateCompensation(currentCell) : ''}
+                        Compensation: {currentCell ? getCompensation(currentCell) : ' ~ CKB'}
                       </p>
                     )}
 
@@ -910,8 +943,20 @@ const App = () => {
                             : `${(currentCell?.cycleEndInterval! + 1) * 4}h`}
                         </p>
                       ) : (
-                        <p className="deposit-message highlight">Unlock now!</p>
+                        <p className="deposit-message highlight">Complete now!</p>
                       ))}
+
+                    {(currentCell?.isDeposit) && (
+                      <p className="deposit-message">
+                        Compensation: {compensation ? `${compensation?.toFixed(2)} CKB` : `${" ~ CKB"}`}
+                      </p>
+                    )}
+
+                    {currentCell?.isDeposit && currentCell.ripe && (
+                      <p className="deposit-message highlight">
+                        New Lock Cycle in: {currentCell?.cycleEndInterval! * 4}h
+                      </p>
+                    )}
 
                     {currentCell?.isDeposit &&
                       (!currentCell.ripe ? (
@@ -929,13 +974,9 @@ const App = () => {
                         <p className="deposit-message highlight">
                           Withdraw now!
                         </p>
-                      ))}
-
-                    {currentCell?.isDeposit && currentCell.ripe && (
-                      <p className="deposit-message highlight">
-                        New Lock Cycle in: {currentCell?.cycleEndInterval! * 4}h
-                      </p>
+                      )
                     )}
+
                   </CircularProgressbarWithChildren>
                 </div>
 

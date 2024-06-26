@@ -7,6 +7,7 @@ import {
   since,
   utils,
   blockchain,
+  PackedDao,
 } from "@ckb-lumos/base";
 const { computeScriptHash } = utils;
 const { parseSince } = since;
@@ -28,7 +29,7 @@ import { getConfig } from "@ckb-lumos/config-manager";
 import { dao } from "@ckb-lumos/common-scripts";
 import { EpochSinceValue } from "@ckb-lumos/base/lib/since";
 import { BI, BIish } from "@ckb-lumos/bi";
-import { bytes } from "@ckb-lumos/codec";
+import { bytes, number } from "@ckb-lumos/codec";
 
 const INDEXER = new Indexer(INDEXER_URL);
 const rpc = new RPC(NODE_URL);
@@ -452,6 +453,40 @@ export const extraFeeCheck = (transaction: TransactionSkeletonType) => {
   if (fee > 1 * CKB_SHANNON_RATIO)
     throw new Error("You're paying more than 1 CKB as transaction fee!");
 };
+
+export function extractDaoDataCompatible(dao: PackedDao): {
+  [key: string]: BI;
+} {
+  if (!/^(0x)?([0-9a-fA-F]){64}$/.test(dao)) {
+    throw new Error("Invalid dao format!");
+  }
+
+  const len = 8 * 2;
+  const hex = dao.startsWith("0x") ? dao.slice(2) : dao;
+
+  return ["c", "ar", "s", "u"]
+    .map((key, i) => {
+      return {
+        [key]: number.Uint64LE.unpack("0x" + hex.slice(len * i, len * (i + 1))),
+      };
+    })
+    .reduce((result, c) => ({ ...result, ...c }), {});
+}
+
+export const estimateReturn = async (depositCell:DaoCell, tipEpoch: number):Promise<number> => {
+  const c_o = 104; // occupied dao cell
+  const c_t = parseInt(depositCell.cellOutput.capacity, 16)/CKB_SHANNON_RATIO;
+
+  const [depositHeader, tipHeader] = await Promise.all([
+    rpc.getHeader(depositCell.blockHash!),
+    rpc.getTipHeader(),
+  ]);
+
+  const depositDaoData = extractDaoDataCompatible(depositHeader.dao);
+  const tipDaoData = extractDaoDataCompatible(tipHeader.dao);
+  const result = ( c_t - c_o ) * (BI.from(tipDaoData.ar).toNumber()) / (BI.from(depositDaoData.ar).toNumber()) + c_o;
+  return result;
+}
 
 export default {
   sendTransaction,
