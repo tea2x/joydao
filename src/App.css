@@ -794,11 +794,6 @@ button.cancel:hover {
   margin: 0 auto;
 }
 
-.deposit-message-head {
-  border-bottom: 1px solid #000;
-  width: inherit;
-  margin: 0.3em;
-}
 .deposit-message {
   margin: 0.1em;
   font-size: 1em;
@@ -806,9 +801,7 @@ button.cancel:hover {
   color: cadetblue;
 }
 
-.deposit-cycle-progress-bar {
-  width: 300px;
-  height: 300px;
+.deposit-circular-progress-bar {
   margin: 10px;
 }
 

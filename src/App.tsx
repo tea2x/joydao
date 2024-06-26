@@ -937,7 +937,7 @@ const App = () => {
                 )}
 
                 {/* <h3 className="deposit-message-head">Deposit Information</h3> */}
-                <div className="deposit-cycle-progress-bar">
+                <div className="deposit-circular-progress-bar">
                   <CircularProgressbarWithChildren
                     value={currentCell?.currentCycleProgress!}
                     styles={buildStyles({
@@ -948,14 +948,12 @@ const App = () => {
                     })}
                   >
                     <p className="deposit-message">
-                      Cycle:{" "}
+                      Cycle{" "}
                       {!currentCell?.isDeposit && currentCell?.ripe
                         ? currentCell?.completedCycles!
-                        : currentCell?.completedCycles! + 1}
+                        : currentCell?.completedCycles! + 1} | Progress {currentCell?.currentCycleProgress!}%
                     </p>
-                    <p className="deposit-message">
-                      Progress: {currentCell?.currentCycleProgress!}%
-                    </p>
+
                     {!currentCell?.isDeposit && (
                       <p className="deposit-message">
                         Compensation: {currentCell ? getCompensation(currentCell) : ' ~ CKB'}
