@@ -21,7 +21,7 @@ export const JOYID_CELLDEP = isMainNet
           "0xf05188e5f3a6767fc4687faf45ba5f1a6e25d3ada6129dae8722cb282f262493",
         index: "0x0",
       },
-      dep_type: "dep_group",
+      depType: "depGroup",
     }
   : {
       codeHash:
@@ -45,7 +45,7 @@ export const OMNILOCK_CELLDEP = isMainNet
           "0xdfdb40f5d229536915f2d5403c66047e162e25dedd70a79ef5164356e1facdc8",
         index: "0x0",
       },
-      dep_type: "code",
+      depType: "code",
     }
   : {
       codeHash:
