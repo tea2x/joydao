@@ -1,4 +1,4 @@
-const isMainNet = false;
+const isMainNet = true;
 
 export const NODE_URL = isMainNet
   ? "https://mainnet.ckb.dev/"
