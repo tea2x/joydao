@@ -198,7 +198,6 @@ const App = () => {
     }
   };
   const onDeposit = async () => {
-    // verify input
     if (depositAmount == "") {
       enqueueSnackbar("Please input amount!", { variant: "error" });
       return;
@@ -211,14 +210,11 @@ const App = () => {
 
     try {
       const amount = BigInt(depositAmount);
-      // reset state var
-      // setDepositAmount('');
       const daoTx = await buildDepositTransaction(ckbAddress, amount);
-
-      let signedTx;
+      
       let txid = "";
       if (isJoyIdAddress(ckbAddress)) {
-        signedTx = await signRawTransaction(daoTx, ckbAddress);
+        const signedTx = await signRawTransaction(daoTx, ckbAddress);
         txid = await sendTransaction(signedTx);
       } else {
         if (signer) {
@@ -234,11 +230,7 @@ const App = () => {
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
-
-      // Wait for the transaction to confirm.
       await waitForTransactionConfirmation(txid);
-
-      // update deposit/withdrawal list and balance
       setIsWaitingTxConfirm(false);
       setDepositAmount("");
       await updateDaoList("deposit");
@@ -248,11 +240,8 @@ const App = () => {
   };
 
   const onWithdraw = async (cell: DaoCell) => {
-    // Open the modal
     setModalIsOpen(true);
     setIsModalMessageLoading(true);
-
-    // Save the cell for later
     setCurrentCell(cell);
     setIsModalMessageLoading(false);
   };
@@ -260,13 +249,9 @@ const App = () => {
   const _onWithdraw = async (cell: DaoCell) => {
     try {
       const daoTx = await buildWithdrawTransaction(ckbAddress, cell);
-
-      let signedTx;
       let txid = "";
-
       if (isJoyIdAddress(ckbAddress)) {
-        signedTx = await signRawTransaction(daoTx, ckbAddress);
-        // Send the transaction to the RPC node.
+        const signedTx = await signRawTransaction(daoTx, ckbAddress);
         txid = await sendTransaction(signedTx);
       } else {
         if (signer) {
@@ -277,14 +262,9 @@ const App = () => {
       }
 
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
-
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
-
-      // Wait for the transaction to confirm.
       await waitForTransactionConfirmation(txid);
-
-      // update deposit/withdrawal list and balance
       setIsWaitingTxConfirm(false);
       await updateDaoList("all");
     } catch (e: any) {
@@ -293,11 +273,8 @@ const App = () => {
   };
 
   const onUnlock = async (cell: DaoCell) => {
-    // Open the modal
     setModalIsOpen(true);
     setIsModalMessageLoading(true);
-
-    // Save the cell for later
     setCurrentCell(cell);
     setIsModalMessageLoading(false);
   };
@@ -311,7 +288,6 @@ const App = () => {
 
       if (isJoyIdAddress(ckbAddress)) {
         signedTx = await signRawTransaction(daoTx, ckbAddress);
-        // Send the transaction to the RPC node.
         txid = await sendTransaction(signedTx);
       } else {
         if (signer) {
@@ -322,14 +298,9 @@ const App = () => {
       }
 
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
-
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
-
-      // Wait for the transaction to confirm.
       await waitForTransactionConfirmation(txid);
-
-      // update deposit/withdrawal list and balance
       setIsWaitingTxConfirm(false);
       await updateDaoList("withdraw");
     } catch (e: any) {
@@ -504,7 +475,7 @@ const App = () => {
       });
     }, 5);
 
-    return () => clearInterval(interval); // Clean up the interval
+    return () => clearInterval(interval);
   }, []);
 
   // calculate background position for an overlay,

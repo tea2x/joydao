@@ -131,9 +131,10 @@ export const FEE_RATE = isMainNet ? 2000 : 1500; // shannon per KB
 export const MIN_FEE_RATE = 1000; // 1000 shannon per KB
 export const MAX_TX_SIZE = 30_000; // in Bytes
 // omnilock|joyid lock script argument is 2 bytes longer than that of secp256k1's.
-// so whereas the secp256r1-dao takes 102, joyid-dao takes 104
+// so whereas the secp256k1-dao takes 102, joyid-dao takes 104
 export const DAO_MINIMUM_CAPACITY = 104;
-export const MINIMUM_CHANGE_CAPACITY = 63; //63ckb for joyidLock/moniLock cell
+//63ckb for joyidLock/moniLock cell
+export const MINIMUM_CHANGE_CAPACITY = 63;
 export const CKB_SHANNON_RATIO = 100_000_000;
 
 //joyid lock signature length is 347 bytes (370bytes in other cases)

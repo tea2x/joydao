@@ -19,6 +19,7 @@ import {
   OMNILOCK_CELLDEP,
   JOYID_SIGNATURE_PLACEHOLDER_DEFAULT,
   OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT,
+  DAO_MINIMUM_CAPACITY,
 } from "../config";
 import { addressToScript, TransactionSkeletonType } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from "@ckb-lumos/ckb-indexer/src/type";
@@ -451,7 +452,7 @@ export const extraFeeCheck = (transaction: TransactionSkeletonType) => {
   const fee = inputCapacity - outputCapacity;
 
   if (fee > 1 * CKB_SHANNON_RATIO)
-    throw new Error("You're paying more than 1 CKB as transaction fee!");
+    throw new Error("You're paying too much fee. Go check your transaction again!");
 };
 
 export function extractDaoDataCompatible(dao: PackedDao): {
@@ -474,7 +475,7 @@ export function extractDaoDataCompatible(dao: PackedDao): {
 }
 
 export const estimateReturn = async (depositCell:DaoCell, tipEpoch: number):Promise<number> => {
-  const c_o = 104; // occupied dao cell
+  const c_o = DAO_MINIMUM_CAPACITY;
   const c_t = parseInt(depositCell.cellOutput.capacity, 16)/CKB_SHANNON_RATIO;
 
   const [depositHeader, tipHeader] = await Promise.all([

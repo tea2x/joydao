@@ -160,7 +160,7 @@ export const buildDepositTransaction = async (
   // TODO because payFeeByRate is not generalized enough for different signing standards,
   // here applied a trick to achieve the function of configurable FeeRate.
   // joyID witnesses from different devices with different sizes, can cause
-  // feeRate by this trick, diviate slightly from the calculated fee. But considered safe.
+  // feeRate by this trick, diviate slightly from the calculated fee but it's considered safe.
   const txSize = getTransactionSize(txSkeleton) + 111;
   fee = calculateFeeCompatible(txSize, FEE_RATE).toNumber();
   const outputCapacity = txSkeleton.outputs
