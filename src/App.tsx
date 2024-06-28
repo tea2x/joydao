@@ -41,6 +41,7 @@ import {
 } from "react-circular-progressbar";
 
 const App = () => {
+  const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
   const [balance, setBalance] = React.useState<Balance | null>(null);
   const [ckbAddress, setCkbAddress] = React.useState("");
   const [depositCells, setDepositCells] = React.useState<DaoCell[]>([]);
@@ -158,6 +159,7 @@ const App = () => {
     try {
       setConnectModalIsOpen(false);
       const authData = await connect();
+      setJoyidInfo(authData);
       await settleUserInfo(authData.address);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
@@ -197,6 +199,7 @@ const App = () => {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
   };
+
   const onDeposit = async () => {
     if (depositAmount == "") {
       enqueueSnackbar("Please input amount!", { variant: "error" });
@@ -210,21 +213,16 @@ const App = () => {
 
     try {
       const amount = BigInt(depositAmount);
-      const daoTx = await buildDepositTransaction(ckbAddress, amount);
-      
       let txid = "";
       if (isJoyIdAddress(ckbAddress)) {
+        const daoTx = await buildDepositTransaction(ckbAddress, amount, joyidInfo);
         const signedTx = await signRawTransaction(daoTx, ckbAddress);
         txid = await sendTransaction(signedTx);
+      } else if (signer) {
+        const daoTx = await buildDepositTransaction(ckbAddress, amount);
+        txid = await signer.sendTransaction(daoTx);
       } else {
-        if (signer) {
-          enqueueSnackbar(`Openning ${wallet.name} ...`, {
-            variant: "success",
-          });
-          txid = await signer.sendTransaction(daoTx);
-        } else {
-          throw new Error("Wallet disconnected. Reconnect!");
-        }
+        throw new Error("Wallet disconnected. Reconnect!");
       }
 
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
@@ -246,19 +244,18 @@ const App = () => {
     setIsModalMessageLoading(false);
   };
 
-  const _onWithdraw = async (cell: DaoCell) => {
+  const _onWithdraw = async (depositCell: DaoCell) => {
     try {
-      const daoTx = await buildWithdrawTransaction(ckbAddress, cell);
       let txid = "";
       if (isJoyIdAddress(ckbAddress)) {
+        const daoTx = await buildWithdrawTransaction(ckbAddress, depositCell, joyidInfo);
         const signedTx = await signRawTransaction(daoTx, ckbAddress);
         txid = await sendTransaction(signedTx);
+      } else if (signer) {
+        const daoTx = await buildWithdrawTransaction(ckbAddress, depositCell);
+        txid = await signer.sendTransaction(daoTx);
       } else {
-        if (signer) {
-          txid = await signer.sendTransaction(daoTx);
-        } else {
-          throw new Error("Wallet disconnected. Reconnect!");
-        }
+        throw new Error("Wallet disconnected. Reconnect!");
       }
 
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
@@ -281,20 +278,16 @@ const App = () => {
 
   const _onUnlock = async (withdrawalCell: DaoCell) => {
     try {
-      const daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell);
-
-      let signedTx;
       let txid = "";
-
       if (isJoyIdAddress(ckbAddress)) {
-        signedTx = await signRawTransaction(daoTx, ckbAddress);
+        const daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell, joyidInfo);
+        const signedTx = await signRawTransaction(daoTx, ckbAddress);
         txid = await sendTransaction(signedTx);
+      } else if (signer) {
+        const daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell);
+        txid = await signer.sendTransaction(daoTx);
       } else {
-        if (signer) {
-          txid = await signer.sendTransaction(daoTx);
-        } else {
-          throw new Error("Wallet disconnected. Reconnect!");
-        }
+        throw new Error("Wallet disconnected. Reconnect!");
       }
 
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });

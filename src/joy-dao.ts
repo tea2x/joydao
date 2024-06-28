@@ -1,4 +1,4 @@
-import { CKBTransaction } from "@joyid/ckb";
+import { CKBTransaction } from '@joyid/ckb'
 import {
   CellDep,
   DepType,
@@ -19,6 +19,7 @@ import {
   OMNILOCK_CELLDEP,
   FEE_RATE,
   MAX_TX_SIZE,
+  isMainNet
 } from "./config";
 import {
   addressToScript,
@@ -27,7 +28,7 @@ import {
   TransactionSkeletonType,
 } from "@ckb-lumos/helpers";
 import { dao } from "@ckb-lumos/common-scripts";
-import { Indexer } from "@ckb-lumos/ckb-indexer";
+import { Indexer, CellCollector } from "@ckb-lumos/ckb-indexer";
 import {
   getBlockHash,
   ckbytesToShannons,
@@ -37,6 +38,7 @@ import {
   findDepositCellWith,
   addWitnessPlaceHolder,
   extraFeeCheck,
+  appendSubkeyDeviceCellDep,
 } from "./lib/helpers";
 import { number } from "@ckb-lumos/codec";
 import { getConfig, Config } from "@ckb-lumos/config-manager";
@@ -90,12 +92,14 @@ export const collectWithdrawals = async (
   ----
   ckbAddress: the ckb address that has CKB, and will be used to lock your Dao deposit
   amount: the amount to deposit to the DAO in CKB
+  joyIdAuth: joyid authReponseData
   ----
   returns a CKB raw transaction
 */
 export const buildDepositTransaction = async (
   ckbAddress: Address,
-  amount: bigint
+  amount: bigint,
+  joyIdAuth: any = null
 ): Promise<CKBTransaction> => {
   let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
 
@@ -104,6 +108,10 @@ export const buildDepositTransaction = async (
     throw new Error("Mimum DAO deposit is 104 CKB.");
   }
 
+  // when a device is using joyid subkey,
+  // prioritizing Cota celldeps at the head of the celldep list
+  txSkeleton = await appendSubkeyDeviceCellDep(txSkeleton, joyIdAuth);
+  
   // generating basic dao transaction skeleton
   txSkeleton = await dao.deposit(txSkeleton, ckbAddress, ckbAddress, amount);
 
@@ -153,7 +161,7 @@ export const buildDepositTransaction = async (
     i.concat(collectedInputs.inputCells)
   );
 
-  txSkeleton = addWitnessPlaceHolder(txSkeleton);
+  txSkeleton = await addWitnessPlaceHolder(txSkeleton, joyIdAuth);
 
   // Regulating fee, and making a change cell
   // 111 is the size difference adding the 1 anticipated change cell
@@ -189,14 +197,20 @@ export const buildDepositTransaction = async (
   ----
   ckbAddress: the ckb address that has CKB, and will be used to lock your Dao deposit
   daoDepositCell: the cell that locks the DAO deposit
+  joyIdAuth: joyid authReponseData
   ----
   returns a CKB raw transaction
 */
 export const buildWithdrawTransaction = async (
   ckbAddress: Address,
-  daoDepositCell: Cell
+  daoDepositCell: Cell,
+  joyIdAuth: any = null
 ): Promise<CKBTransaction> => {
   let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
+
+  // when a device is using joyid subkey,
+  // prioritizing Cota celldeps at the head of the celldep list
+  txSkeleton = await appendSubkeyDeviceCellDep(txSkeleton, joyIdAuth);
 
   // adding cell deps
   const config = getConfig();
@@ -260,7 +274,7 @@ export const buildWithdrawTransaction = async (
     i.concat(collectedInputs.inputCells)
   );
 
-  txSkeleton = addWitnessPlaceHolder(txSkeleton);
+  txSkeleton = await addWitnessPlaceHolder(txSkeleton, joyIdAuth);
 
   // Regulating fee, and making a change cell
   // 111 is the size difference adding the 1 anticipated change cell
@@ -295,17 +309,23 @@ export const buildWithdrawTransaction = async (
   ckbAddress: the ckb address that has CKB, and will be used to lock your Dao deposit
   daoDepositCell: the cell that locks the DAO deposit
   daoWithdrawalCell: the DAO withdrawal cell
+  joyIdAuth: joyid authReponseData
   ----
   returns a CKB raw transaction
 */
 export const buildUnlockTransaction = async (
   ckbAddress: Address,
-  daoWithdrawalCell: Cell
+  daoWithdrawalCell: Cell,
+  joyIdAuth: any = null
 ): Promise<CKBTransaction> => {
   const config = getConfig();
   _checkDaoScript(config);
 
   let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
+
+  // when a device is using joyid subkey,
+  // prioritizing Cota celldeps at the head of the celldep list
+  txSkeleton = await appendSubkeyDeviceCellDep(txSkeleton, joyIdAuth);
 
   //  adding celldeps
   const template = config.SCRIPTS.DAO!;
@@ -405,7 +425,7 @@ export const buildUnlockTransaction = async (
     });
   }
 
-  txSkeleton = addWitnessPlaceHolder(txSkeleton, true);
+  txSkeleton = await addWitnessPlaceHolder(txSkeleton, joyIdAuth);
 
   // substract fee based on fee rate from the deposit
   const txSize = getTransactionSize(txSkeleton) + 111;
