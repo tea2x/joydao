@@ -424,7 +424,7 @@ export const buildUnlockTransaction = async (
     });
   }
 
-  txSkeleton = await addWitnessPlaceHolder(txSkeleton, joyIdAuth);
+  txSkeleton = await addWitnessPlaceHolder(txSkeleton, joyIdAuth, true);
 
   // substract fee based on fee rate from the deposit
   const txSize = getTransactionSize(txSkeleton) + 111;
