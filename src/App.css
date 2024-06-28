@@ -13,6 +13,7 @@ body {
   background-attachment: fixed;
   overflow: auto;
   position: absolute;
+  text-align: center;
 }
 
 .info-board {
@@ -20,12 +21,64 @@ body {
   font-size: large;
   font-family: sans-serif;
   font-weight: bold;
-  padding: 10px;
+  padding: 5px 30px 5px 30px;
   color: rgb(86, 43, 27);
   border-radius: 10px;
   background: hsla(0, 0%, 72%, 0.834);
-  margin: 20px auto;
+  margin: 20px auto 10px auto;
   width: 320px;
+  height: 150px;
+  text-align: left;
+}
+
+.to-right-sign {
+  position: relative;
+  top: -100px;
+  right: -200px;
+  margin: 0;
+}
+
+.to-left-sign {
+  position: relative;
+  top: -100px;
+  left: -200px;
+  margin: 0;
+}
+
+.basic-wallet-text-box {
+  outline: none;
+  border-width: 0.5px;
+  border-radius: 5px;
+  background: transparent;
+  width: 320px;
+  padding: 3px;
+  position: relative;
+  font-size: medium;
+  font-family: sans-serif;
+  color: rgb(86, 43, 27);
+  margin: 5px auto;
+}
+
+.control-panel-headline {
+  text-align: center;
+}
+
+.right-to-left-enter {
+  transform: translateX(100%);
+}
+
+.right-to-left-enter-active {
+  transform: translateX(0);
+  transition: all 1s ease;
+}
+
+.left-to-right-enter {
+  transform: translateX(-100%);
+}
+
+.left-to-right-enter-active {
+  transform: translateX(0);
+  transition: all 1s ease;
 }
 
 .deposit-field {
@@ -40,16 +93,17 @@ body {
   padding: 3px;
 
   position: relative;
+  top: 3px;
   font-size: large;
   font-family: sans-serif;
-  font-weight: bold;
+  /* font-weight: bold; */
   color: rgb(86, 43, 27);
 }
 
 .underline {
   display: inline-block;
   border-bottom: 1px solid rgb(0, 0, 0);
-  width: 210px;
+  width: 226.5px;
   cursor: pointer;
   outline: none;
   white-space: nowrap;
@@ -99,7 +153,7 @@ body {
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-bottom: 60px;
+  margin-bottom: 30px;
 }
 
 .signin-button {
@@ -779,7 +833,7 @@ button.cancel:hover {
   font-weight: bold;
   width: 200px;
   text-align: center;
-  margin: 5px 10px;
+  margin: 0 auto;
 }
 
 .main-wallet-option {
@@ -790,8 +844,8 @@ button.cancel:hover {
 
 .headline-separation {
   border-top: 1px solid #000;
-  width: 180px;
-  margin: 0 auto;
+  width: 320px;
+  margin: 0px auto 10px auto;
 }
 
 .deposit-message {
@@ -829,6 +883,24 @@ button.cancel:hover {
     width: 270px;
   }
 
+  .to-right-sign {
+    top: -100px;
+    right: -175px;
+  }
+  
+  .to-left-sign {
+    top: -100px;
+    left: -175px;
+  }
+
+  .basic-wallet-text-box {
+    width: 270px;
+  }
+
+  .headline-separation {
+    width: 270px;
+  }
+
   .underline {
     width: 180px;
   }
@@ -845,7 +917,7 @@ button.cancel:hover {
   }
 
   .account-deposit-buttons {
-    margin-bottom: 30px;
+    margin-bottom: 15px;
   }
 
   .signin-button,

@@ -28,6 +28,7 @@ import {
   collectDeposits,
   collectWithdrawals,
 } from "./joy-dao";
+import { buildTransfer } from "./basic-wallet";
 import { ccc } from "@ckb-ccc/connector-react";
 import { ClientPublicTestnet, ClientPublicMainnet } from "@ckb-ccc/core";
 import "./App.css";
@@ -39,6 +40,7 @@ import {
   CircularProgressbarWithChildren,
   buildStyles,
 } from "react-circular-progressbar";
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
 const App = () => {
   const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
@@ -62,6 +64,11 @@ const App = () => {
   const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
   const [compensation, setCompensation] = React.useState<number>();
   const [percentageLoading, setPercentageLoading] = React.useState<number>(0);
+  const [isNextPage, setIsNextPage] = React.useState(true);
+
+  // basic wallet
+  const [transferTo, setTransferTo] = React.useState<string>("");
+  const [amount, setAmount] = React.useState<string>("");
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
@@ -73,6 +80,9 @@ const App = () => {
     joyidAppURL: JOYID_URL,
   });
   initializeConfig(TEST_NET_CONFIG as Config);
+
+  const onNext = () => setIsNextPage(true);
+  const onPrevious = () => setIsNextPage(false);
 
   const sumDeposit = () => {
     const sum = [...depositCells].reduce(
@@ -200,6 +210,23 @@ const App = () => {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
   };
+
+  const onTransfer = async () => {
+    try {
+      const transferTx = await buildTransfer(ckbAddress, transferTo, amount);
+      let txid = "";
+      if (isJoyIdAddress(ckbAddress)) {
+        const signedTx = await signRawTransaction(transferTx, ckbAddress);
+        txid = await sendTransaction(signedTx);
+      } else if (signer) {
+        txid = await signer.sendTransaction(transferTx);
+      } else {
+        throw new Error("Wallet disconnected. Reconnect!");
+      }
+    } catch (e: any) {
+      enqueueSnackbar("Error: " + e.message, { variant: "error" });
+    }
+  }
 
   const onDeposit = async () => {
     if (depositAmount == "") {
@@ -550,60 +577,141 @@ const App = () => {
         )}
 
         {ckbAddress && (
-          <div className="info-board">
-            <div className="text-based-info">
-              • Account: {shortenAddress(ckbAddress)}
-              <span
-                className="copy-sign"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  copyAddress(ckbAddress);
-                }}
+          <div>
+            <TransitionGroup>
+              <CSSTransition
+                classNames={isNextPage ? 'right-to-left' : 'left-to-right'}
+                timeout={1000}
               >
-                ⧉
-              </span>
-            </div>
+                <div
+                style={{
+                  marginBottom: '-30px',
+                }}
+                >
+                  {isNextPage ? (
+                    <div className="info-board">
+                      <div className="control-panel-headline">
+                        Account: {shortenAddress(ckbAddress)}
+                        <span
+                          className="copy-sign"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyAddress(ckbAddress);
+                          }}
+                        >
+                          ⧉
+                        </span>
+                      </div>
+                      <h3 className="headline-separation"> </h3>
 
-            <div className="text-based-info">
-              • Free:{" "}
-              {balance
-                ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
-                    .toString()
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-                : "Loading..."}
-            </div>
+                      <div className="text-based-info">
+                        • Free:{" "}
+                        {balance
+                          ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
+                              .toString()
+                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+                          : "Loading..."}
+                      </div>
 
-            <div className="text-based-info">
-              • Deposited:{" "}
-              {balance
-                ? (sumDeposit() / CKB_SHANNON_RATIO)
-                    .toString()
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-                : "Loading..."}
-            </div>
+                      <div className="text-based-info">
+                        • Deposited:{" "}
+                        {balance
+                          ? (sumDeposit() / CKB_SHANNON_RATIO)
+                              .toString()
+                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+                          : "Loading..."}
+                      </div>
 
-            <div className="text-based-info">
-              • Withdrawing:{" "}
-              {balance
-                ? (sumLocked() / CKB_SHANNON_RATIO)
-                    .toString()
-                    .toString()
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-                : "Loading..."}
-            </div>
+                      <div className="text-based-info">
+                        • Withdrawing:{" "}
+                        {balance
+                          ? (sumLocked() / CKB_SHANNON_RATIO)
+                              .toString()
+                              .toString()
+                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+                          : "Loading..."}
+                      </div>
 
-            <div className="text-based-info">
-              • Deposit:{" "}
-              <span className="underline">
-                <input
-                  type="text"
-                  className="deposit-textbox"
-                  value={depositAmount}
-                  onChange={(e) => setDepositAmount(e.target.value)}
-                  onKeyDown={handleDepositKeyDown}
-                />
-              </span>
-            </div>
+                      <div className="text-based-info">
+                        • Deposit:{" "}
+                        <span className="underline">
+                          <input
+                            type="text"
+                            className="deposit-textbox"
+                            value={depositAmount}
+                            onChange={(e) => setDepositAmount(e.target.value)}
+                            onKeyDown={handleDepositKeyDown}
+                            placeholder="Enter CKB amount!"
+                          />
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="info-board">
+                      <div className="control-panel-headline">
+                        Transfer
+                      </div>
+                      <h3 className="headline-separation"> </h3>
+
+                      <div className="text-based-info">
+                        • Transferable:{" "}
+                        {balance
+                          ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
+                              .toString()
+                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+                          : "Loading..."}
+                      </div>
+
+                      <input
+                        className="basic-wallet-text-box"
+                        type="text"
+                        value={transferTo}
+                        onInput={(e) => setTransferTo(e.currentTarget.value)}
+                        placeholder="Enter address to transfer to"
+                      />
+
+                      <input
+                        className="basic-wallet-text-box"
+                        type="text"
+                        value={amount}
+                        onInput={(e) => setAmount(e.currentTarget.value)}
+                        placeholder="Enter amount to transfer"
+                      />
+                    </div>
+                  )}
+
+                  <svg
+                    className="to-right-sign"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    id="angle-right"
+                    width="30"
+                    height="30"
+                    onClick={onPrevious}
+                  >
+                    <path 
+                      fill="#524540" 
+                      d="M14.83,11.29,10.59,7.05a1,1,0,0,0-1.42,0,1,1,0,0,0,0,1.41L12.71,12,9.17,15.54a1,1,0,0,0,0,1.41,1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29l4.24-4.24A1,1,0,0,0,14.83,11.29Z"
+                    ></path>
+                  </svg>
+
+                  <svg
+                    className="to-left-sign"
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 24 24"
+                    id="angle-left"
+                    width="30"
+                    height="30"
+                    onClick={onNext}
+                  >
+                    <path 
+                      fill="#524540" 
+                      d="M11.29,12l3.54-3.54a1,1,0,0,0,0-1.41,1,1,0,0,0-1.42,0L9.17,11.29a1,1,0,0,0,0,1.42L13.41,17a1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41Z"
+                    ></path>
+                  </svg>
+                </div>
+              </CSSTransition>
+            </TransitionGroup>
           </div>
         )}
 
@@ -674,7 +782,7 @@ const App = () => {
                 Sign Out
               </button>
             ))}
-          {ckbAddress && (
+          {ckbAddress && (isNextPage ? (
             <button
               className="deposit-button"
               onClick={(e) => {
@@ -683,7 +791,16 @@ const App = () => {
             >
               Deposit
             </button>
-          )}
+          ) : (
+            <button
+              className="deposit-button"
+              onClick={(e) => {
+                onTransfer();
+              }}
+            >
+              Transfer
+          </button>
+          ))}
         </div>
 
         {ckbAddress &&

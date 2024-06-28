@@ -46,7 +46,7 @@ import { RPC } from "@ckb-lumos/rpc";
 
 const DAO_LOCK_PERIOD_EPOCHS_COMPATIBLE = BI.from(180);
 const rpc = new RPC(NODE_URL);
-const INDEXER = new Indexer(INDEXER_URL);
+const indexer = new Indexer(INDEXER_URL);
 
 /*
   ckbAddress: the ckb address that has CKB, and will be used to lock your Dao deposit
@@ -57,7 +57,7 @@ export const collectDeposits = async (ckbAddress: Address): Promise<Cell[]> => {
   let depositCells: Cell[] = [];
   const daoCellCollector = new dao.CellCollector(
     ckbAddress,
-    INDEXER,
+    indexer,
     "deposit"
   );
   for await (const inputCell of daoCellCollector.collect()) {
@@ -77,7 +77,7 @@ export const collectWithdrawals = async (
   let depositCells: Cell[] = [];
   const daoCellCollector = new dao.CellCollector(
     ckbAddress,
-    INDEXER,
+    indexer,
     "withdraw"
   );
   for await (const inputCell of daoCellCollector.collect()) {
@@ -105,7 +105,7 @@ export const buildDepositTransaction = async (
     throw new Error("Mimum DAO deposit is 104 CKB.");
   }
 
-  let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
+  let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
   
   // when a device is using joyid subkey,
   // prioritizing Cota celldeps at the head of the celldep list
@@ -152,7 +152,7 @@ export const buildDepositTransaction = async (
     amount + ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(fee);
 
   const collectedInputs = await collectInputs(
-    INDEXER,
+    indexer,
     addressToScript(ckbAddress),
     requiredCapacity
   );
@@ -205,7 +205,7 @@ export const buildWithdrawTransaction = async (
   daoDepositCell: Cell,
   joyIdAuth: any = null
 ): Promise<CKBTransaction> => {
-  let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
+  let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
 
   // when a device is using joyid subkey,
   // prioritizing Cota celldeps at the head of the celldep list
@@ -265,7 +265,7 @@ export const buildWithdrawTransaction = async (
   const requiredCapacity =
     ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(fee);
   const collectedInputs = await collectInputs(
-    INDEXER,
+    indexer,
     addressToScript(ckbAddress),
     requiredCapacity
   );
@@ -320,7 +320,7 @@ export const buildUnlockTransaction = async (
   const config = getConfig();
   _checkDaoScript(config);
 
-  let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
+  let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
 
   // when a device is using joyid subkey,
   // prioritizing Cota celldeps at the head of the celldep list
