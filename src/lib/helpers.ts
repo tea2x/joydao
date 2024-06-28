@@ -19,6 +19,8 @@ import {
   OMNILOCK_CELLDEP,
   JOYID_SIGNATURE_PLACEHOLDER_DEFAULT,
   OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT,
+  DAO_MINIMUM_CAPACITY,
+  ISMAINNET,
 } from "../config";
 import { addressToScript, TransactionSkeletonType } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from "@ckb-lumos/ckb-indexer/src/type";
@@ -30,6 +32,7 @@ import { dao } from "@ckb-lumos/common-scripts";
 import { EpochSinceValue } from "@ckb-lumos/base/lib/since";
 import { BI, BIish } from "@ckb-lumos/bi";
 import { bytes, number } from "@ckb-lumos/codec";
+import { getSubkeyUnlock, getCotaTypeScript } from '@joyid/ckb'
 
 const INDEXER = new Indexer(INDEXER_URL);
 const rpc = new RPC(NODE_URL);
@@ -367,16 +370,9 @@ export class SeededRandom {
   }
 
   next(min: number, max: number): number {
-    // These numbers are constants used in the Linear Congruential Generator (LCG) algorithm.
-    // The LCG algorithm uses the formula: X_{n+1} = (aX_n + c) mod m
-    // In this formula, X_n is the current value (or "seed"), and a, c, and m are constants.
-    // In this code, a is 9301, c is 49297, and m is 233280.
-    // These constants are chosen because they give a good period and distribution of values.
+    // These numbers are constants used in the LCG algorithm.
     this.seed = (this.seed * 9301 + 49297) % 233280;
     const rnd = this.seed / 233280;
-
-    // After generating X_{n+1}, the code divides it by m to get a random floating-point number between 0 and 1.
-    // This is then scaled to the desired range [min, max).
     return min + rnd * (max - min);
   }
 }
@@ -388,22 +384,53 @@ export const isJoyIdAddress = (address: string) => {
   );
 };
 
-// this function is only for joyID lock and omnilock
-export const addWitnessPlaceHolder = (
+// append subkey device celldep if it is
+export const appendSubkeyDeviceCellDep = async (
   transaction: TransactionSkeletonType,
-  daoUnlock = false
+  joyIdAuth:any
 ) => {
-  if (transaction.witnesses.size !== 0)
+  // append CoTa celldep for sub-key device
+  if (joyIdAuth && joyIdAuth.keyType === 'sub_key') {
+    // Get CoTA cell from CKB blockchain and append it to the head of the cellDeps list
+    const cotaType = getCotaTypeScript(ISMAINNET)
+    const cotaCellsCollector = new CellCollector(INDEXER, { lock: addressToScript(joyIdAuth.address), type: cotaType });
+    let cotaCells:Cell[] = [];
+    for await (const cell of cotaCellsCollector.collect()) {
+      cotaCells.push(cell);
+    }
+    if (!cotaCells || cotaCells.length === 0) {
+      throw new Error("Cota cell doesn't exist");
+    }
+    const cotaCell = cotaCells[0];
+
+    transaction = transaction.update("cellDeps", (i) =>
+      i.push({
+        outPoint: cotaCell.outPoint!,
+        depType: "code",
+      })
+    );
+  }
+  return transaction;
+}
+
+// this function is only for joyID lock and omnilock
+export const addWitnessPlaceHolder = async (
+  transaction: TransactionSkeletonType,
+  joyIdAuth:any,
+  daoUnlock = false,
+) => {
+  if (transaction.witnesses.size !== 0) {
     throw new Error(
       "This function can only be used on an empty witnesses structure."
     );
+  }
 
-  // Cycle through all inputs adding placeholders for unique locks, and empty witnesses in all other places.
   let uniqueLocks = new Set();
   for (const input of transaction.inputs) {
     let witness = "0x";
     let lockScriptWitness = "0x";
     let inputTypeScriptWitness;
+    let outputTypeScriptWitness;
 
     const lockHash = computeScriptHash(input.cellOutput.lock);
     if (!uniqueLocks.has(lockHash)) {
@@ -426,10 +453,18 @@ export const addWitnessPlaceHolder = (
         inputTypeScriptWitness = "0x0000000000000000";
       }
 
+      // for subkey device
+      if (joyIdAuth && joyIdAuth.keyType === 'sub_key') {
+        let unlockEntry = await getSubkeyUnlock("https://cota.nervina.dev/mainnet-aggregator", joyIdAuth);
+        unlockEntry = unlockEntry.startsWith('0x') ? unlockEntry : `0x${unlockEntry}`
+        outputTypeScriptWitness = unlockEntry;
+      }
+
       witness = bytes.hexify(
         blockchain.WitnessArgs.pack({
           lock: lockScriptWitness,
           inputType: inputTypeScriptWitness,
+          outputType: outputTypeScriptWitness
         })
       );
     }
@@ -451,7 +486,7 @@ export const extraFeeCheck = (transaction: TransactionSkeletonType) => {
   const fee = inputCapacity - outputCapacity;
 
   if (fee > 1 * CKB_SHANNON_RATIO)
-    throw new Error("You're paying more than 1 CKB as transaction fee!");
+    throw new Error("You're paying too much fee. Go check your transaction again!");
 };
 
 export function extractDaoDataCompatible(dao: PackedDao): {
@@ -474,7 +509,7 @@ export function extractDaoDataCompatible(dao: PackedDao): {
 }
 
 export const estimateReturn = async (depositCell:DaoCell, tipEpoch: number):Promise<number> => {
-  const c_o = 104; // occupied dao cell
+  const c_o = DAO_MINIMUM_CAPACITY;
   const c_t = parseInt(depositCell.cellOutput.capacity, 16)/CKB_SHANNON_RATIO;
 
   const [depositHeader, tipHeader] = await Promise.all([

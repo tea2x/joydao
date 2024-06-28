@@ -1,17 +1,17 @@
-const isMainNet = false;
+export const ISMAINNET = false;
 
-export const NODE_URL = isMainNet
+export const NODE_URL = ISMAINNET
   ? "https://mainnet.ckb.dev/"
   : "https://testnet.ckb.dev/";
-export const INDEXER_URL = isMainNet
+export const INDEXER_URL = ISMAINNET
   ? "https://mainnet.ckb.dev/indexer"
   : "https://testnet.ckb.dev/indexer";
 
-export const JOYID_URL = isMainNet
+export const JOYID_URL = ISMAINNET
   ? "https://app.joy.id/"
   : "https://testnet.joyid.dev";
-export const CCC_MAINNET = isMainNet;
-export const JOYID_CELLDEP = isMainNet
+export const CCC_MAINNET = ISMAINNET;
+export const JOYID_CELLDEP = ISMAINNET
   ? {
       codeHash:
         "0xd00c84f0ec8fd441c38bc3f87a371f547190f2fcff88e642bc5bf54b9e318323",
@@ -35,7 +35,7 @@ export const JOYID_CELLDEP = isMainNet
       depType: "depGroup",
     };
 
-export const OMNILOCK_CELLDEP = isMainNet
+export const OMNILOCK_CELLDEP = ISMAINNET
   ? {
       codeHash:
         "0x9b819793a64463aed77c615d6cb226eea5487ccfc0783043a587254cda2b6f26",
@@ -59,7 +59,7 @@ export const OMNILOCK_CELLDEP = isMainNet
       depType: "code",
     };
 
-export const TEST_NET_CONFIG = isMainNet
+export const TEST_NET_CONFIG = ISMAINNET
   ? {
       PREFIX: "ckb",
       SCRIPTS: {
@@ -127,13 +127,14 @@ export const TEST_NET_CONFIG = isMainNet
       },
     };
 
-export const FEE_RATE = isMainNet ? 2000 : 1500; // shannon per KB
+export const FEE_RATE = ISMAINNET ? 2000 : 1500; // shannon per KB
 export const MIN_FEE_RATE = 1000; // 1000 shannon per KB
 export const MAX_TX_SIZE = 30_000; // in Bytes
 // omnilock|joyid lock script argument is 2 bytes longer than that of secp256k1's.
-// so whereas the secp256r1-dao takes 102, joyid-dao takes 104
+// so whereas the secp256k1-dao takes 102, joyid-dao takes 104
 export const DAO_MINIMUM_CAPACITY = 104;
-export const MINIMUM_CHANGE_CAPACITY = 63; //63ckb for joyidLock/moniLock cell
+//63ckb for joyidLock/moniLock cell
+export const MINIMUM_CHANGE_CAPACITY = 63;
 export const CKB_SHANNON_RATIO = 100_000_000;
 
 //joyid lock signature length is 347 bytes (370bytes in other cases)
@@ -141,6 +142,6 @@ export const JOYID_SIGNATURE_PLACEHOLDER_DEFAULT = "0x" + "0".repeat(694);
 //joyid lock signature length is 85 bytes
 export const OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT = "0x" + "0".repeat(170);
 
-export const EXPLORER_PREFIX = isMainNet
+export const EXPLORER_PREFIX = ISMAINNET
   ? "https://explorer.nervos.org/transaction/"
   : "https://pudge.explorer.nervos.org/transaction/";
