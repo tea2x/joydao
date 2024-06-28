@@ -20,7 +20,7 @@ import {
   JOYID_SIGNATURE_PLACEHOLDER_DEFAULT,
   OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT,
   DAO_MINIMUM_CAPACITY,
-  isMainNet,
+  ISMAINNET,
 } from "../config";
 import { addressToScript, TransactionSkeletonType } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from "@ckb-lumos/ckb-indexer/src/type";
@@ -392,7 +392,7 @@ export const appendSubkeyDeviceCellDep = async (
   // append CoTa celldep for sub-key device
   if (joyIdAuth && joyIdAuth.keyType === 'sub_key') {
     // Get CoTA cell from CKB blockchain and append it to the head of the cellDeps list
-    const cotaType = getCotaTypeScript(isMainNet)
+    const cotaType = getCotaTypeScript(ISMAINNET)
     const cotaCellsCollector = new CellCollector(INDEXER, { lock: addressToScript(joyIdAuth.address), type: cotaType });
     let cotaCells:Cell[] = [];
     for await (const cell of cotaCellsCollector.collect()) {

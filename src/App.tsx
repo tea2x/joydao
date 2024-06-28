@@ -160,6 +160,7 @@ const App = () => {
       setConnectModalIsOpen(false);
       const authData = await connect();
       setJoyidInfo(authData);
+      localStorage.setItem("joyidInfo", JSON.stringify(authData));
       await settleUserInfo(authData.address);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
@@ -395,12 +396,19 @@ const App = () => {
     }
   }, [depositCells, withdrawalCells, tipEpoch]);
 
-  // updating deposit info
+  // when page refreshed, fetch from localstorage
+  // only joyidinfo saved, other wallets signers get wiped out
   React.useEffect(() => {
+    const storedJoyidInfo = localStorage.getItem("joyidInfo");
     const storedCkbAddress = localStorage.getItem("ckbAddress");
     const storedBalance = localStorage.getItem("balance");
     const storedDepositCells = localStorage.getItem("depositCells");
     const storedWithdrawalCells = localStorage.getItem("withdrawalCells");
+
+    if (storedJoyidInfo) {
+      setJoyidInfo(storedJoyidInfo);
+    }
+
     if (storedCkbAddress) {
       setCkbAddress(storedCkbAddress);
     }
@@ -747,7 +755,7 @@ const App = () => {
                   const isDeposit = depositCells.some(
                     (c) => c.outPoint?.txHash === cell.outPoint?.txHash
                   );
-                  const backgroundColor = isDeposit ? "#99c824" : "#e58603";
+                  const backgroundColor = isDeposit ? "#ade129" : "#e58603";
                   const buttonColor = "#2d4858";
 
                   return (

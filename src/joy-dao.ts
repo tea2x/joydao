@@ -19,7 +19,6 @@ import {
   OMNILOCK_CELLDEP,
   FEE_RATE,
   MAX_TX_SIZE,
-  isMainNet
 } from "./config";
 import {
   addressToScript,
@@ -101,13 +100,13 @@ export const buildDepositTransaction = async (
   amount: bigint,
   joyIdAuth: any = null
 ): Promise<CKBTransaction> => {
-  let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
-
   amount = ckbytesToShannons(amount);
   if (amount < ckbytesToShannons(BigInt(DAO_MINIMUM_CAPACITY))) {
     throw new Error("Mimum DAO deposit is 104 CKB.");
   }
 
+  let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
+  
   // when a device is using joyid subkey,
   // prioritizing Cota celldeps at the head of the celldep list
   txSkeleton = await appendSubkeyDeviceCellDep(txSkeleton, joyIdAuth);
