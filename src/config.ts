@@ -145,3 +145,7 @@ export const OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT = "0x" + "0".repeat(170);
 export const EXPLORER_PREFIX = ISMAINNET
   ? "https://explorer.nervos.org/transaction/"
   : "https://pudge.explorer.nervos.org/transaction/";
+
+export const COTA_AGGREGATOR_URL = ISMAINNET
+  ? "https://cota.nervina.dev/mainnet-aggregator"
+  : "https://cota.nervina.dev/aggregator";

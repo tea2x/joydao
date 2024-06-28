@@ -21,6 +21,7 @@ import {
   OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT,
   DAO_MINIMUM_CAPACITY,
   ISMAINNET,
+  COTA_AGGREGATOR_URL,
 } from "../config";
 import { addressToScript, TransactionSkeletonType } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from "@ckb-lumos/ckb-indexer/src/type";
@@ -455,7 +456,7 @@ export const addWitnessPlaceHolder = async (
 
       // for subkey device
       if (joyIdAuth && joyIdAuth.keyType === 'sub_key') {
-        let unlockEntry = await getSubkeyUnlock("https://cota.nervina.dev/mainnet-aggregator", joyIdAuth);
+        let unlockEntry = await getSubkeyUnlock(COTA_AGGREGATOR_URL, joyIdAuth);
         unlockEntry = unlockEntry.startsWith('0x') ? unlockEntry : `0x${unlockEntry}`
         outputTypeScriptWitness = unlockEntry;
       }

@@ -406,7 +406,7 @@ const App = () => {
     const storedWithdrawalCells = localStorage.getItem("withdrawalCells");
 
     if (storedJoyidInfo) {
-      setJoyidInfo(storedJoyidInfo);
+      setJoyidInfo(JSON.parse(storedJoyidInfo));
     }
 
     if (storedCkbAddress) {
