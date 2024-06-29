@@ -10,12 +10,14 @@ import {
   getTipEpoch,
   SeededRandom,
   isJoyIdAddress,
+  isOmnilockAddress,
+  isDefaultAddress,
   estimateReturn,
 } from "./lib/helpers";
 import { initializeConfig } from "@ckb-lumos/config-manager";
 import { Config } from "./types";
 import {
-  TEST_NET_CONFIG,
+  NETWORK_CONFIG,
   CKB_SHANNON_RATIO,
   EXPLORER_PREFIX,
   JOYID_URL,
@@ -30,6 +32,7 @@ import {
 } from "./joy-dao";
 import { buildTransfer } from "./basic-wallet";
 import { ccc } from "@ckb-ccc/connector-react";
+import { Signer } from "@ckb-ccc/core";
 import { ClientPublicTestnet, ClientPublicMainnet } from "@ckb-ccc/core";
 import "./App.css";
 import Modal from "react-modal";
@@ -68,7 +71,7 @@ const App = () => {
 
   // basic wallet
   const [transferTo, setTransferTo] = React.useState<string>("");
-  const [amount, setAmount] = React.useState<string>("");
+  const [transferAmount, setTransferAmount] = React.useState<string>("");
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
@@ -79,7 +82,7 @@ const App = () => {
     logo: "https://fav.farm/🆔",
     joyidAppURL: JOYID_URL,
   });
-  initializeConfig(TEST_NET_CONFIG as Config);
+  initializeConfig(NETWORK_CONFIG as Config);
 
   const onNext = () => setIsNextPage(true);
   const onPrevious = () => setIsNextPage(false);
@@ -108,60 +111,57 @@ const App = () => {
     return (compensation/CKB_SHANNON_RATIO).toFixed(2).toString() + " CKB";
   }
 
-  const updateDaoList = async (daoType: "all" | "deposit" | "withdraw") => {
+  const updateJoyDaoInfo = async (type: "all" | "deposit" | "withdraw" | "balance") => {
     const storedCkbAddress = localStorage.getItem("ckbAddress");
     if (storedCkbAddress) {
       try {
-        let balance, deposits, withdrawals, epoch;
-        if (daoType == "all") {
-          [balance, deposits, withdrawals, epoch] = await Promise.all([
+        let balance, deposits, withdrawals;
+        if (type == "all") {
+          [balance, deposits, withdrawals] = await Promise.all([
             queryBalance(storedCkbAddress),
             collectDeposits(storedCkbAddress),
             collectWithdrawals(storedCkbAddress),
-            getTipEpoch(),
           ]);
 
           setBalance(balance);
           setDepositCells(deposits as DaoCell[]);
           setWithdrawalCells(withdrawals as DaoCell[]);
-          setIsLoading(false);
-          setTipEpoch(epoch);
 
           localStorage.setItem("balance", JSON.stringify(balance));
           localStorage.setItem("depositCells", JSON.stringify(deposits));
           localStorage.setItem("withdrawalCells", JSON.stringify(withdrawals));
-        } else if (daoType == "deposit") {
-          [balance, deposits, epoch] = await Promise.all([
+        } else if (type == "deposit") {
+          [balance, deposits] = await Promise.all([
             queryBalance(storedCkbAddress),
             collectDeposits(storedCkbAddress),
-            getTipEpoch(),
           ]);
 
           setBalance(balance);
           setDepositCells(deposits as DaoCell[]);
-          setIsLoading(false);
-          setTipEpoch(epoch);
 
           localStorage.setItem("balance", JSON.stringify(balance));
           localStorage.setItem("depositCells", JSON.stringify(deposits));
-        } else if (daoType == "withdraw") {
-          [balance, withdrawals, epoch] = await Promise.all([
+        } else if (type == "withdraw") {
+          [balance, withdrawals] = await Promise.all([
             queryBalance(storedCkbAddress),
             collectWithdrawals(storedCkbAddress),
-            getTipEpoch(),
           ]);
 
           setBalance(balance);
           setWithdrawalCells(withdrawals as DaoCell[]);
-          setIsLoading(false);
-          setTipEpoch(epoch);
 
           localStorage.setItem("balance", JSON.stringify(balance));
           localStorage.setItem("withdrawalCells", JSON.stringify(withdrawals));
+        } else {
+          // load balance
+          const balance = await queryBalance(storedCkbAddress);
+          setBalance(balance);
+          localStorage.setItem("balance", JSON.stringify(balance));
         }
       } catch (e: any) {
         enqueueSnackbar("Error: " + e.message, { variant: "error" });
       }
+      setIsLoading(false);
     }
   };
 
@@ -211,18 +211,46 @@ const App = () => {
     }
   };
 
-  const onTransfer = async () => {
+  const onCCCTransfer = async () => {
+    if (transferAmount == "") {
+      enqueueSnackbar("Please fill address and amount!", { variant: "error" });
+      return;
+    } else if (!/^[0-9]+$/.test(transferAmount)) {
+      enqueueSnackbar("Please input a valid numeric amount!", {
+        variant: "error",
+      });
+      return;
+    }
+
+    // output readable error for common cases
+    if (
+      (isJoyIdAddress(transferTo) || isOmnilockAddress(transferTo))
+      && parseInt(transferAmount) < 63
+    ) {
+      enqueueSnackbar("Your receiver address requires a minimum amount of 63CKB", {
+        variant: "error",
+      });
+      return;
+    } else if (isDefaultAddress(transferTo) && parseInt(transferAmount) < 61) {
+      enqueueSnackbar("Your receiver address requires a minimum amount of 61CKB", {
+        variant: "error",
+      });
+      return;
+    }
+
     try {
-      const transferTx = await buildTransfer(ckbAddress, transferTo, amount);
-      let txid = "";
-      if (isJoyIdAddress(ckbAddress)) {
-        const signedTx = await signRawTransaction(transferTx, ckbAddress);
-        txid = await sendTransaction(signedTx);
-      } else if (signer) {
-        txid = await signer.sendTransaction(transferTx);
-      } else {
-        throw new Error("Wallet disconnected. Reconnect!");
-      }
+      if (isJoyIdAddress(ckbAddress) || !signer)
+        return;
+
+      const transferTx = await buildTransfer(signer!, transferTo, transferAmount);
+      const txid = await signer.sendTransaction(transferTx);
+
+      enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
+      setIsWaitingTxConfirm(true);
+      setIsLoading(true);
+      await waitForTransactionConfirmation(txid);
+      setIsWaitingTxConfirm(false);
+      await updateJoyDaoInfo("balance");
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
@@ -259,7 +287,7 @@ const App = () => {
       await waitForTransactionConfirmation(txid);
       setIsWaitingTxConfirm(false);
       setDepositAmount("");
-      await updateDaoList("deposit");
+      await updateJoyDaoInfo("deposit");
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
@@ -291,7 +319,7 @@ const App = () => {
       setIsLoading(true);
       await waitForTransactionConfirmation(txid);
       setIsWaitingTxConfirm(false);
-      await updateDaoList("all");
+      await updateJoyDaoInfo("all");
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
@@ -323,7 +351,7 @@ const App = () => {
       setIsLoading(true);
       await waitForTransactionConfirmation(txid);
       setIsWaitingTxConfirm(false);
-      await updateDaoList("withdraw");
+      await updateJoyDaoInfo("withdraw");
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
@@ -531,6 +559,135 @@ const App = () => {
     return backgroundPos;
   }
 
+  function daoInfoBoard() {
+    return (
+      <div className="info-board">
+        <div className="control-panel-headline">
+          Account: {shortenAddress(ckbAddress)}
+          <span
+            className="copy-sign"
+            onClick={(e) => {
+              e.stopPropagation();
+              copyAddress(ckbAddress);
+            }}
+          >
+            ⧉
+          </span>
+        </div>
+        <h3 className="headline-separation"> </h3>
+
+        <div className="text-based-info">
+          • Free:{" "}
+          {balance
+            ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
+                .toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+            : "Loading..."}
+        </div>
+
+        <div className="text-based-info">
+          • Deposited:{" "}
+          {balance
+            ? (sumDeposit() / CKB_SHANNON_RATIO)
+                .toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+            : "Loading..."}
+        </div>
+
+        <div className="text-based-info">
+          • Withdrawing:{" "}
+          {balance
+            ? (sumLocked() / CKB_SHANNON_RATIO)
+                .toString()
+                .toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+            : "Loading..."}
+        </div>
+
+        <input
+          type="text"
+          className="control-panel-text-box"
+          value={depositAmount}
+          onChange={(e) => setDepositAmount(e.target.value)}
+          onKeyDown={handleDepositKeyDown}
+          placeholder="Enter amount to deposit!"
+        />
+      </div>
+    );
+  }
+
+  function basicWallet() {
+    return (
+      <div className="info-board">
+        <div className="control-panel-headline">
+          Transfer
+        </div>
+        <h3 className="headline-separation"> </h3>
+
+        <div className="text-based-info">
+          • Transferable:{" "}
+          {balance
+            ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
+                .toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+            : "Loading..."}
+        </div>
+
+        <input
+          className="control-panel-text-box"
+          type="text"
+          value={transferTo}
+          onInput={(e) => setTransferTo(e.currentTarget.value)}
+          placeholder="Enter address to transfer to!"
+        />
+
+        <input
+          className="control-panel-text-box"
+          type="text"
+          value={transferAmount}
+          onInput={(e) => setTransferAmount(e.currentTarget.value)}
+          placeholder="Enter amount to transfer!"
+        />
+      </div>
+    );
+  }
+
+  function tabNavigator() {
+    return (
+      <div>
+        <svg
+          className="to-right-sign"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          id="angle-right"
+          width="30"
+          height="30"
+          onClick={onPrevious}
+        >
+          <path 
+            fill="#524540" 
+            d="M14.83,11.29,10.59,7.05a1,1,0,0,0-1.42,0,1,1,0,0,0,0,1.41L12.71,12,9.17,15.54a1,1,0,0,0,0,1.41,1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29l4.24-4.24A1,1,0,0,0,14.83,11.29Z"
+          ></path>
+        </svg>
+
+        <svg
+          className="to-left-sign"
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 24 24"
+          id="angle-left"
+          width="30"
+          height="30"
+          onClick={onNext}
+        >
+          <path 
+            fill="#524540" 
+            d="M11.29,12l3.54-3.54a1,1,0,0,0,0-1.41,1,1,0,0,0-1.42,0L9.17,11.29a1,1,0,0,0,0,1.42L13.41,17a1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41Z"
+          ></path>
+        </svg>
+      </div>
+    );
+  }
+
   {
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
     const smallScreenDeviceMinCellWidth = 100;
@@ -568,7 +725,7 @@ const App = () => {
           <h1
             className="title"
             onClick={async () => {
-              await updateDaoList("all");
+              await updateJoyDaoInfo("all");
               window.location.reload();
             }}
           >
@@ -576,7 +733,9 @@ const App = () => {
           </h1>
         )}
 
-        {ckbAddress && (
+        {ckbAddress && (isJoyIdAddress(ckbAddress)? (
+          daoInfoBoard()
+        ) : (
           <div>
             <TransitionGroup>
               <CSSTransition
@@ -584,136 +743,21 @@ const App = () => {
                 timeout={1000}
               >
                 <div
-                style={{
-                  marginBottom: '-30px',
-                }}
+                  style={{
+                    marginBottom: '-30px',
+                  }}
                 >
                   {isNextPage ? (
-                    <div className="info-board">
-                      <div className="control-panel-headline">
-                        Account: {shortenAddress(ckbAddress)}
-                        <span
-                          className="copy-sign"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            copyAddress(ckbAddress);
-                          }}
-                        >
-                          ⧉
-                        </span>
-                      </div>
-                      <h3 className="headline-separation"> </h3>
-
-                      <div className="text-based-info">
-                        • Free:{" "}
-                        {balance
-                          ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
-                              .toString()
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-                          : "Loading..."}
-                      </div>
-
-                      <div className="text-based-info">
-                        • Deposited:{" "}
-                        {balance
-                          ? (sumDeposit() / CKB_SHANNON_RATIO)
-                              .toString()
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-                          : "Loading..."}
-                      </div>
-
-                      <div className="text-based-info">
-                        • Withdrawing:{" "}
-                        {balance
-                          ? (sumLocked() / CKB_SHANNON_RATIO)
-                              .toString()
-                              .toString()
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-                          : "Loading..."}
-                      </div>
-
-                      <div className="text-based-info">
-                        • Deposit:{" "}
-                        <span className="underline">
-                          <input
-                            type="text"
-                            className="deposit-textbox"
-                            value={depositAmount}
-                            onChange={(e) => setDepositAmount(e.target.value)}
-                            onKeyDown={handleDepositKeyDown}
-                            placeholder="Enter CKB amount!"
-                          />
-                        </span>
-                      </div>
-                    </div>
+                    daoInfoBoard()
                   ) : (
-                    <div className="info-board">
-                      <div className="control-panel-headline">
-                        Transfer
-                      </div>
-                      <h3 className="headline-separation"> </h3>
-
-                      <div className="text-based-info">
-                        • Transferable:{" "}
-                        {balance
-                          ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
-                              .toString()
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-                          : "Loading..."}
-                      </div>
-
-                      <input
-                        className="basic-wallet-text-box"
-                        type="text"
-                        value={transferTo}
-                        onInput={(e) => setTransferTo(e.currentTarget.value)}
-                        placeholder="Enter address to transfer to"
-                      />
-
-                      <input
-                        className="basic-wallet-text-box"
-                        type="text"
-                        value={amount}
-                        onInput={(e) => setAmount(e.currentTarget.value)}
-                        placeholder="Enter amount to transfer"
-                      />
-                    </div>
+                    basicWallet()
                   )}
-
-                  <svg
-                    className="to-right-sign"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    id="angle-right"
-                    width="30"
-                    height="30"
-                    onClick={onPrevious}
-                  >
-                    <path 
-                      fill="#524540" 
-                      d="M14.83,11.29,10.59,7.05a1,1,0,0,0-1.42,0,1,1,0,0,0,0,1.41L12.71,12,9.17,15.54a1,1,0,0,0,0,1.41,1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29l4.24-4.24A1,1,0,0,0,14.83,11.29Z"
-                    ></path>
-                  </svg>
-
-                  <svg
-                    className="to-left-sign"
-                    xmlns="http://www.w3.org/2000/svg" 
-                    viewBox="0 0 24 24"
-                    id="angle-left"
-                    width="30"
-                    height="30"
-                    onClick={onNext}
-                  >
-                    <path 
-                      fill="#524540" 
-                      d="M11.29,12l3.54-3.54a1,1,0,0,0,0-1.41,1,1,0,0,0-1.42,0L9.17,11.29a1,1,0,0,0,0,1.42L13.41,17a1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41Z"
-                    ></path>
-                  </svg>
+                  {tabNavigator()}
                 </div>
               </CSSTransition>
             </TransitionGroup>
           </div>
-        )}
+        ))}
 
         {!ckbAddress && (
           <div className="description">
@@ -795,7 +839,7 @@ const App = () => {
             <button
               className="deposit-button"
               onClick={(e) => {
-                onTransfer();
+                onCCCTransfer();
               }}
             >
               Transfer

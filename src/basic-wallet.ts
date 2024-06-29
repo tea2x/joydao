@@ -4,6 +4,10 @@ import { CKBTransaction } from '@joyid/ckb';
 import { TransactionSkeleton, createTransactionFromSkeleton } from "@ckb-lumos/helpers";
 import { INDEXER_URL, FEE_RATE } from "./config";
 import { Indexer } from "@ckb-lumos/ckb-indexer";
+import { generateDefaultScriptInfos } from "@ckb-ccc/lumos-patches";
+import { registerCustomLockScriptInfos } from "@ckb-lumos/common-scripts/lib/common";
+import { predefined } from "@ckb-lumos/config-manager";
+import { Signer } from "@ckb-ccc/core";
 const indexer = new Indexer(INDEXER_URL);
 
 // inherit from ccc demo
@@ -23,30 +27,51 @@ function fixedPointFrom(val: FixedPointLike, decimals = 8): FixedPoint {
   return lVal + BigInt(r.slice(0, decimals).padEnd(decimals, "0"));
 }
 
+// for non-joyid wallet
 export const buildTransfer = async (
-  from: Address,
+  signer:Signer,
   to: Address,
   amount: string
 ): Promise<CKBTransaction> => {
-  
-  let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
 
+  if (!signer)
+    throw new Error("Wallet disconnected. Reconnect!");
+
+  const prefix = await signer.client.getAddressPrefix();
+  const fromAddresses = await signer.getAddresses();
+
+  registerCustomLockScriptInfos(generateDefaultScriptInfos());
+  let txSkeleton = new TransactionSkeleton({
+    cellProvider: indexer,
+  });
   txSkeleton = await common.transfer(
     txSkeleton,
-    [from],
+    fromAddresses,
     to,
     fixedPointFrom(amount),
     undefined,
-    undefined
+    undefined,
+    {
+      config:
+      prefix === "ckb"
+        ? predefined.LINA
+        : predefined.AGGRON4,
+    },
   );
-
   txSkeleton = await common.payFeeByFeeRate(
     txSkeleton,
-    [from],
+    fromAddresses,
     BigInt(FEE_RATE),
-    undefined
+    undefined,
+    {
+      config:
+      prefix === "ckb"
+        ? predefined.LINA
+        : predefined.AGGRON4,
+    },
   );
 
   const transferTx: Transaction = createTransactionFromSkeleton(txSkeleton);
   return transferTx as CKBTransaction;
+
 }

@@ -22,6 +22,7 @@ import {
   DAO_MINIMUM_CAPACITY,
   ISMAINNET,
   COTA_AGGREGATOR_URL,
+  NETWORK_CONFIG,
 } from "../config";
 import { addressToScript, TransactionSkeletonType } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from "@ckb-lumos/ckb-indexer/src/type";
@@ -277,7 +278,7 @@ export async function waitForConfirmation(
 export async function waitForTransactionConfirmation(txid: string) {
   console.log("Waiting for transaction to confirm.");
   await waitForConfirmation(txid, (_status) => console.log("."), {
-    recheckMs: 1_000,
+    recheckMs: 2_000,
   });
 }
 
@@ -380,8 +381,28 @@ export class SeededRandom {
 
 export const isJoyIdAddress = (address: string) => {
   const config = getConfig();
+  const script = addressToScript(address, { config });
   return (
-    addressToScript(address, { config }).codeHash == JOYID_CELLDEP.codeHash
+    script.codeHash == JOYID_CELLDEP.codeHash
+    && script.hashType == JOYID_CELLDEP.hashType
+  );
+};
+
+export const isOmnilockAddress = (address: string) => {
+  const config = getConfig();
+  const script = addressToScript(address, { config });
+  return (
+    script.codeHash == OMNILOCK_CELLDEP.codeHash
+    && script.hashType == OMNILOCK_CELLDEP.hashType
+  );
+};
+
+export const isDefaultAddress = (address: string) => {
+  const config = getConfig();
+  const script = addressToScript(address, { config });
+  return (
+    script.codeHash == NETWORK_CONFIG.SCRIPTS.SECP256K1_BLAKE160.CODE_HASH
+    && script.hashType == NETWORK_CONFIG.SCRIPTS.SECP256K1_BLAKE160.HASH_TYPE
   );
 };
 
@@ -487,7 +508,7 @@ export const extraFeeCheck = (transaction: TransactionSkeletonType) => {
   const fee = inputCapacity - outputCapacity;
 
   if (fee > 1 * CKB_SHANNON_RATIO)
-    throw new Error("You're paying too much fee. Go check your transaction again!");
+    throw new Error("You're paying too much fee!");
 };
 
 export function extractDaoDataCompatible(dao: PackedDao): {
