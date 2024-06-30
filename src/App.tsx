@@ -607,24 +607,66 @@ const App = () => {
   // calculate background position for an overlay,
   // showing cycle progress bar on top of each deposit
   function calculateButtonBorderProgressBar(percentage: number) {
-    let backgroundPos = '';
+    let backgroundPos = "";
     const targetBtnSize = {
       width: windowWidth <= 768 ? 90 : 110,
       height: windowWidth <= 768 ? 30 : 30,
     };
     const deltaH = windowWidth <= 768 ? 1.5 : 2;
     const deltaW = windowWidth <= 768 ? 1.5 : 2;
-    const totalLength = (targetBtnSize.width + targetBtnSize.height)*2;
+    const totalLength = (targetBtnSize.width + targetBtnSize.height) * 2;
     const borderLen = (percentage / 100) * totalLength;
 
     if (borderLen <= targetBtnSize.width) {
-      backgroundPos = '' + (-targetBtnSize.width + borderLen) + 'px 0px, ' + (targetBtnSize.width - deltaW) + 'px -' + targetBtnSize.height + 'px, ' + targetBtnSize.width + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height + 'px';
-    } else if (borderLen <= (targetBtnSize.width + targetBtnSize.height)) {
-      backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px ' + (-targetBtnSize.height + (borderLen - targetBtnSize.width)) + 'px, ' + targetBtnSize.width + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height + 'px';
-    } else if (borderLen <= (targetBtnSize.width * 2 + targetBtnSize.height)) {
-      backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px 0px, ' + (targetBtnSize.width - (borderLen - targetBtnSize.width - targetBtnSize.height)) + 'px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + targetBtnSize.height +'px';
+      backgroundPos =
+        "" +
+        (-targetBtnSize.width + borderLen) +
+        "px 0px, " +
+        (targetBtnSize.width - deltaW) +
+        "px -" +
+        targetBtnSize.height +
+        "px, " +
+        targetBtnSize.width +
+        "px " +
+        (targetBtnSize.height - deltaH) +
+        "px, 0px " +
+        targetBtnSize.height +
+        "px";
+    } else if (borderLen <= targetBtnSize.width + targetBtnSize.height) {
+      backgroundPos =
+        "0px 0px, " +
+        (targetBtnSize.width - deltaW) +
+        "px " +
+        (-targetBtnSize.height + (borderLen - targetBtnSize.width)) +
+        "px, " +
+        targetBtnSize.width +
+        "px " +
+        (targetBtnSize.height - deltaH) +
+        "px, 0px " +
+        targetBtnSize.height +
+        "px";
+    } else if (borderLen <= targetBtnSize.width * 2 + targetBtnSize.height) {
+      backgroundPos =
+        "0px 0px, " +
+        (targetBtnSize.width - deltaW) +
+        "px 0px, " +
+        (targetBtnSize.width -
+          (borderLen - targetBtnSize.width - targetBtnSize.height)) +
+        "px " +
+        (targetBtnSize.height - deltaH) +
+        "px, 0px " +
+        targetBtnSize.height +
+        "px";
     } else {
-      backgroundPos = '0px 0px, ' + (targetBtnSize.width - deltaW) + 'px 0px, 0px ' + (targetBtnSize.height - deltaH) + 'px, 0px ' + (targetBtnSize.height - (borderLen - (targetBtnSize.width * 2) - targetBtnSize.height)) + 'px';
+      backgroundPos =
+        "0px 0px, " +
+        (targetBtnSize.width - deltaW) +
+        "px 0px, 0px " +
+        (targetBtnSize.height - deltaH) +
+        "px, 0px " +
+        (targetBtnSize.height -
+          (borderLen - targetBtnSize.width * 2 - targetBtnSize.height)) +
+        "px";
     }
     return backgroundPos;
   }
