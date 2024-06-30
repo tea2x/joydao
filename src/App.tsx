@@ -71,7 +71,7 @@ const App = () => {
   const [currentTx, setCurrentTx] = React.useState<{tx: CKBTransaction | null, fee: number}>({tx: null, fee: 0});
   const [daoMode, setDaoMode] = React.useState<DaoFunction | null>(DaoFunction.none);
   const [tipEpoch, setTipEpoch] = React.useState<number>();
-  const [isModalMessageLoading, setIsModalMessageLoading] =
+  const [isDaoTransitMsgLoading, setIsDaoTransitMsgLoading] =
     React.useState(false);
   const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
   const [compensation, setCompensation] = React.useState<number>();
@@ -265,44 +265,41 @@ const App = () => {
     }
   }
 
-  const buildAndGetFeeDeposit = async () => {
-    let daoTx;
-    if (isJoyIdAddress(ckbAddress)) {
+  const preBuildDeposit = async () => {
+    let daoTx:{tx: CKBTransaction | null, fee: number};
+    if (joyidInfo) {
       daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount), joyidInfo);
     } else if (signer) {
       daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount));
-    } else {
-      throw new Error("Wallet disconnected. Reconnect!");
     }
-    setCurrentTx(daoTx);
+    setCurrentTx(daoTx!);
   }
 
-  const buildAndGetFeeWithdraw = async (depositCell:DaoCell) => {
-    let daoTx;
-    if (isJoyIdAddress(ckbAddress)) {
+  const preBuildWithdraw = async (depositCell:DaoCell) => {
+    let daoTx:{tx: CKBTransaction | null, fee: number};
+    if (joyidInfo) {
       daoTx = await buildWithdrawTransaction(ckbAddress, depositCell, joyidInfo);
     } else if (signer) {
       daoTx = await buildWithdrawTransaction(ckbAddress, depositCell);
-    } else {
-      throw new Error("Wallet disconnected. Reconnect!");
     }
-    setCurrentTx(daoTx);
+    setCurrentTx(daoTx!);
   }
 
-  const buildAndGetFeeUnlock = async (withdrawalCell:DaoCell) => {
-    let daoTx;
-    if (isJoyIdAddress(ckbAddress)) {
+  const preBuildUnlock = async (withdrawalCell:DaoCell) => {
+    let daoTx:{tx: CKBTransaction | null, fee: number};
+    if (joyidInfo) {
       daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell, joyidInfo);
     } else if (signer) {
       daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell);
-    } else {
-      throw new Error("Wallet disconnected. Reconnect!");
     }
-    setCurrentTx(daoTx);
+    setCurrentTx(daoTx!);
   }
 
   const onDeposit = async () => {
     try {
+      if (!joyidInfo && !signer)
+        throw new Error("Wallet disconnected. Reconnect!");
+
       if (depositAmount == "") {
         enqueueSnackbar("Please input amount!", { variant: "error" });
         return;
@@ -313,31 +310,27 @@ const App = () => {
         return;
       }
       
-      await buildAndGetFeeDeposit();
       setDaoMode(DaoFunction.depositing);
       setModalIsOpen(true);
-      setIsModalMessageLoading(true);
-      setIsModalMessageLoading(false);
+      setIsDaoTransitMsgLoading(true);
+      await preBuildDeposit();
+      setIsDaoTransitMsgLoading(false);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
   }
   
   const _onDeposit = async () => {
-    if (!currentTx.tx) {
-      enqueueSnackbar("Error: transaction building failed", { variant: "error" });
-      return;
-    }
-
     try {
+      if (!currentTx.tx)
+        throw new Error("Transaction building has failed");
+
       let txid = "";
       if (isJoyIdAddress(ckbAddress)) {
         const signedTx = await signRawTransaction(currentTx.tx, ckbAddress);
         txid = await sendTransaction(signedTx);
       } else if (signer) {
         txid = await signer.sendTransaction(currentTx.tx);
-      } else {
-        throw new Error("Wallet disconnected. Reconnect!");
       }
 
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
@@ -354,24 +347,25 @@ const App = () => {
 
   const onWithdraw = async (cell: DaoCell) => {
     try {
-      await buildAndGetFeeWithdraw(cell);
+      if (!joyidInfo && !signer)
+        throw new Error("Wallet disconnected. Reconnect!");
+
       setDaoMode(DaoFunction.withdrawing);
       setModalIsOpen(true);
-      setIsModalMessageLoading(true);
+      setIsDaoTransitMsgLoading(true);
+      await preBuildWithdraw(cell);
       setCurrentCell(cell);
-      setIsModalMessageLoading(false);
+      setIsDaoTransitMsgLoading(false);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
   };
 
   const _onWithdraw = async () => {
-    if (!currentTx.tx) {
-      enqueueSnackbar("Error: transaction building failed", { variant: "error" });
-      return;
-    }
-    
     try {
+      if (!currentTx.tx)
+        throw new Error("Transaction building has failed");
+
       let txid = "";
       if (isJoyIdAddress(ckbAddress)) {
         const signedTx = await signRawTransaction(currentTx.tx, ckbAddress);
@@ -395,24 +389,25 @@ const App = () => {
 
   const onUnlock = async (cell: DaoCell) => {
     try {
-      await buildAndGetFeeUnlock(cell);
+      if (!joyidInfo && !signer)
+        throw new Error("Wallet disconnected. Reconnect!");
+
       setDaoMode(DaoFunction.unlocking);
       setModalIsOpen(true);
-      setIsModalMessageLoading(true);
+      setIsDaoTransitMsgLoading(true);
+      await preBuildUnlock(cell);
       setCurrentCell(cell);
-      setIsModalMessageLoading(false);
+      setIsDaoTransitMsgLoading(false);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
   };
 
   const _onUnlock = async () => {
-    if (!currentTx.tx) {
-      enqueueSnackbar("Error: transaction building failed", { variant: "error" });
-      return;
-    }
-
     try {
+      if (!currentTx.tx)
+        throw new Error("Transaction building has failed");
+
       let txid = "";
       if (isJoyIdAddress(ckbAddress)) {
         const signedTx = await signRawTransaction(currentTx.tx, ckbAddress);
@@ -436,12 +431,14 @@ const App = () => {
 
   const onSignOut = async () => {
     disconnect();
+    setJoyidInfo(null);
     setCkbAddress("");
     setBalance(null);
     setDepositCells([]);
     setWithdrawalCells([]);
     setIsLoading(false);
 
+    localStorage.removeItem("joyidInfo");
     localStorage.removeItem("ckbAddress");
     localStorage.removeItem("balance");
     localStorage.removeItem("depositCells");
@@ -619,8 +616,8 @@ const App = () => {
       width: windowWidth <= 768 ? 90 : 110,
       height: windowWidth <= 768 ? 30 : 30,
     };
-    const deltaH = windowWidth <= 768 ? 1 : 2;
-    const deltaW = windowWidth <= 768 ? 1 : 2;
+    const deltaH = windowWidth <= 768 ? 1.5 : 2;
+    const deltaW = windowWidth <= 768 ? 1.5 : 2;
     const totalLength = (targetBtnSize.width + targetBtnSize.height)*2;
     const borderLen = (percentage / 100) * totalLength;
 
@@ -765,11 +762,9 @@ const App = () => {
     );
   }
 
-  function circularProgressBarInfo() {
+  function daoDepositCircularProgressBarInfo() {
     return(
       <div className="deposit-circular-progress-bar">
-        {/* <p className="dao-transition-message headline">Deposit information</p> */}
-        <h3 className="headline-separation"> </h3>
         <CircularProgressbarWithChildren
           value={pickedDaoCell?.currentCycleProgress!}
           styles={buildStyles({
@@ -847,9 +842,22 @@ const App = () => {
     );
   }
 
+  function depositTransitionMessage() {
+    return(
+      <div>
+        <p className="dao-transition-message headline">Depositing {depositAmount} CKB</p>
+        <h3 className="headline-separation"> </h3>
+        <p className="dao-transition-message deposit"> • A withdraw can be requested any time later on</p>
+        <p className="dao-transition-message deposit"> • Each withdrawal is only completed when the yellow line reached the starting point</p>
+        <p className="dao-transition-message-sample-image"></p>
+        <p className="dao-transition-message deposit"> • Tx fee: {currentTx.fee ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB` : `${" ~ CKB"}`}</p>
+      </div>
+    );
+  }
+
   {
     const daoCellNum = [...depositCells, ...withdrawalCells].length;
-    const smallScreenDeviceMinCellWidth = 100;
+    const smallScreenDeviceMinCellWidth = 110;
     const largeScreenDeviceMinCellWidth = 120;
 
     // fix cell heights and minimum cell width,
@@ -1221,27 +1229,16 @@ const App = () => {
                   setModalIsOpen(false);
                 }}
               >
-                {isModalMessageLoading && (
+                {isDaoTransitMsgLoading && (
                   <div className="modal-loading-overlay">
-                    <div className="modal-loading-circle-container">
-                      <div className="modal-loading-circle"></div>
-                    </div>
+                    <div className="modal-loading-circle"></div>
                   </div>
                 )}
 
-                {/* <h3 className="deposit-message-head">Deposit Information</h3> */}
                 {daoMode == DaoFunction.depositing ? (
-                  <div>
-                    <p className="dao-transition-message headline">Depositing {depositAmount} CKB</p>
-                    <h3 className="headline-separation"> </h3>
-                    <p className="dao-transition-message deposit"> • A withdraw can be requested any time later on</p>
-                    <p className="dao-transition-message deposit"> • Each withdrawal is only completed when the yellow line reached the starting point</p>
-                    {/* <p className="dao-transition-message deposit"> • Cycle indicator:</p> */}
-                    <p className="dao-transition-message-sample-image"></p>
-                    <p className="dao-transition-message deposit"> • Tx fee: {currentTx.fee ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB` : `${" ~ CKB"}`}</p>
-                  </div>
+                  depositTransitionMessage()
                 ) : (
-                  circularProgressBarInfo()
+                  daoDepositCircularProgressBarInfo()
                 )}
 
                 <div className="button">

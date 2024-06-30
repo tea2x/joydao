@@ -278,7 +278,7 @@ export async function waitForConfirmation(
 export async function waitForTransactionConfirmation(txid: string) {
   console.log("Waiting for transaction to confirm.");
   await waitForConfirmation(txid, (_status) => console.log("."), {
-    recheckMs: 2_000,
+    recheckMs: 3_000,
   });
 }
 
