@@ -249,7 +249,7 @@ const App = () => {
 
     try {
       if (isJoyIdAddress(ckbAddress) || !signer)
-        return;
+        throw new Error("Wallet disconnected. Reconnect!");
 
       const transferTx = await buildTransfer(signer!, transferTo, transferAmount);
       const txid = await signer.sendTransaction(transferTx);
@@ -372,8 +372,6 @@ const App = () => {
         txid = await sendTransaction(signedTx);
       } else if (signer) {
         txid = await signer.sendTransaction(currentTx.tx);
-      } else {
-        throw new Error("Wallet disconnected. Reconnect!");
       }
 
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
@@ -414,8 +412,6 @@ const App = () => {
         txid = await sendTransaction(signedTx);
       } else if (signer) {
         txid = await signer.sendTransaction(currentTx.tx);
-      } else {
-        throw new Error("Wallet disconnected. Reconnect!");
       }
 
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
@@ -847,11 +843,69 @@ const App = () => {
       <div>
         <p className="dao-transition-message headline">Depositing {depositAmount} CKB</p>
         <h3 className="headline-separation"> </h3>
-        <p className="dao-transition-message deposit"> • A withdraw can be requested any time later on</p>
-        <p className="dao-transition-message deposit"> • Each withdrawal is only completed when the yellow line reached the starting point</p>
-        <p className="dao-transition-message-sample-image"></p>
+        <p className="dao-transition-message deposit"> • Withdrawals can be initiated any time later on but each withdrawal is only completed at the end of its 30-day cycle</p>
+        {/* <p className="dao-transition-message deposit"> • Each withdrawal is only completed at the end of its 30-day cycle</p> */}
+        {/* <p className="dao-transition-message-sample-image"></p> */}
         <p className="dao-transition-message deposit"> • Tx fee: {currentTx.fee ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB` : `${" ~ CKB"}`}</p>
       </div>
+    );
+  }
+
+  function daoTransitInfoModal() {
+    return (
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={() => {
+          setModalIsOpen(false);
+        }}
+      >
+        {isDaoTransitMsgLoading && (
+          <div className="modal-loading-overlay">
+            <div className="modal-loading-circle"></div>
+          </div>
+        )}
+
+        {daoMode == DaoFunction.depositing ? (
+          depositTransitionMessage()
+        ) : (
+          daoDepositCircularProgressBarInfo()
+        )}
+
+        <div className="button">
+          <button
+            className="proceed"
+            disabled={
+              pickedDaoCell
+                ? !pickedDaoCell.isDeposit && !pickedDaoCell.ripe
+                : false
+            }
+            onClick={() => {
+              if (daoMode == DaoFunction.withdrawing) {
+                _onWithdraw();
+              } else if (daoMode == DaoFunction.unlocking) {
+                _onUnlock();
+              } else if (daoMode == DaoFunction.depositing) {
+                _onDeposit();
+              } else {
+                //nothing
+              }
+              setModalIsOpen(false);
+              setDaoMode(DaoFunction.none);
+            }}
+          >
+            Proceed
+          </button>
+
+          <button
+            className="cancel"
+            onClick={() => {
+              setModalIsOpen(false);
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </Modal>
     );
   }
 
@@ -1222,61 +1276,9 @@ const App = () => {
                   );
                 }
               )}
-
-              <Modal
-                isOpen={modalIsOpen}
-                onRequestClose={() => {
-                  setModalIsOpen(false);
-                }}
-              >
-                {isDaoTransitMsgLoading && (
-                  <div className="modal-loading-overlay">
-                    <div className="modal-loading-circle"></div>
-                  </div>
-                )}
-
-                {daoMode == DaoFunction.depositing ? (
-                  depositTransitionMessage()
-                ) : (
-                  daoDepositCircularProgressBarInfo()
-                )}
-
-                <div className="button">
-                  <button
-                    className="proceed"
-                    disabled={
-                      pickedDaoCell
-                        ? !pickedDaoCell.isDeposit && !pickedDaoCell.ripe
-                        : false
-                    }
-                    onClick={() => {
-                      if (daoMode == DaoFunction.withdrawing) {
-                        _onWithdraw();
-                      } else if (daoMode == DaoFunction.unlocking) {
-                        _onUnlock();
-                      } else if (daoMode == DaoFunction.depositing) {
-                        _onDeposit();
-                      } else {
-                        //nothing
-                      }
-                      setModalIsOpen(false);
-                    }}
-                  >
-                    Proceed
-                  </button>
-
-                  <button
-                    className="cancel"
-                    onClick={() => {
-                      setModalIsOpen(false);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </Modal>
             </div>
           ))}
+        {daoTransitInfoModal()}
       </>
     );
   }
