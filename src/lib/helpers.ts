@@ -22,6 +22,7 @@ import {
   DAO_MINIMUM_CAPACITY,
   ISMAINNET,
   COTA_AGGREGATOR_URL,
+  NETWORK_CONFIG,
 } from "../config";
 import { addressToScript, TransactionSkeletonType } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from "@ckb-lumos/ckb-indexer/src/type";
@@ -40,7 +41,7 @@ const rpc = new RPC(NODE_URL);
 const lightClientRPC = new LightClientRPC(NODE_URL);
 
 export interface DaoCell extends Cell {
-  isDeposit: boolean;
+  isDeposit: boolean; // deposit/withdraw
   depositEpoch: number;
   sinceEpoch: number;
   maximumWithdraw: string;
@@ -277,7 +278,7 @@ export async function waitForConfirmation(
 export async function waitForTransactionConfirmation(txid: string) {
   console.log("Waiting for transaction to confirm.");
   await waitForConfirmation(txid, (_status) => console.log("."), {
-    recheckMs: 1_000,
+    recheckMs: 3_000,
   });
 }
 
@@ -380,8 +381,28 @@ export class SeededRandom {
 
 export const isJoyIdAddress = (address: string) => {
   const config = getConfig();
+  const script = addressToScript(address, { config });
   return (
-    addressToScript(address, { config }).codeHash == JOYID_CELLDEP.codeHash
+    script.codeHash == JOYID_CELLDEP.codeHash
+    && script.hashType == JOYID_CELLDEP.hashType
+  );
+};
+
+export const isOmnilockAddress = (address: string) => {
+  const config = getConfig();
+  const script = addressToScript(address, { config });
+  return (
+    script.codeHash == OMNILOCK_CELLDEP.codeHash
+    && script.hashType == OMNILOCK_CELLDEP.hashType
+  );
+};
+
+export const isDefaultAddress = (address: string) => {
+  const config = getConfig();
+  const script = addressToScript(address, { config });
+  return (
+    script.codeHash == NETWORK_CONFIG.SCRIPTS.SECP256K1_BLAKE160.CODE_HASH
+    && script.hashType == NETWORK_CONFIG.SCRIPTS.SECP256K1_BLAKE160.HASH_TYPE
   );
 };
 
@@ -475,7 +496,7 @@ export const addWitnessPlaceHolder = async (
   return transaction;
 };
 
-export const extraFeeCheck = (transaction: TransactionSkeletonType) => {
+export const getFee = (transaction: TransactionSkeletonType):number => {
   const inputCapacity = transaction.inputs
     .toArray()
     .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
@@ -484,10 +505,7 @@ export const extraFeeCheck = (transaction: TransactionSkeletonType) => {
     .toArray()
     .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
 
-  const fee = inputCapacity - outputCapacity;
-
-  if (fee > 1 * CKB_SHANNON_RATIO)
-    throw new Error("You're paying too much fee. Go check your transaction again!");
+  return Number(inputCapacity - outputCapacity);
 };
 
 export function extractDaoDataCompatible(dao: PackedDao): {

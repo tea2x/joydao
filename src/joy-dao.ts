@@ -36,7 +36,7 @@ import {
   collectInputs,
   findDepositCellWith,
   addWitnessPlaceHolder,
-  extraFeeCheck,
+  getFee,
   appendSubkeyDeviceCellDep,
 } from "./lib/helpers";
 import { number } from "@ckb-lumos/codec";
@@ -46,7 +46,7 @@ import { RPC } from "@ckb-lumos/rpc";
 
 const DAO_LOCK_PERIOD_EPOCHS_COMPATIBLE = BI.from(180);
 const rpc = new RPC(NODE_URL);
-const INDEXER = new Indexer(INDEXER_URL);
+const indexer = new Indexer(INDEXER_URL);
 
 /*
   ckbAddress: the ckb address that has CKB, and will be used to lock your Dao deposit
@@ -57,7 +57,7 @@ export const collectDeposits = async (ckbAddress: Address): Promise<Cell[]> => {
   let depositCells: Cell[] = [];
   const daoCellCollector = new dao.CellCollector(
     ckbAddress,
-    INDEXER,
+    indexer,
     "deposit"
   );
   for await (const inputCell of daoCellCollector.collect()) {
@@ -77,7 +77,7 @@ export const collectWithdrawals = async (
   let depositCells: Cell[] = [];
   const daoCellCollector = new dao.CellCollector(
     ckbAddress,
-    INDEXER,
+    indexer,
     "withdraw"
   );
   for await (const inputCell of daoCellCollector.collect()) {
@@ -99,13 +99,13 @@ export const buildDepositTransaction = async (
   ckbAddress: Address,
   amount: bigint,
   joyIdAuth: any = null
-): Promise<CKBTransaction> => {
+): Promise<{tx: CKBTransaction, fee: number}> => {
   amount = ckbytesToShannons(amount);
   if (amount < ckbytesToShannons(BigInt(DAO_MINIMUM_CAPACITY))) {
     throw new Error("Mimum DAO deposit is 104 CKB.");
   }
 
-  let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
+  let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
   
   // when a device is using joyid subkey,
   // prioritizing Cota celldeps at the head of the celldep list
@@ -152,7 +152,7 @@ export const buildDepositTransaction = async (
     amount + ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(fee);
 
   const collectedInputs = await collectInputs(
-    INDEXER,
+    indexer,
     addressToScript(ckbAddress),
     requiredCapacity
   );
@@ -165,9 +165,10 @@ export const buildDepositTransaction = async (
   // Regulating fee, and making a change cell
   // 111 is the size difference adding the 1 anticipated change cell
   // TODO because payFeeByRate is not generalized enough for different signing standards,
-  // here applied a trick to achieve the function of configurable FeeRate.
+  // here applied a trick to  approximately achieve the function of configurable FeeRate
+  // for joyID without compropmising UX (ask user to sign then calculate the transaction size).
   // joyID witnesses from different devices with different sizes, can cause
-  // feeRate by this trick, diviate slightly from the calculated fee but it's considered safe.
+  // feeRate by this trick, diviate from the calculated fee but it's considered safe.
   const txSize = getTransactionSize(txSkeleton) + 111;
   fee = calculateFeeCompatible(txSize, FEE_RATE).toNumber();
   const outputCapacity = txSkeleton.outputs
@@ -184,11 +185,9 @@ export const buildDepositTransaction = async (
   };
 
   txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
-  // safe check
-  extraFeeCheck(txSkeleton);
-
+  const txFee = getFee(txSkeleton);
   const daoDepositTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-  return daoDepositTx as CKBTransaction;
+  return {tx: daoDepositTx as CKBTransaction, fee: txFee};
 };
 
 /*
@@ -204,8 +203,8 @@ export const buildWithdrawTransaction = async (
   ckbAddress: Address,
   daoDepositCell: Cell,
   joyIdAuth: any = null
-): Promise<CKBTransaction> => {
-  let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
+): Promise<{tx: CKBTransaction, fee: number}> => {
+  let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
 
   // when a device is using joyid subkey,
   // prioritizing Cota celldeps at the head of the celldep list
@@ -265,7 +264,7 @@ export const buildWithdrawTransaction = async (
   const requiredCapacity =
     ckbytesToShannons(BigInt(MINIMUM_CHANGE_CAPACITY)) + BigInt(fee);
   const collectedInputs = await collectInputs(
-    INDEXER,
+    indexer,
     addressToScript(ckbAddress),
     requiredCapacity
   );
@@ -295,11 +294,9 @@ export const buildWithdrawTransaction = async (
   };
 
   txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
-  // safe check
-  extraFeeCheck(txSkeleton);
-
+  const txFee = getFee(txSkeleton);
   const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-  return daoWithdrawTx as CKBTransaction;
+  return {tx: daoWithdrawTx as CKBTransaction, fee: txFee};
 };
 
 /*
@@ -316,11 +313,11 @@ export const buildUnlockTransaction = async (
   ckbAddress: Address,
   daoWithdrawalCell: Cell,
   joyIdAuth: any = null
-): Promise<CKBTransaction> => {
+): Promise<{tx: CKBTransaction, fee: number}> => {
   const config = getConfig();
   _checkDaoScript(config);
 
-  let txSkeleton = TransactionSkeleton({ cellProvider: INDEXER });
+  let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
 
   // when a device is using joyid subkey,
   // prioritizing Cota celldeps at the head of the celldep list
@@ -452,11 +449,10 @@ export const buildUnlockTransaction = async (
     });
   });
 
-  // safe check
-  extraFeeCheck(txSkeleton);
+  // const txFee = getFee(txSkeleton);
   // converting skeleton to CKB transaction
   const daoUnlockTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-  return daoUnlockTx as CKBTransaction;
+  return {tx: daoUnlockTx as CKBTransaction, fee: fee};
 };
 
 function epochSinceCompatible({

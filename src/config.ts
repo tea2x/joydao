@@ -59,7 +59,7 @@ export const OMNILOCK_CELLDEP = ISMAINNET
       depType: "code",
     };
 
-export const TEST_NET_CONFIG = ISMAINNET
+export const NETWORK_CONFIG = ISMAINNET
   ? {
       PREFIX: "ckb",
       SCRIPTS: {
@@ -137,7 +137,7 @@ export const DAO_MINIMUM_CAPACITY = 104;
 export const MINIMUM_CHANGE_CAPACITY = 63;
 export const CKB_SHANNON_RATIO = 100_000_000;
 
-//joyid lock signature length is 347 bytes (370bytes in other cases)
+//a typical joyid lock signature length is ~ 347 bytes ()
 export const JOYID_SIGNATURE_PLACEHOLDER_DEFAULT = "0x" + "0".repeat(694);
 //joyid lock signature length is 85 bytes
 export const OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT = "0x" + "0".repeat(170);

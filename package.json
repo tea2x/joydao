@@ -5,6 +5,7 @@
   "dependencies": {
     "@ckb-ccc/connector-react": "^0.0.4-alpha.13",
     "@ckb-ccc/core": "^0.0.4-alpha.13",
+    "@ckb-ccc/lumos-patches": "^0.0.5-alpha.2",
     "@ckb-lumos/common-scripts": "^0.22.2",
     "@ckb-lumos/lumos": "^0.22.2",
     "@joyid/ckb": "^0.0.8",
@@ -23,6 +24,7 @@
     "react-dom": "^18.3.1",
     "react-modal": "^3.16.1",
     "react-scripts": "5.0.1",
+    "react-transition-group": "^4.4.5",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
@@ -52,6 +54,7 @@
   },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
+    "@types/react-transition-group": "^4.4.10",
     "browserify-fs": "^1.0.0",
     "crypto-browserify": "^3.12.0",
     "path-browserify": "^1.0.1",

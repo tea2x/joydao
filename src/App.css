@@ -13,6 +13,7 @@ body {
   background-attachment: fixed;
   overflow: auto;
   position: absolute;
+  text-align: center;
 }
 
 .info-board {
@@ -20,36 +21,87 @@ body {
   font-size: large;
   font-family: sans-serif;
   font-weight: bold;
-  padding: 10px;
+  padding: 5px 30px 5px 30px;
   color: rgb(86, 43, 27);
   border-radius: 10px;
   background: hsla(0, 0%, 72%, 0.834);
-  margin: 20px auto;
+  margin: 20px auto 10px auto;
   width: 320px;
+  height: 150px;
+  text-align: left;
+}
+
+.to-right-sign {
+  position: relative;
+  top: -100px;
+  right: -200px;
+  margin: 0;
+  opacity: 0.4;
+}
+
+.to-right-sign:hover {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.to-left-sign {
+  position: relative;
+  top: -100px;
+  left: -200px;
+  margin: 0;
+  opacity: 0.4;
+}
+
+.to-left-sign:hover {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.control-panel-text-box {
+  outline: none;
+  border-width: 0.5px;
+  border-radius: 5px;
+  background: transparent;
+  width: 300px;
+  height: 25px;
+  padding: 3px 10px 3px 10px;
+  position: relative;
+  font-size: medium;
+  font-family: sans-serif;
+  color: rgb(86, 43, 27);
+  margin: 5px auto;
+}
+
+.control-panel-headline {
+  text-align: center;
+}
+
+.right-to-left-enter {
+  transform: translateX(100%);
+}
+
+.right-to-left-enter-active {
+  transform: translateX(0);
+  transition: all 1s ease;
+}
+
+.left-to-right-enter {
+  transform: translateX(-100%);
+}
+
+.left-to-right-enter-active {
+  transform: translateX(0);
+  transition: all 1s ease;
 }
 
 .deposit-field {
   font-size: 16px;
 }
 
-.deposit-textbox {
-  border: none;
-  outline: none;
-  background: transparent;
-  width: 220px;
-  padding: 3px;
-
-  position: relative;
-  font-size: large;
-  font-family: sans-serif;
-  font-weight: bold;
-  color: rgb(86, 43, 27);
-}
-
 .underline {
   display: inline-block;
   border-bottom: 1px solid rgb(0, 0, 0);
-  width: 210px;
+  width: 226.5px;
   cursor: pointer;
   outline: none;
   white-space: nowrap;
@@ -68,6 +120,7 @@ body {
 .notif {
   /* max-width: 200px; */
   z-index: 9999;
+  text-align: left;
 }
 
 .title {
@@ -99,7 +152,7 @@ body {
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-bottom: 60px;
+  margin-bottom: 30px;
 }
 
 .signin-button {
@@ -119,7 +172,7 @@ body {
   box-shadow: 1px 1px 0 #555, 2px 2px 0 #333;
   transition: transform 0.3s ease;
   position: relative;
-  top: 40vh;
+  top: -50px;
   margin: 0 auto;
 }
 
@@ -308,15 +361,16 @@ body {
 
 .entrance-decor {
   content: "";
-  position: absolute;
-  left: 0.5%;
-  width: 100%;
-  height: 100%;
+  position: relative;
+  left: 1.8%;
+  width: 100vh;
+  height: 60vh;
   background-image: url("./images/poster.png");
-  background-size: 90vh;
-  background-position: top 55% center;
+  background-size: 100vh;
+  background-position: top 100px;
   background-repeat: no-repeat;
   z-index: inherit;
+  margin: 0 auto;
 }
 
 .dao-link {
@@ -530,7 +584,7 @@ body {
   border: 1px solid #ddd;
   padding: 5px;
   margin: 5px;
-  border-radius: 5px;
+  border-radius: 10px;
   width: var(--cellWidth);
   height: var(--cellHeight);
   display: flex;
@@ -547,7 +601,7 @@ body {
   border: 1px solid var(--backgroundColor);
   padding: 5px;
   margin: 5px;
-  border-radius: 5px;
+  border-radius: 10px;
   width: var(--cellWidth);
   height: var(--cellHeight);
   display: flex;
@@ -662,7 +716,7 @@ body {
 .modal-loading-overlay {
   position: absolute;
   width: 100%;
-  height: 100%;
+  height: 90%;
   background-color: rgba(255, 255, 255, 0.8);
   display: flex;
   justify-content: center;
@@ -676,6 +730,7 @@ body {
   border-radius: 50%;
   width: 60px;
   height: 60px;
+  position: relative;
   animation: spin 1s linear infinite;
 }
 
@@ -686,12 +741,6 @@ body {
   to {
     transform: rotate(360deg);
   }
-}
-
-.modal-loading-circle-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .buttons {
@@ -779,7 +828,7 @@ button.cancel:hover {
   font-weight: bold;
   width: 200px;
   text-align: center;
-  margin: 5px 10px;
+  margin: 0 auto;
 }
 
 .main-wallet-option {
@@ -790,15 +839,36 @@ button.cancel:hover {
 
 .headline-separation {
   border-top: 1px solid #000;
-  width: 180px;
-  margin: 0 auto;
+  width: 320px;
+  margin: 0px auto 10px auto;
 }
 
-.deposit-message {
+.dao-transition-message {
   margin: 0.1em;
   font-size: 1em;
   font-weight: bold;
   color: cadetblue;
+}
+
+.dao-transition-message.deposit {
+  text-align: left;
+}
+
+.dao-transition-message.headline {
+  text-align: center;
+  font-weight: bolder;
+}
+
+.dao-transition-message-sample-image {
+  background-image: url("./images/example-progess.png");
+  width: 100px;
+  height: 35px;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  text-align: center;
+  position: relative;
+  margin: 0 auto;
+  border-radius: 5px;
 }
 
 .deposit-circular-progress-bar {
@@ -829,6 +899,25 @@ button.cancel:hover {
     width: 270px;
   }
 
+  .to-right-sign {
+    top: -100px;
+    right: -175px;
+  }
+  
+  .to-left-sign {
+    top: -100px;
+    left: -175px;
+  }
+
+  .control-panel-text-box {
+    width: 270px;
+    height: 30px;
+  }
+
+  .headline-separation {
+    width: 270px;
+  }
+
   .underline {
     width: 180px;
   }
@@ -845,7 +934,7 @@ button.cancel:hover {
   }
 
   .account-deposit-buttons {
-    margin-bottom: 30px;
+    margin-bottom: 5px;
   }
 
   .signin-button,
@@ -866,7 +955,7 @@ button.cancel:hover {
     width: 180px;
     font-size: 1.5em;
     position: relative;
-    top: 50vh;
+    top: -50px;
   }
 
   .copy-sign {
@@ -886,12 +975,11 @@ button.cancel:hover {
   }
 
   .entrance-decor {
-    content: "";
-    position: absolute;
-    top: 50px;
-    left: 2%;
-    background-size: 70vh;
-    background-position: top 50% center;
+    left: 0.1%;
+    width: 45vh;
+    height: 45vh;
+    background-image: url("./images/poster-mobile.png");
+    background-size: 45vh;
   }
 
   .cell-grid {
@@ -899,13 +987,17 @@ button.cancel:hover {
   }
 
   .dao-cell-dummy {
-    border-radius: 5px;
+    padding: 3px;
+    margin: 3px;
+    border-radius: 10px;
     font-size: 16px;
     height: var(--cellHeight);
   }
 
   .dao-cell {
-    border-radius: 5px;
+    padding: 3px;
+    margin: 3px;
+    border-radius: 10px;
     font-size: 16px;
     height: var(--cellHeight);
   }
@@ -927,7 +1019,7 @@ button.cancel:hover {
     border-radius: 2px;
     background-size: 100% 1.5px, 1.5px 100%, 100% 1.5px, 1.5px 100%;
     position: relative;
-    top: 35px;
+    top: 38px;
     z-index: 1;
   }
 
