@@ -36,7 +36,7 @@ import {
   collectInputs,
   findDepositCellWith,
   addWitnessPlaceHolder,
-  extraFeeCheck,
+  getFee,
   appendSubkeyDeviceCellDep,
 } from "./lib/helpers";
 import { number } from "@ckb-lumos/codec";
@@ -99,7 +99,7 @@ export const buildDepositTransaction = async (
   ckbAddress: Address,
   amount: bigint,
   joyIdAuth: any = null
-): Promise<CKBTransaction> => {
+): Promise<{tx: CKBTransaction, fee: number}> => {
   amount = ckbytesToShannons(amount);
   if (amount < ckbytesToShannons(BigInt(DAO_MINIMUM_CAPACITY))) {
     throw new Error("Mimum DAO deposit is 104 CKB.");
@@ -185,11 +185,9 @@ export const buildDepositTransaction = async (
   };
 
   txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
-  // safe check
-  extraFeeCheck(txSkeleton);
-
+  const txFee = getFee(txSkeleton);
   const daoDepositTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-  return daoDepositTx as CKBTransaction;
+  return {tx: daoDepositTx as CKBTransaction, fee: txFee};
 };
 
 /*
@@ -205,7 +203,7 @@ export const buildWithdrawTransaction = async (
   ckbAddress: Address,
   daoDepositCell: Cell,
   joyIdAuth: any = null
-): Promise<CKBTransaction> => {
+): Promise<{tx: CKBTransaction, fee: number}> => {
   let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
 
   // when a device is using joyid subkey,
@@ -296,11 +294,9 @@ export const buildWithdrawTransaction = async (
   };
 
   txSkeleton = txSkeleton.update("outputs", (i) => i.push(change));
-  // safe check
-  extraFeeCheck(txSkeleton);
-
+  const txFee = getFee(txSkeleton);
   const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-  return daoWithdrawTx as CKBTransaction;
+  return {tx: daoWithdrawTx as CKBTransaction, fee: txFee};
 };
 
 /*
@@ -317,7 +313,7 @@ export const buildUnlockTransaction = async (
   ckbAddress: Address,
   daoWithdrawalCell: Cell,
   joyIdAuth: any = null
-): Promise<CKBTransaction> => {
+): Promise<{tx: CKBTransaction, fee: number}> => {
   const config = getConfig();
   _checkDaoScript(config);
 
@@ -453,11 +449,10 @@ export const buildUnlockTransaction = async (
     });
   });
 
-  // safe check
-  extraFeeCheck(txSkeleton);
+  // const txFee = getFee(txSkeleton);
   // converting skeleton to CKB transaction
   const daoUnlockTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-  return daoUnlockTx as CKBTransaction;
+  return {tx: daoUnlockTx as CKBTransaction, fee: fee};
 };
 
 function epochSinceCompatible({

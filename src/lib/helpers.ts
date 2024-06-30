@@ -41,7 +41,7 @@ const rpc = new RPC(NODE_URL);
 const lightClientRPC = new LightClientRPC(NODE_URL);
 
 export interface DaoCell extends Cell {
-  isDeposit: boolean;
+  isDeposit: boolean; // deposit/withdraw
   depositEpoch: number;
   sinceEpoch: number;
   maximumWithdraw: string;
@@ -496,7 +496,7 @@ export const addWitnessPlaceHolder = async (
   return transaction;
 };
 
-export const extraFeeCheck = (transaction: TransactionSkeletonType) => {
+export const getFee = (transaction: TransactionSkeletonType):number => {
   const inputCapacity = transaction.inputs
     .toArray()
     .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
@@ -505,10 +505,7 @@ export const extraFeeCheck = (transaction: TransactionSkeletonType) => {
     .toArray()
     .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
 
-  const fee = inputCapacity - outputCapacity;
-
-  if (fee > 1 * CKB_SHANNON_RATIO)
-    throw new Error("You're paying too much fee!");
+  return Number(inputCapacity - outputCapacity);
 };
 
 export function extractDaoDataCompatible(dao: PackedDao): {
