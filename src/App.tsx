@@ -220,7 +220,7 @@ const App = () => {
     }
   };
 
-  const onCCCTransfer = async () => {
+  const onTransfer = async () => {
     if (transferAmount == "") {
       enqueueSnackbar("Please fill address and amount!", { variant: "error" });
       return;
@@ -871,9 +871,11 @@ const App = () => {
             )
           )}
 
-          <p className="dao-transition-message">
-            Tx fee: {currentTx.fee ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB` : `${" ~ CKB"}`}
-          </p>
+          {!(!pickedDaoCell?.isDeposit && !pickedDaoCell?.ripe) && (
+            <p className="dao-transition-message">
+              Tx fee: {currentTx.fee ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB` : `${" ~ CKB"}`}
+            </p>
+          )}
 
         </CircularProgressbarWithChildren>
       </div>
@@ -1103,7 +1105,7 @@ const App = () => {
             <button
               className="deposit-button"
               onClick={(e) => {
-                onCCCTransfer();
+                onTransfer();
               }}
             >
               Transfer
