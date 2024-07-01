@@ -272,6 +272,12 @@ const App = () => {
     } else if (signer) {
       daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount));
     }
+
+    // might be over-cautious, but worth checking with utxo
+    // TODO remove when fully support fee-rate configuration
+    if (daoTx!.fee > 1*CKB_SHANNON_RATIO)
+      throw new Error("Paying too much transaction fee");
+
     setCurrentTx(daoTx!);
   }
 
@@ -282,6 +288,12 @@ const App = () => {
     } else if (signer) {
       daoTx = await buildWithdrawTransaction(ckbAddress, depositCell);
     }
+
+    // might be over-cautious, but worth checking with utxo
+    // TODO remove when fully support fee-rate configuration
+    if (daoTx!.fee > 1*CKB_SHANNON_RATIO)
+      throw new Error("Paying too much transaction fee");
+
     setCurrentTx(daoTx!);
   }
 
@@ -292,6 +304,12 @@ const App = () => {
     } else if (signer) {
       daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell);
     }
+
+    // might be over-cautious, but worth checking with utxo
+    // TODO remove when fully support fee-rate configuration
+    if (daoTx!.fee > 1*CKB_SHANNON_RATIO)
+      throw new Error("Paying too much transaction fee");
+
     setCurrentTx(daoTx!);
   }
 
