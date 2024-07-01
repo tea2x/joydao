@@ -22,6 +22,7 @@ import {
   EXPLORER_PREFIX,
   JOYID_URL,
   CCC_MAINNET,
+  DAO_MINIMUM_CAPACITY,
 } from "./config";
 import {
   buildDepositTransaction,
@@ -333,6 +334,10 @@ const App = () => {
 
       if (parseInt(depositAmount)*CKB_SHANNON_RATIO > parseInt(balance.available))
         throw new Error("Insufficient balance!");
+
+      if (parseInt(depositAmount) < DAO_MINIMUM_CAPACITY) {
+        throw new Error("Mimum joyDAO deposit is 104 CKB.");
+      }
       
       setDaoMode(DaoFunction.depositing);
       setModalIsOpen(true);
