@@ -142,5 +142,6 @@ The procedure to verify your ownership is similar to that of the deposit transac
 This is DAO unlocking transaction. It doesn't have any typescript because you're opting out of the Nervos DAO to get your CKB back. And the procedure to verify your ownership is similar to that of the deposit transaction.
 
 # Starting project
-
-    `npm start`
+    1. `npm install`
+    2. `npm run build`
+    3. `npm run start`
