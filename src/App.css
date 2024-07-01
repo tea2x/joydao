@@ -34,7 +34,7 @@ body {
 .to-right-sign {
   position: relative;
   top: -100px;
-  right: -200px;
+  right: -180px;
   margin: 0;
   opacity: 0.4;
 }
@@ -47,7 +47,7 @@ body {
 .to-left-sign {
   position: relative;
   top: -100px;
-  left: -200px;
+  left: -180px;
   margin: 0;
   opacity: 0.4;
 }
@@ -839,7 +839,7 @@ button.cancel:hover {
 
 .headline-separation {
   border-top: 1px solid #000;
-  width: 320px;
+  width: 100%;
   margin: 0px auto 10px auto;
 }
 
@@ -905,12 +905,12 @@ button.cancel:hover {
 
   .to-right-sign {
     top: -100px;
-    right: -175px;
+    right: -155px;
   }
   
   .to-left-sign {
     top: -100px;
-    left: -175px;
+    left: -155px;
   }
 
   .control-panel-text-box {
