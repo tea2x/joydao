@@ -6,8 +6,8 @@ body {
   min-height: 100%;
   border: none;
   border-radius: 10px;
-  background-image: url("./images/plume-signin-background_portrait.png");
-  background-size: auto;
+  background-image: url("./images/plume-signin-background.png");
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -894,6 +894,10 @@ button.cancel:hover {
 }
 
 @media only screen and (max-width: 768px) {
+  body {
+    background-image: url("./images/plume-signin-background_portrait.png");
+  }
+
   .info-board {
     font-size: medium;
     width: 270px;
