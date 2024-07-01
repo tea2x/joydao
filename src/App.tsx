@@ -70,11 +70,11 @@ const App = () => {
   const [pickedDaoCell, setPickedDaoCell] = React.useState<DaoCell | null>(null);
   const [currentTx, setCurrentTx] = React.useState<{tx: CKBTransaction | null, fee: number}>({tx: null, fee: 0});
   const [daoMode, setDaoMode] = React.useState<DaoFunction | null>(DaoFunction.none);
-  const [tipEpoch, setTipEpoch] = React.useState<number>();
+  const [tipEpoch, setTipEpoch] = React.useState<number | null>(null);
   const [isDaoTransitMsgLoading, setIsDaoTransitMsgLoading] =
     React.useState(false);
   const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
-  const [compensation, setCompensation] = React.useState<number>();
+  const [compensation, setCompensation] = React.useState<number | null>(null);
   const [percentageLoading, setPercentageLoading] = React.useState<number>(0);
   const [isNextPage, setIsNextPage] = React.useState(true);
 
@@ -494,6 +494,9 @@ const App = () => {
 
   // enriching dao cell info
   React.useEffect(() => {
+    if (!tipEpoch || !depositCells || !withdrawalCells)
+      return;
+    
     try {
       if (depositCellsRef.current !== depositCells) {
         Promise.all(
@@ -585,7 +588,7 @@ const App = () => {
 
   // estimate return
   React.useEffect(() => {
-    if (!(tipEpoch && pickedDaoCell))
+    if (!tipEpoch || !pickedDaoCell)
       return;
 
     if (!pickedDaoCell.isDeposit)
@@ -599,8 +602,22 @@ const App = () => {
     fetchData();
   }, [tipEpoch, pickedDaoCell]);
 
-  // creating a loafin effect on deposit button
+  // creating a loading effect on deposit button
   React.useEffect(() => {
+    if (!joyidInfo && !signer) {
+      return;
+    }
+
+    if (!tipEpoch || (!depositCells && !withdrawalCells)) {
+      return;
+    }
+
+    if ((depositCellsRef.current == depositCells)
+      || (withdrawalCellsRef.current == withdrawalCells)
+    ) {
+      return;
+    }
+
     const interval = setInterval(() => {
       setPercentageLoading((prevPercentage) => {
         return prevPercentage === 100 ? 1 : prevPercentage + 1;
@@ -608,7 +625,7 @@ const App = () => {
     }, 5);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [depositCells, withdrawalCells, tipEpoch, percentageLoading]);
 
   // calculate background position for an overlay,
   // showing cycle progress bar on top of each deposit
@@ -829,7 +846,7 @@ const App = () => {
 
           {!pickedDaoCell?.isDeposit && (
             <p className="dao-transition-message">
-              Compensation: {pickedDaoCell ? getCompensation(pickedDaoCell) : '~'}
+              Compensation: {pickedDaoCell ? getCompensation(pickedDaoCell) : "~"}
             </p>
           )}
 
@@ -852,7 +869,7 @@ const App = () => {
 
           {(pickedDaoCell?.isDeposit) && (
             <p className="dao-transition-message">
-              Compensation: {compensation ? `${compensation?.toFixed(2)} CKB` : `${" ~ CKB"}`}
+              Compensation: {(compensation != null) ? `${compensation?.toFixed(2)} CKB` : "~"}
             </p>
           )}
 
