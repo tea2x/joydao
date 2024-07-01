@@ -231,23 +231,23 @@ const App = () => {
       return;
     }
 
-    // output readable error for common cases
-    if (
-      (isJoyIdAddress(transferTo) || isOmnilockAddress(transferTo))
-      && parseInt(transferAmount) < 63
-    ) {
-      enqueueSnackbar("Your receiver address requires a minimum amount of 63CKB", {
-        variant: "error",
-      });
-      return;
-    } else if (isDefaultAddress(transferTo) && parseInt(transferAmount) < 61) {
-      enqueueSnackbar("Your receiver address requires a minimum amount of 61CKB", {
-        variant: "error",
-      });
-      return;
-    }
-
     try {
+      // output readable error for common cases
+      if (
+        (isJoyIdAddress(transferTo) || isOmnilockAddress(transferTo))
+        && parseInt(transferAmount) < 63
+      ) {
+        enqueueSnackbar("Your receiver address requires a minimum amount of 63CKB", {
+          variant: "error",
+        });
+        return;
+      } else if (isDefaultAddress(transferTo) && parseInt(transferAmount) < 61) {
+        enqueueSnackbar("Your receiver address requires a minimum amount of 61CKB", {
+          variant: "error",
+        });
+        return;
+      }
+
       if (isJoyIdAddress(ckbAddress) || !signer)
         throw new Error("Wallet disconnected. Reconnect!");
 
