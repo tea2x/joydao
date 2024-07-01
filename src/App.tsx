@@ -170,7 +170,6 @@ const App = () => {
       } catch (e: any) {
         enqueueSnackbar("Error: " + e.message, { variant: "error" });
       }
-      setIsLoading(false);
     }
   };
 
@@ -260,6 +259,7 @@ const App = () => {
       await waitForTransactionConfirmation(txid);
       setIsWaitingTxConfirm(false);
       await updateJoyDaoInfo("balance");
+      setIsLoading(false);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
@@ -340,6 +340,7 @@ const App = () => {
       setIsWaitingTxConfirm(false);
       setDepositAmount("");
       await updateJoyDaoInfo("deposit");
+      setIsLoading(false);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
@@ -380,6 +381,7 @@ const App = () => {
       await waitForTransactionConfirmation(txid);
       setIsWaitingTxConfirm(false);
       await updateJoyDaoInfo("all");
+      setIsLoading(false);
       setPickedDaoCell(null);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
@@ -422,6 +424,7 @@ const App = () => {
       await waitForTransactionConfirmation(txid);
       setIsWaitingTxConfirm(false);
       await updateJoyDaoInfo("withdraw");
+      setIsLoading(false);
       setPickedDaoCell(null);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
