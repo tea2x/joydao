@@ -102,7 +102,7 @@ export const buildDepositTransaction = async (
 ): Promise<{tx: CKBTransaction, fee: number}> => {
   amount = ckbytesToShannons(amount);
   if (amount < ckbytesToShannons(BigInt(DAO_MINIMUM_CAPACITY))) {
-    throw new Error("Mimum DAO deposit is 104 CKB.");
+    throw new Error("Minimum DAO deposit is 104 CKB.");
   }
 
   let txSkeleton = TransactionSkeleton({ cellProvider: indexer });

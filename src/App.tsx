@@ -336,7 +336,7 @@ const App = () => {
         throw new Error("Insufficient balance!");
 
       if (parseInt(depositAmount) < DAO_MINIMUM_CAPACITY) {
-        throw new Error("Mimum joyDAO deposit is 104 CKB.");
+        throw new Error("Minimum joyDAO deposit is 104 CKB.");
       }
       
       setDaoMode(DaoFunction.depositing);
