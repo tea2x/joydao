@@ -300,6 +300,9 @@ const App = () => {
       if (!joyidInfo && !signer)
         throw new Error("Wallet disconnected. Reconnect!");
 
+      if (!balance || balance.available === '0')
+        throw new Error("Empty balance!");
+
       if (depositAmount == "") {
         enqueueSnackbar("Please input amount!", { variant: "error" });
         return;
@@ -309,6 +312,9 @@ const App = () => {
         });
         return;
       }
+
+      if (parseInt(depositAmount)*CKB_SHANNON_RATIO > parseInt(balance.available))
+        throw new Error("Insufficient balance!");
       
       setDaoMode(DaoFunction.depositing);
       setModalIsOpen(true);
