@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@ckb-ccc/connector-react": "^0.0.4-alpha.13",
+    "@ckb-ccc/connector-react": "^0.0.5-alpha.10",
     "@ckb-ccc/core": "^0.0.4-alpha.13",
     "@ckb-ccc/lumos-patches": "^0.0.5-alpha.2",
     "@ckb-lumos/common-scripts": "^0.22.2",
