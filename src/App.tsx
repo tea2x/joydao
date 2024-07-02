@@ -1,5 +1,5 @@
 import * as React from "react";
-import { initConfig, connect, signRawTransaction, CKBTransaction } from "@joyid/ckb";
+import { signRawTransaction, CKBTransaction } from "@joyid/ckb";
 import {
   sendTransaction,
   waitForTransactionConfirmation,
@@ -33,7 +33,7 @@ import {
 } from "./joy-dao";
 import { buildTransfer } from "./basic-wallet";
 import { ccc } from "@ckb-ccc/connector-react";
-import { Signer } from "@ckb-ccc/core";
+// import { SignerSignType } from "@ckb-ccc/ccc/node_modules/@ckb-ccc/core";
 import { ClientPublicTestnet, ClientPublicMainnet } from "@ckb-ccc/core";
 import "./App.css";
 import Modal from "react-modal";
@@ -54,7 +54,6 @@ enum DaoFunction {
 }
 
 const App = () => {
-  const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
   const [balance, setBalance] = React.useState<Balance | null>(null);
   const [ckbAddress, setCkbAddress] = React.useState("");
   const [depositCells, setDepositCells] = React.useState<DaoCell[]>([]);
@@ -63,6 +62,8 @@ const App = () => {
   const withdrawalCellsRef = React.useRef(withdrawalCells);
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [renderKick, setRenderKick] = React.useState<number>(0);
+  const [internalAddress, setInternalAddress] = React.useState("");
+  const [isTestnet] = React.useState(true);
 
   const [depositAmount, setDepositAmount] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
@@ -74,7 +75,6 @@ const App = () => {
   const [tipEpoch, setTipEpoch] = React.useState<number | null>(null);
   const [isDaoTransitMsgLoading, setIsDaoTransitMsgLoading] =
     React.useState(false);
-  const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
   const [compensation, setCompensation] = React.useState<number | null>(null);
   const [percentageLoading, setPercentageLoading] = React.useState<number>(0);
   const [isNextPage, setIsNextPage] = React.useState(true);
@@ -85,13 +85,9 @@ const App = () => {
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
+  console.log(">>>signer: ", signer)
   const { enqueueSnackbar } = useSnackbar();
 
-  initConfig({
-    name: "joyDAO",
-    logo: "https://fav.farm/🆔",
-    joyidAppURL: JOYID_URL,
-  });
   initializeConfig(NETWORK_CONFIG as Config);
 
   const onNext = () => setIsNextPage(true);
@@ -174,25 +170,10 @@ const App = () => {
     }
   };
 
-  const joyIdConnect = async () => {
-    try {
-      setConnectModalIsOpen(false);
-      const authData = await connect();
-      setJoyidInfo(authData);
-      localStorage.setItem("joyidInfo", JSON.stringify(authData));
-      await settleUserInfo(authData.address);
-    } catch (e: any) {
-      enqueueSnackbar("Error: " + e.message, { variant: "error" });
-    }
-  };
-
   function cccConnect() {
     if (ckbAddress) settleUserInfo(ckbAddress);
   }
 
-  const onConnect = async () => {
-    setConnectModalIsOpen(true);
-  };
 
   const settleUserInfo = async (ckbAddress: string) => {
     setIsLoading(true);
@@ -268,9 +249,9 @@ const App = () => {
 
   const preBuildDeposit = async () => {
     let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (joyidInfo) {
-      daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount), joyidInfo);
-    } else if (signer) {
+    if (signer.signType() == "JoyId") {
+      daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount), signer.connection);
+    } else {
       daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount));
     }
 
@@ -284,9 +265,9 @@ const App = () => {
 
   const preBuildWithdraw = async (depositCell:DaoCell) => {
     let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (joyidInfo) {
-      daoTx = await buildWithdrawTransaction(ckbAddress, depositCell, joyidInfo);
-    } else if (signer) {
+    if (signer.signType() == "JoyId") {
+      daoTx = await buildWithdrawTransaction(ckbAddress, depositCell, signer.connection);
+    } else {
       daoTx = await buildWithdrawTransaction(ckbAddress, depositCell);
     }
 
@@ -300,9 +281,9 @@ const App = () => {
 
   const preBuildUnlock = async (withdrawalCell:DaoCell) => {
     let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (joyidInfo) {
-      daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell, joyidInfo);
-    } else if (signer) {
+    if (signer.signType() == "JoyId") {
+      daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell, signer.connection);
+    } else {
       daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell);
     }
 
@@ -316,7 +297,7 @@ const App = () => {
 
   const onDeposit = async () => {
     try {
-      if (!joyidInfo && !signer)
+      if (!signer)
         throw new Error("Wallet disconnected. Reconnect!");
 
       if (!balance || balance.available === '0')
@@ -377,7 +358,7 @@ const App = () => {
 
   const onWithdraw = async (cell: DaoCell) => {
     try {
-      if (!joyidInfo && !signer)
+      if (!signer)
         throw new Error("Wallet disconnected. Reconnect!");
 
       setDaoMode(DaoFunction.withdrawing);
@@ -419,7 +400,7 @@ const App = () => {
 
   const onUnlock = async (cell: DaoCell) => {
     try {
-      if (!joyidInfo && !signer)
+      if (!signer)
         throw new Error("Wallet disconnected. Reconnect!");
 
       setDaoMode(DaoFunction.unlocking);
@@ -462,7 +443,6 @@ const App = () => {
 
   const onSignOut = async () => {
     disconnect();
-    setJoyidInfo(null);
     setCkbAddress("");
     setBalance(null);
     setDepositCells([]);
@@ -562,15 +542,10 @@ const App = () => {
   // when page refreshed, fetch from localstorage
   // only joyidinfo saved, other wallets signers get wiped out
   React.useEffect(() => {
-    const storedJoyidInfo = localStorage.getItem("joyidInfo");
     const storedCkbAddress = localStorage.getItem("ckbAddress");
     const storedBalance = localStorage.getItem("balance");
     const storedDepositCells = localStorage.getItem("depositCells");
     const storedWithdrawalCells = localStorage.getItem("withdrawalCells");
-
-    if (storedJoyidInfo) {
-      setJoyidInfo(JSON.parse(storedJoyidInfo));
-    }
 
     if (storedCkbAddress) {
       setCkbAddress(storedCkbAddress);
@@ -595,13 +570,19 @@ const App = () => {
 
   // updating other chain wallets info
   React.useEffect(() => {
+
     if (!signer) {
+      setInternalAddress("");
+      setCkbAddress("");
       return;
     }
 
     (async () => {
+      setInternalAddress(await signer.getInternalAddress());
       setCkbAddress(await signer.getRecommendedAddress());
+      // setBalance(await signer.getBalance());
     })();
+
   }, [signer]);
 
   // calling cccConnect when ckbAddress varies
@@ -610,10 +591,16 @@ const App = () => {
   }, [ckbAddress]);
 
   // cc wallet
+  // React.useEffect(() => {
+  //   if (CCC_MAINNET) setClient(new ClientPublicMainnet());
+  //   else setClient(new ClientPublicTestnet());
+  // }, [setClient, CCC_MAINNET]);
+
   React.useEffect(() => {
-    if (CCC_MAINNET) setClient(new ClientPublicMainnet());
-    else setClient(new ClientPublicTestnet());
-  }, [setClient, CCC_MAINNET]);
+    setClient(
+      isTestnet ? new ccc.ClientPublicTestnet() : new ccc.ClientPublicMainnet(),
+    );
+  }, [isTestnet, setClient]);
 
   // estimate return
   React.useEffect(() => {
@@ -633,7 +620,7 @@ const App = () => {
 
   // creating a loading effect on deposit button
   React.useEffect(() => {
-    if (!joyidInfo && !signer) {
+    if (!signer) {
       return;
     }
 
@@ -1096,49 +1083,28 @@ const App = () => {
         ))}
 
         {!ckbAddress && (
-          <button className="signin-button" onClick={onConnect}>
+          <button
+            className="signin-button"
+            onClick={() => {
+              try {
+                open();
+              } catch (e: any) {
+                enqueueSnackbar("Error: " + e.message, {
+                  variant: "error",
+                });
+              }
+            }}
+          >
             Connect
           </button>
         )}
 
-        {(!ckbAddress || !signer) && (
-          <Modal
-            isOpen={connectModalIsOpen}
-            onRequestClose={() => {
-              setConnectModalIsOpen(false);
-            }}
-          >
-            <div className="main-wallet-option">
-              <h3 className="connect-wallet">Connect Wallet</h3>
-              <h3 className="headline-separation"> </h3>
-              <button
-                className="signin-button joyid-connect"
-                onClick={() => {
-                  setConnectModalIsOpen(false);
-                  joyIdConnect();
-                }}
-              >
-                JoyID Passkeys
-              </button>
-
-              <button
-                className="signin-button other-wallet-connect"
-                onClick={() => {
-                  setConnectModalIsOpen(false);
-                  try {
-                    open();
-                  } catch (e: any) {
-                    enqueueSnackbar("Error: " + e.message, {
-                      variant: "error",
-                    });
-                  }
-                }}
-              >
-                Others
-              </button>
-            </div>
-          </Modal>
-        )}
+<button
+  className="signin-button"
+  onClick={()=> {disconnect()}}
+>
+  disconnect
+</button>
 
         <div className="account-deposit-buttons">
           {ckbAddress &&
@@ -1146,7 +1112,13 @@ const App = () => {
               <button
                 className="account-button"
                 onClick={() => {
-                  setConnectModalIsOpen(true);
+                  try {
+                    open();
+                  } catch (e: any) {
+                    enqueueSnackbar("Error: " + e.message, {
+                      variant: "error",
+                    });
+                  }
                 }}
               >
                 Reconnect
