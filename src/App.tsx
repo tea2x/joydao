@@ -20,8 +20,7 @@ import {
   NETWORK_CONFIG,
   CKB_SHANNON_RATIO,
   EXPLORER_PREFIX,
-  JOYID_URL,
-  CCC_MAINNET,
+  ISMAINNET,
   DAO_MINIMUM_CAPACITY,
 } from "./config";
 import {
@@ -33,7 +32,6 @@ import {
 } from "./joy-dao";
 import { buildTransfer } from "./basic-wallet";
 import { ccc } from "@ckb-ccc/connector-react";
-// import { SignerSignType } from "@ckb-ccc/ccc/node_modules/@ckb-ccc/core";
 import { ClientPublicTestnet, ClientPublicMainnet } from "@ckb-ccc/core";
 import "./App.css";
 import Modal from "react-modal";
@@ -591,16 +589,16 @@ const App = () => {
   }, [ckbAddress]);
 
   // cc wallet
-  // React.useEffect(() => {
-  //   if (CCC_MAINNET) setClient(new ClientPublicMainnet());
-  //   else setClient(new ClientPublicTestnet());
-  // }, [setClient, CCC_MAINNET]);
-
   React.useEffect(() => {
-    setClient(
-      isTestnet ? new ccc.ClientPublicTestnet() : new ccc.ClientPublicMainnet(),
-    );
-  }, [isTestnet, setClient]);
+    if (ISMAINNET) setClient(new ClientPublicMainnet());
+    else setClient(new ClientPublicTestnet());
+  }, [setClient, ISMAINNET]);
+
+  // React.useEffect(() => {
+  //   setClient(
+  //     isTestnet ? new ccc.ClientPublicTestnet() : new ccc.ClientPublicMainnet(),
+  //   );
+  // }, [isTestnet, setClient]);
 
   // estimate return
   React.useEffect(() => {

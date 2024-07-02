@@ -77,7 +77,7 @@ export const buildTransfer = async (
   if (!signer)
     throw new Error("Wallet disconnected. Reconnect!");
 
-  const prefix = await signer.client.getAddressPrefix();
+  const prefix = await signer.client.addressPrefix;
   const fromAddresses = await signer.getAddresses();
 
   registerCustomLockScriptInfos(generateDefaultScriptInfos());
@@ -124,7 +124,7 @@ export const buildTransferAll = async (
   if (!signer)
     throw new Error("Wallet disconnected. Reconnect!");
 
-  const prefix = await signer.client.getAddressPrefix();
+  const prefix = await signer.client.addressPrefix;
   const fromAddresses = await signer.getAddresses();
 
   registerCustomLockScriptInfos(generateDefaultScriptInfos());

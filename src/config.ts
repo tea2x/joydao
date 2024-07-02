@@ -7,10 +7,6 @@ export const INDEXER_URL = ISMAINNET
   ? "https://mainnet.ckb.dev/indexer"
   : "https://testnet.ckb.dev/indexer";
 
-export const JOYID_URL = ISMAINNET
-  ? "https://app.joy.id/"
-  : "https://testnet.joyid.dev";
-export const CCC_MAINNET = ISMAINNET;
 export const JOYID_CELLDEP = ISMAINNET
   ? {
       codeHash:
