@@ -12,7 +12,9 @@ module.exports = {
           "stream": require.resolve("stream-browserify"),
           "vm": require.resolve("vm-browserify"),
           "process": require.resolve("process/browser"),
-          "buffer": require.resolve("buffer/")
+          "buffer": require.resolve("buffer/"),
+          "assert": require.resolve("assert/"),
+          "url": require.resolve("url/"),
         }
       }
     },
