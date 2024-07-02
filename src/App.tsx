@@ -1,5 +1,6 @@
 import * as React from "react";
 import { signRawTransaction, CKBTransaction } from "@joyid/ckb";
+import { AuthResponseData } from "@joyid/core";
 import {
   sendTransaction,
   waitForTransactionConfirmation,
@@ -247,7 +248,7 @@ const App = () => {
   const preBuildDeposit = async () => {
     let daoTx:{tx: CKBTransaction | null, fee: number};
     if (signer.signType == "JoyId") {
-      daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount), signer.connection);
+      daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount), signer.connection as AuthResponseData);
     } else {
       daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount));
     }
