@@ -83,7 +83,6 @@ const App = () => {
 
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
-  console.log(">>>signer: ", signer)
   const { enqueueSnackbar } = useSnackbar();
 
   initializeConfig(NETWORK_CONFIG as Config);
@@ -247,7 +246,7 @@ const App = () => {
 
   const preBuildDeposit = async () => {
     let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (signer.signType() == "JoyId") {
+    if (signer.signType == "JoyId") {
       daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount), signer.connection);
     } else {
       daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount));
@@ -263,7 +262,7 @@ const App = () => {
 
   const preBuildWithdraw = async (depositCell:DaoCell) => {
     let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (signer.signType() == "JoyId") {
+    if (signer.signType == "JoyId") {
       daoTx = await buildWithdrawTransaction(ckbAddress, depositCell, signer.connection);
     } else {
       daoTx = await buildWithdrawTransaction(ckbAddress, depositCell);
@@ -279,7 +278,7 @@ const App = () => {
 
   const preBuildUnlock = async (withdrawalCell:DaoCell) => {
     let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (signer.signType() == "JoyId") {
+    if (signer.signType == "JoyId") {
       daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell, signer.connection);
     } else {
       daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell);
@@ -1096,13 +1095,6 @@ const App = () => {
             Connect
           </button>
         )}
-
-<button
-  className="signin-button"
-  onClick={()=> {disconnect()}}
->
-  disconnect
-</button>
 
         <div className="account-deposit-buttons">
           {ckbAddress &&
