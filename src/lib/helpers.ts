@@ -477,11 +477,11 @@ export const addWitnessPlaceHolder = async (
 
       // for subkey device
       console.log(">>>joyIdAuth: ",joyIdAuth)
-      if (joyIdAuth && joyIdAuth.keyType === 'sub_key') {
-        let unlockEntry = await getSubkeyUnlock(COTA_AGGREGATOR_URL, joyIdAuth);
-        unlockEntry = unlockEntry.startsWith('0x') ? unlockEntry : `0x${unlockEntry}`
-        outputTypeScriptWitness = unlockEntry;
-      }
+      // if (joyIdAuth && joyIdAuth.keyType === 'sub_key') {
+      //   let unlockEntry = await getSubkeyUnlock(COTA_AGGREGATOR_URL, joyIdAuth);
+      //   unlockEntry = unlockEntry.startsWith('0x') ? unlockEntry : `0x${unlockEntry}`
+      //   outputTypeScriptWitness = unlockEntry;
+      // }
 
       witness = bytes.hexify(
         blockchain.WitnessArgs.pack({

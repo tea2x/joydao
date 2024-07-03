@@ -148,7 +148,7 @@ body {
   background-color: #000;
 }
 
-.account-deposit-buttons {
+.main-buttons {
   display: flex;
   justify-content: center;
   width: 100%;
@@ -215,7 +215,7 @@ body {
   color: #f8f8f8;
 }
 
-.account-button {
+.sign-out-button {
   background-color: #f8f8f8;
   color: #505050;
   padding: 10px 10px 10px 10px;
@@ -273,13 +273,13 @@ body {
   }
 }
 
-.account-button:hover {
+.sign-out-button:hover {
   transform: translateY(-3px);
   background-color: #000;
   color: #a8e72f;
 }
 
-.account-button {
+.sign-out-button {
   background-color: #f8f8f8;
   color: #505050;
   padding: 5px 10px;
@@ -301,7 +301,7 @@ body {
   height: 40px;
 }
 
-.account-button:hover {
+.sign-out-button:hover {
   background-color: #000;
   color: #a8e72f;
 }
@@ -317,7 +317,7 @@ body {
   }
 }
 
-.deposit-button {
+.deposit-and-transfer-button {
   background-color: #f8f8f8;
   color: #505050;
   padding: 10px 20px;
@@ -340,7 +340,7 @@ body {
   transition: transform 0.3s ease;
 }
 
-.deposit-button:hover {
+.deposit-and-transfer-button:hover {
   transform: translateY(-3px);
   background-color: #000;
   color: #a8e72f;
@@ -937,13 +937,13 @@ button.cancel:hover {
     top: -30px;
   }
 
-  .account-deposit-buttons {
+  .main-buttons {
     margin-bottom: 5px;
   }
 
   .signin-button,
-  .account-button,
-  .deposit-button {
+  .sign-out-button,
+  .deposit-and-transfer-button {
     width: 150px;
     height: 45px;
     padding: 5px 10px 5px 10px;

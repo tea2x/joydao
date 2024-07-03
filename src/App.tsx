@@ -227,7 +227,7 @@ const App = () => {
         return;
       }
 
-      if (isJoyIdAddress(ckbAddress) || !signer)
+      if (!signer)
         throw new Error("Wallet disconnected. Reconnect!");
 
       const transferTx = await buildTransfer(signer!, transferTo, transferAmount);
@@ -246,12 +246,8 @@ const App = () => {
   }
 
   const preBuildDeposit = async () => {
-    let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (signer.signType == "JoyId") {
-      daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount), signer.connection as AuthResponseData);
-    } else {
-      daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount));
-    }
+    let daoTx: { tx: CKBTransaction | null; fee: number } =
+      await buildDepositTransaction(signer, BigInt(depositAmount));
 
     // might be over-cautious, but worth checking with utxo
     // TODO remove when fully support fee-rate configuration
@@ -262,12 +258,8 @@ const App = () => {
   }
 
   const preBuildWithdraw = async (depositCell:DaoCell) => {
-    let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (signer.signType == "JoyId") {
-      daoTx = await buildWithdrawTransaction(ckbAddress, depositCell, signer.connection);
-    } else {
-      daoTx = await buildWithdrawTransaction(ckbAddress, depositCell);
-    }
+    let daoTx:{tx: CKBTransaction | null, fee: number} =
+      await buildWithdrawTransaction(signer, depositCell);
 
     // might be over-cautious, but worth checking with utxo
     // TODO remove when fully support fee-rate configuration
@@ -278,12 +270,8 @@ const App = () => {
   }
 
   const preBuildUnlock = async (withdrawalCell:DaoCell) => {
-    let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (signer.signType == "JoyId") {
-      daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell, signer.connection);
-    } else {
-      daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell);
-    }
+    let daoTx:{tx: CKBTransaction | null, fee: number} =
+      await buildUnlockTransaction(signer, withdrawalCell);
 
     // might be over-cautious, but worth checking with utxo
     // TODO remove when fully support fee-rate configuration
@@ -333,14 +321,7 @@ const App = () => {
       if (!currentTx.tx)
         throw new Error("Transaction building has failed");
 
-      let txid = "";
-      if (isJoyIdAddress(ckbAddress)) {
-        const signedTx = await signRawTransaction(currentTx.tx, ckbAddress);
-        txid = await sendTransaction(signedTx);
-      } else if (signer) {
-        txid = await signer.sendTransaction(currentTx.tx);
-      }
-
+      const txid = await signer.sendTransaction(currentTx.tx);
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
@@ -375,14 +356,7 @@ const App = () => {
       if (!currentTx.tx)
         throw new Error("Transaction building has failed");
 
-      let txid = "";
-      if (isJoyIdAddress(ckbAddress)) {
-        const signedTx = await signRawTransaction(currentTx.tx, ckbAddress);
-        txid = await sendTransaction(signedTx);
-      } else if (signer) {
-        txid = await signer.sendTransaction(currentTx.tx);
-      }
-
+      const txid = await signer.sendTransaction(currentTx.tx);
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
@@ -418,14 +392,7 @@ const App = () => {
       if (!currentTx.tx)
         throw new Error("Transaction building has failed");
 
-      let txid = "";
-      if (isJoyIdAddress(ckbAddress)) {
-        const signedTx = await signRawTransaction(currentTx.tx, ckbAddress);
-        txid = await sendTransaction(signedTx);
-      } else if (signer) {
-        txid = await signer.sendTransaction(currentTx.tx);
-      }
-
+      const txid = await signer.sendTransaction(currentTx.tx);
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
@@ -1097,31 +1064,15 @@ const App = () => {
           </button>
         )}
 
-        <div className="account-deposit-buttons">
-          {ckbAddress &&
-            (!signer && !isJoyIdAddress(ckbAddress) ? (
-              <button
-                className="account-button"
-                onClick={() => {
-                  try {
-                    open();
-                  } catch (e: any) {
-                    enqueueSnackbar("Error: " + e.message, {
-                      variant: "error",
-                    });
-                  }
-                }}
-              >
-                Reconnect
-              </button>
-            ) : (
-              <button className="account-button" onClick={onSignOut}>
-                Sign Out
-              </button>
-            ))}
+        <div className="main-buttons">
+          {ckbAddress && (
+            <button className="sign-out-button" onClick={onSignOut}>
+              Sign Out
+            </button>
+          )}
           {ckbAddress && (isNextPage ? (
             <button
-              className="deposit-button"
+              className="deposit-and-transfer-button"
               onClick={(e) => {
                 onDeposit();
               }}
@@ -1130,7 +1081,7 @@ const App = () => {
             </button>
           ) : (
             <button
-              className="deposit-button"
+              className="deposit-and-transfer-button"
               onClick={(e) => {
                 onTransfer();
               }}
