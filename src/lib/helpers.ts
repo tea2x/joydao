@@ -18,10 +18,7 @@ import {
   JOYID_CELLDEP,
   OMNILOCK_CELLDEP,
   JOYID_SIGNATURE_PLACEHOLDER_DEFAULT,
-  OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT,
   DAO_MINIMUM_CAPACITY,
-  ISMAINNET,
-  COTA_AGGREGATOR_URL,
   NETWORK_CONFIG,
 } from "../config";
 import { addressToScript, TransactionSkeletonType } from "@ckb-lumos/helpers";
@@ -34,7 +31,6 @@ import { dao } from "@ckb-lumos/common-scripts";
 import { EpochSinceValue } from "@ckb-lumos/base/lib/since";
 import { BI, BIish } from "@ckb-lumos/bi";
 import { bytes, number } from "@ckb-lumos/codec";
-import { getSubkeyUnlock, getCotaTypeScript } from '@joyid/ckb'
 
 const INDEXER = new Indexer(INDEXER_URL);
 const rpc = new RPC(NODE_URL);
@@ -406,40 +402,9 @@ export const isDefaultAddress = (address: string) => {
   );
 };
 
-// append subkey device celldep if it is
-export const appendSubkeyDeviceCellDep = async (
-  transaction: TransactionSkeletonType,
-  joyIdAuth:any
-) => {
-  // append CoTa celldep for sub-key device
-  if (joyIdAuth && joyIdAuth.keyType === 'sub_key') {
-    // Get CoTA cell from CKB blockchain and append it to the head of the cellDeps list
-    const cotaType = getCotaTypeScript(ISMAINNET)
-    const cotaCellsCollector = new CellCollector(INDEXER, { lock: addressToScript(joyIdAuth.address), type: cotaType });
-    let cotaCells:Cell[] = [];
-    for await (const cell of cotaCellsCollector.collect()) {
-      cotaCells.push(cell);
-    }
-    if (!cotaCells || cotaCells.length === 0) {
-      throw new Error("Cota cell doesn't exist");
-    }
-    const cotaCell = cotaCells[0];
-
-    transaction = transaction.update("cellDeps", (i) =>
-      i.push({
-        outPoint: cotaCell.outPoint!,
-        depType: "code",
-      })
-    );
-  }
-  return transaction;
-}
-
 // this function is only for joyID lock and omnilock
-export const addWitnessPlaceHolder = async (
+export const addJoyIdWitnessPlaceHolder = async (
   transaction: TransactionSkeletonType,
-  joyIdAuth:any,
-  daoUnlock = false,
 ) => {
   if (transaction.witnesses.size !== 0) {
     throw new Error(
@@ -451,43 +416,22 @@ export const addWitnessPlaceHolder = async (
   for (const input of transaction.inputs) {
     let witness = "0x";
     let lockScriptWitness = "0x";
-    let inputTypeScriptWitness;
-    let outputTypeScriptWitness;
-
     const lockHash = computeScriptHash(input.cellOutput.lock);
+
     if (!uniqueLocks.has(lockHash)) {
       uniqueLocks.add(lockHash);
 
-      if (
+      if (!(
         input.cellOutput.lock.hashType === "type" &&
         input.cellOutput.lock.codeHash === JOYID_CELLDEP.codeHash
-      ) {
-        lockScriptWitness = JOYID_SIGNATURE_PLACEHOLDER_DEFAULT;
-      } else if (
-        input.cellOutput.lock.hashType === "type" &&
-        input.cellOutput.lock.codeHash === OMNILOCK_CELLDEP.codeHash
-      ) {
-        lockScriptWitness = OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT;
+      )) {
+        throw new Error("Withness place holder is a workaround for joyID only!");
       }
 
-      // will fall on the the first input - deposit cell
-      if (daoUnlock) {
-        inputTypeScriptWitness = "0x0000000000000000";
-      }
-
-      // for subkey device
-      console.log(">>>joyIdAuth: ",joyIdAuth)
-      // if (joyIdAuth && joyIdAuth.keyType === 'sub_key') {
-      //   let unlockEntry = await getSubkeyUnlock(COTA_AGGREGATOR_URL, joyIdAuth);
-      //   unlockEntry = unlockEntry.startsWith('0x') ? unlockEntry : `0x${unlockEntry}`
-      //   outputTypeScriptWitness = unlockEntry;
-      // }
-
+      lockScriptWitness = JOYID_SIGNATURE_PLACEHOLDER_DEFAULT;
       witness = bytes.hexify(
         blockchain.WitnessArgs.pack({
           lock: lockScriptWitness,
-          inputType: inputTypeScriptWitness,
-          outputType: outputTypeScriptWitness
         })
       );
     }
@@ -506,6 +450,10 @@ export const getFee = (transaction: TransactionSkeletonType):number => {
   const outputCapacity = transaction.outputs
     .toArray()
     .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
+
+  console.log(">>>inputCapacity: ", inputCapacity.toString())
+  console.log(">>>outputCapacity: ", outputCapacity.toString())
+  console.log(">>>txFee: ", Number(inputCapacity - outputCapacity))
 
   return Number(inputCapacity - outputCapacity);
 };

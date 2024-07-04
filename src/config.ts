@@ -133,10 +133,8 @@ export const DAO_MINIMUM_CAPACITY = 104;
 export const MINIMUM_CHANGE_CAPACITY = 63;
 export const CKB_SHANNON_RATIO = 100_000_000;
 
-//a typical joyid lock signature length is ~ 347 bytes ()
-export const JOYID_SIGNATURE_PLACEHOLDER_DEFAULT = "0x" + "0".repeat(694);
-//joyid lock signature length is 85 bytes
-export const OMNILOCK_SIGNATURE_PLACEHOLDER_DEFAULT = "0x" + "0".repeat(170);
+// TODO because payFeeByFeeRate doesn't fully support joyID
+export const JOYID_SIGNATURE_PLACEHOLDER_DEFAULT = "0x" + "0".repeat(1000);
 
 export const EXPLORER_PREFIX = ISMAINNET
   ? "https://explorer.nervos.org/transaction/"
