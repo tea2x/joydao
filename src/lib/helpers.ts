@@ -441,7 +441,7 @@ export const addJoyIdWitnessPlaceHolder = async (
   return transaction;
 };
 
-// this is estimating, use number instead of BigInt
+// this is for estimating purpose, use number instead of BigInt
 export const getFee = (transaction: TransactionSkeletonType):number => {
   const inputCapacity = transaction.inputs
     .toArray()

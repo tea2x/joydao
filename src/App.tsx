@@ -1,8 +1,6 @@
 import * as React from "react";
-import { signRawTransaction, CKBTransaction } from "@joyid/ckb";
-import { AuthResponseData } from "@joyid/core";
+import { CKBTransaction } from "@joyid/ckb";
 import {
-  sendTransaction,
   waitForTransactionConfirmation,
   queryBalance,
   Balance,
@@ -61,7 +59,6 @@ const App = () => {
   const withdrawalCellsRef = React.useRef(withdrawalCells);
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [renderKick, setRenderKick] = React.useState<number>(0);
-  const [internalAddress, setInternalAddress] = React.useState("");
   const [isTestnet] = React.useState(true);
 
   const [depositAmount, setDepositAmount] = React.useState("");
@@ -537,13 +534,11 @@ const App = () => {
   React.useEffect(() => {
 
     if (!signer) {
-      setInternalAddress("");
       setCkbAddress("");
       return;
     }
 
     (async () => {
-      setInternalAddress(await signer.getInternalAddress());
       setCkbAddress(await signer.getRecommendedAddress());
       // setBalance(await signer.getBalance());
     })();
@@ -560,12 +555,6 @@ const App = () => {
     if (ISMAINNET) setClient(new ClientPublicMainnet());
     else setClient(new ClientPublicTestnet());
   }, [setClient, ISMAINNET]);
-
-  // React.useEffect(() => {
-  //   setClient(
-  //     isTestnet ? new ccc.ClientPublicTestnet() : new ccc.ClientPublicMainnet(),
-  //   );
-  // }, [isTestnet, setClient]);
 
   // estimate return
   React.useEffect(() => {
