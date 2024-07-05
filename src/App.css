@@ -619,6 +619,38 @@ body {
   cursor: pointer;
 }
 
+.dao-cell::after {
+  content: "";
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 18px;
+  height: 18px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  border: 0.5px solid #000;
+  opacity: var(--opacityCtrl);
+  transition: opacity 0.3s ease-in-out;
+}
+
+.dao-cell:hover::after {
+  opacity: 1;
+}
+
+.check-point {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 18px;
+  height: 18px;
+  opacity: var(--opacityCtrl);
+  z-index: 1;
+}
+
+.check-point:hover {
+  opacity: 1;
+}
+
 .dao-cell:hover {
   transform: translateY(-3px);
   color: textColor;

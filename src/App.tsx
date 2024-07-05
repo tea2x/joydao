@@ -60,6 +60,7 @@ const App = () => {
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [renderKick, setRenderKick] = React.useState<number>(0);
   const [isTestnet] = React.useState(true);
+  const [pickedCells, setPickedCells] = React.useState<DaoCell[]>([]);
 
   const [depositAmount, setDepositAmount] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
@@ -1155,18 +1156,16 @@ const App = () => {
                   return (
                     <div
                       key={index}
-                      className={`dao-cell`}
+                      className="dao-cell"
                       ref={(el) => {
                         if (el) {
                           el.style.setProperty("--cellWidth", `${cellWidth}px`);
-                          el.style.setProperty(
-                            "--cellHeight",
-                            `${cellHeight}px`
-                          );
-                          el.style.setProperty(
-                            "--backgroundColor",
-                            backgroundColor
-                          );
+                          el.style.setProperty("--cellHeight", `${cellHeight}px`);
+                          el.style.setProperty("--backgroundColor", backgroundColor);
+                          if (pickedCells.includes(cell))
+                            el.style.setProperty("--opacityCtrl", "1");
+                          else
+                            el.style.setProperty("--opacityCtrl", "0");
                         }
                       }}
                       onClick={(e) => {
@@ -1250,6 +1249,49 @@ const App = () => {
                         </div>
                       ))}
                       
+                      <span
+                        className="check-point"
+                        ref={(el) => {
+                          if (el) {
+                            if (pickedCells.includes(cell))
+                              el.style.setProperty("--opacityCtrl", "1");
+                            else
+                              el.style.setProperty("--opacityCtrl", "0");
+                          }
+                        }}
+
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          try {
+                            if (isLoading)
+                              throw new Error("joyDAO is loading stuffs for you");
+
+                            if (!pickedCells.includes(cell)) {
+
+                              if (!cell.isDeposit && !cell.ripe)
+                                throw new Error("Can not batch incomplete withdrawals");
+
+                              pickedCells.push(cell);
+                              setPickedCells(pickedCells);
+                              setRenderKick((prevRenderKick) => prevRenderKick + 1);
+                            } else {
+                              // remove cell if re-picked
+                              const index = pickedCells.indexOf(cell);
+                              if (index !== -1) {
+                                pickedCells.splice(index, 1);
+                                setPickedCells(pickedCells);
+                                setRenderKick((prevRenderKick) => prevRenderKick + 1);
+                              }
+                            }
+                          } catch (e: any) {
+                            enqueueSnackbar("Error: " + e.message, { variant: "error" });
+                          }
+
+                        }}
+                      >
+                        ✓
+                      </span>
+
                     </div>
                   );
                 })
