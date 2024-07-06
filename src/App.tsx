@@ -1,7 +1,6 @@
 import * as React from "react";
-import { initConfig, connect, signRawTransaction, CKBTransaction } from "@joyid/ckb";
+import { CKBTransaction } from "@joyid/ckb";
 import {
-  sendTransaction,
   waitForTransactionConfirmation,
   queryBalance,
   Balance,
@@ -20,8 +19,7 @@ import {
   NETWORK_CONFIG,
   CKB_SHANNON_RATIO,
   EXPLORER_PREFIX,
-  JOYID_URL,
-  CCC_MAINNET,
+  ISMAINNET,
   DAO_MINIMUM_CAPACITY,
 } from "./config";
 import {
@@ -30,10 +28,10 @@ import {
   buildUnlockTransaction,
   collectDeposits,
   collectWithdrawals,
+  batchDaoCells,
 } from "./joy-dao";
 import { buildTransfer } from "./basic-wallet";
 import { ccc } from "@ckb-ccc/connector-react";
-import { Signer } from "@ckb-ccc/core";
 import { ClientPublicTestnet, ClientPublicMainnet } from "@ckb-ccc/core";
 import "./App.css";
 import Modal from "react-modal";
@@ -54,7 +52,6 @@ enum DaoFunction {
 }
 
 const App = () => {
-  const [joyidInfo, setJoyidInfo] = React.useState<any>(null);
   const [balance, setBalance] = React.useState<Balance | null>(null);
   const [ckbAddress, setCkbAddress] = React.useState("");
   const [depositCells, setDepositCells] = React.useState<DaoCell[]>([]);
@@ -63,6 +60,8 @@ const App = () => {
   const withdrawalCellsRef = React.useRef(withdrawalCells);
   const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [renderKick, setRenderKick] = React.useState<number>(0);
+  const [isTestnet] = React.useState(true);
+  const [pickedCells, setPickedCells] = React.useState<DaoCell[]>([]);
 
   const [depositAmount, setDepositAmount] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
@@ -74,10 +73,9 @@ const App = () => {
   const [tipEpoch, setTipEpoch] = React.useState<number | null>(null);
   const [isDaoTransitMsgLoading, setIsDaoTransitMsgLoading] =
     React.useState(false);
-  const [connectModalIsOpen, setConnectModalIsOpen] = React.useState(false);
   const [compensation, setCompensation] = React.useState<number | null>(null);
   const [percentageLoading, setPercentageLoading] = React.useState<number>(0);
-  const [isNextPage, setIsNextPage] = React.useState(true);
+  const [isMainPanel, setIsMainPanel] = React.useState(true);
 
   // basic wallet
   const [transferTo, setTransferTo] = React.useState<string>("");
@@ -86,16 +84,10 @@ const App = () => {
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
   const { enqueueSnackbar } = useSnackbar();
+  const onMainPanel = () => setIsMainPanel(true);
+  const onToTransferPanel = () => setIsMainPanel(false);
 
-  initConfig({
-    name: "joyDAO",
-    logo: "https://fav.farm/🆔",
-    joyidAppURL: JOYID_URL,
-  });
   initializeConfig(NETWORK_CONFIG as Config);
-
-  const onNext = () => setIsNextPage(true);
-  const onPrevious = () => setIsNextPage(false);
 
   const sumDeposit = () => {
     const sum = [...depositCells].reduce(
@@ -174,25 +166,10 @@ const App = () => {
     }
   };
 
-  const joyIdConnect = async () => {
-    try {
-      setConnectModalIsOpen(false);
-      const authData = await connect();
-      setJoyidInfo(authData);
-      localStorage.setItem("joyidInfo", JSON.stringify(authData));
-      await settleUserInfo(authData.address);
-    } catch (e: any) {
-      enqueueSnackbar("Error: " + e.message, { variant: "error" });
-    }
-  };
-
   function cccConnect() {
     if (ckbAddress) settleUserInfo(ckbAddress);
   }
 
-  const onConnect = async () => {
-    setConnectModalIsOpen(true);
-  };
 
   const settleUserInfo = async (ckbAddress: string) => {
     setIsLoading(true);
@@ -219,6 +196,26 @@ const App = () => {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
   };
+
+  const onBatch = async (cells:DaoCell[]) => {
+    try {
+      if (!signer)
+        throw new Error("Wallet disconnected. Reconnect!");
+
+      const batchTx = await batchDaoCells(signer, cells);
+      const txid = await signer.sendTransaction(batchTx.tx);
+      enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
+      setIsWaitingTxConfirm(true);
+      setIsLoading(true);
+      await waitForTransactionConfirmation(txid);
+      setIsWaitingTxConfirm(false);
+      setDepositAmount("");
+      await updateJoyDaoInfo("deposit");
+      setIsLoading(false);
+    } catch (e: any) {
+      enqueueSnackbar("Error: " + e.message, { variant: "error" });
+    }
+  }
 
   const onTransfer = async () => {
     if (transferAmount == "") {
@@ -248,7 +245,7 @@ const App = () => {
         return;
       }
 
-      if (isJoyIdAddress(ckbAddress) || !signer)
+      if (!signer)
         throw new Error("Wallet disconnected. Reconnect!");
 
       const transferTx = await buildTransfer(signer!, transferTo, transferAmount);
@@ -267,12 +264,8 @@ const App = () => {
   }
 
   const preBuildDeposit = async () => {
-    let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (joyidInfo) {
-      daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount), joyidInfo);
-    } else if (signer) {
-      daoTx = await buildDepositTransaction(ckbAddress, BigInt(depositAmount));
-    }
+    let daoTx: { tx: CKBTransaction | null; fee: number } =
+      await buildDepositTransaction(signer, BigInt(depositAmount));
 
     // might be over-cautious, but worth checking with utxo
     // TODO remove when fully support fee-rate configuration
@@ -283,12 +276,8 @@ const App = () => {
   }
 
   const preBuildWithdraw = async (depositCell:DaoCell) => {
-    let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (joyidInfo) {
-      daoTx = await buildWithdrawTransaction(ckbAddress, depositCell, joyidInfo);
-    } else if (signer) {
-      daoTx = await buildWithdrawTransaction(ckbAddress, depositCell);
-    }
+    let daoTx:{tx: CKBTransaction | null, fee: number} =
+      await buildWithdrawTransaction(signer, depositCell);
 
     // might be over-cautious, but worth checking with utxo
     // TODO remove when fully support fee-rate configuration
@@ -299,12 +288,8 @@ const App = () => {
   }
 
   const preBuildUnlock = async (withdrawalCell:DaoCell) => {
-    let daoTx:{tx: CKBTransaction | null, fee: number};
-    if (joyidInfo) {
-      daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell, joyidInfo);
-    } else if (signer) {
-      daoTx = await buildUnlockTransaction(ckbAddress, withdrawalCell);
-    }
+    let daoTx:{tx: CKBTransaction | null, fee: number} =
+      await buildUnlockTransaction(signer, withdrawalCell);
 
     // might be over-cautious, but worth checking with utxo
     // TODO remove when fully support fee-rate configuration
@@ -316,7 +301,7 @@ const App = () => {
 
   const onDeposit = async () => {
     try {
-      if (!joyidInfo && !signer)
+      if (!signer)
         throw new Error("Wallet disconnected. Reconnect!");
 
       if (!balance || balance.available === '0')
@@ -354,14 +339,7 @@ const App = () => {
       if (!currentTx.tx)
         throw new Error("Transaction building has failed");
 
-      let txid = "";
-      if (isJoyIdAddress(ckbAddress)) {
-        const signedTx = await signRawTransaction(currentTx.tx, ckbAddress);
-        txid = await sendTransaction(signedTx);
-      } else if (signer) {
-        txid = await signer.sendTransaction(currentTx.tx);
-      }
-
+      const txid = await signer.sendTransaction(currentTx.tx);
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
@@ -377,7 +355,7 @@ const App = () => {
 
   const onWithdraw = async (cell: DaoCell) => {
     try {
-      if (!joyidInfo && !signer)
+      if (!signer)
         throw new Error("Wallet disconnected. Reconnect!");
 
       setDaoMode(DaoFunction.withdrawing);
@@ -396,14 +374,7 @@ const App = () => {
       if (!currentTx.tx)
         throw new Error("Transaction building has failed");
 
-      let txid = "";
-      if (isJoyIdAddress(ckbAddress)) {
-        const signedTx = await signRawTransaction(currentTx.tx, ckbAddress);
-        txid = await sendTransaction(signedTx);
-      } else if (signer) {
-        txid = await signer.sendTransaction(currentTx.tx);
-      }
-
+      const txid = await signer.sendTransaction(currentTx.tx);
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
@@ -419,7 +390,7 @@ const App = () => {
 
   const onUnlock = async (cell: DaoCell) => {
     try {
-      if (!joyidInfo && !signer)
+      if (!signer)
         throw new Error("Wallet disconnected. Reconnect!");
 
       setDaoMode(DaoFunction.unlocking);
@@ -439,14 +410,7 @@ const App = () => {
       if (!currentTx.tx)
         throw new Error("Transaction building has failed");
 
-      let txid = "";
-      if (isJoyIdAddress(ckbAddress)) {
-        const signedTx = await signRawTransaction(currentTx.tx, ckbAddress);
-        txid = await sendTransaction(signedTx);
-      } else if (signer) {
-        txid = await signer.sendTransaction(currentTx.tx);
-      }
-
+      const txid = await signer.sendTransaction(currentTx.tx);
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
       setIsWaitingTxConfirm(true);
       setIsLoading(true);
@@ -462,7 +426,6 @@ const App = () => {
 
   const onSignOut = async () => {
     disconnect();
-    setJoyidInfo(null);
     setCkbAddress("");
     setBalance(null);
     setDepositCells([]);
@@ -562,15 +525,10 @@ const App = () => {
   // when page refreshed, fetch from localstorage
   // only joyidinfo saved, other wallets signers get wiped out
   React.useEffect(() => {
-    const storedJoyidInfo = localStorage.getItem("joyidInfo");
     const storedCkbAddress = localStorage.getItem("ckbAddress");
     const storedBalance = localStorage.getItem("balance");
     const storedDepositCells = localStorage.getItem("depositCells");
     const storedWithdrawalCells = localStorage.getItem("withdrawalCells");
-
-    if (storedJoyidInfo) {
-      setJoyidInfo(JSON.parse(storedJoyidInfo));
-    }
 
     if (storedCkbAddress) {
       setCkbAddress(storedCkbAddress);
@@ -595,13 +553,17 @@ const App = () => {
 
   // updating other chain wallets info
   React.useEffect(() => {
+
     if (!signer) {
+      setCkbAddress("");
       return;
     }
 
     (async () => {
       setCkbAddress(await signer.getRecommendedAddress());
+      // setBalance(await signer.getBalance());
     })();
+
   }, [signer]);
 
   // calling cccConnect when ckbAddress varies
@@ -611,9 +573,9 @@ const App = () => {
 
   // cc wallet
   React.useEffect(() => {
-    if (CCC_MAINNET) setClient(new ClientPublicMainnet());
+    if (ISMAINNET) setClient(new ClientPublicMainnet());
     else setClient(new ClientPublicTestnet());
-  }, [setClient, CCC_MAINNET]);
+  }, [setClient, ISMAINNET]);
 
   // estimate return
   React.useEffect(() => {
@@ -633,7 +595,7 @@ const App = () => {
 
   // creating a loading effect on deposit button
   React.useEffect(() => {
-    if (!joyidInfo && !signer) {
+    if (!signer) {
       return;
     }
 
@@ -819,7 +781,7 @@ const App = () => {
   function tabNavigator() {
     return (
       <div>
-        {isNextPage ? (
+        {isMainPanel ? (
           <svg
             className="to-right-sign"
             xmlns="http://www.w3.org/2000/svg"
@@ -827,7 +789,7 @@ const App = () => {
             id="angle-right"
             width="30"
             height="30"
-            onClick={onPrevious}
+            onClick={onToTransferPanel}
           >
             <path 
               fill="#524540" 
@@ -842,7 +804,7 @@ const App = () => {
             id="angle-left"
             width="30"
             height="30"
-            onClick={onNext}
+            onClick={onMainPanel}
           >
             <path 
               fill="#524540" 
@@ -1075,7 +1037,6 @@ const App = () => {
           <div>
             <TransitionGroup>
               <CSSTransition
-                classNames={isNextPage ? 'right-to-left' : 'left-to-right'}
                 timeout={1000}
               >
                 <div
@@ -1083,7 +1044,7 @@ const App = () => {
                     marginBottom: '-30px',
                   }}
                 >
-                  {isNextPage ? (
+                  {isMainPanel ? (
                     daoInfoBoard()
                   ) : (
                     basicWallet()
@@ -1096,85 +1057,48 @@ const App = () => {
         ))}
 
         {!ckbAddress && (
-          <button className="signin-button" onClick={onConnect}>
+          <button
+            className="signin-button"
+            onClick={() => {
+              try {
+                open();
+              } catch (e: any) {
+                enqueueSnackbar("Error: " + e.message, {
+                  variant: "error",
+                });
+              }
+            }}
+          >
             Connect
           </button>
         )}
 
-        {(!ckbAddress || !signer) && (
-          <Modal
-            isOpen={connectModalIsOpen}
-            onRequestClose={() => {
-              setConnectModalIsOpen(false);
-            }}
-          >
-            <div className="main-wallet-option">
-              <h3 className="connect-wallet">Connect Wallet</h3>
-              <h3 className="headline-separation"> </h3>
-              <button
-                className="signin-button joyid-connect"
-                onClick={() => {
-                  setConnectModalIsOpen(false);
-                  joyIdConnect();
-                }}
-              >
-                JoyID Passkeys
-              </button>
-
-              <button
-                className="signin-button other-wallet-connect"
-                onClick={() => {
-                  setConnectModalIsOpen(false);
-                  try {
-                    open();
-                  } catch (e: any) {
-                    enqueueSnackbar("Error: " + e.message, {
-                      variant: "error",
-                    });
-                  }
-                }}
-              >
-                Others
-              </button>
-            </div>
-          </Modal>
-        )}
-
-        <div className="account-deposit-buttons">
-          {ckbAddress &&
-            (!signer && !isJoyIdAddress(ckbAddress) ? (
-              <button
-                className="account-button"
-                onClick={() => {
-                  setConnectModalIsOpen(true);
-                }}
-              >
-                Reconnect
-              </button>
-            ) : (
-              <button className="account-button" onClick={onSignOut}>
+        <div className="main-buttons">
+          {ckbAddress && (
+            <>
+              <button className="sign-out-button" onClick={onSignOut}>
                 Sign Out
               </button>
-            ))}
-          {ckbAddress && (isNextPage ? (
-            <button
-              className="deposit-button"
-              onClick={(e) => {
-                onDeposit();
-              }}
-            >
-              Deposit
-            </button>
-          ) : (
-            <button
-              className="deposit-button"
-              onClick={(e) => {
-                onTransfer();
-              }}
-            >
-              Transfer
-          </button>
-          ))}
+              
+              <button
+                className="poly-morph-button"
+                onClick={(e) => {
+                  !isMainPanel
+                    ? onTransfer()
+                    : pickedCells.length >= 2
+                      ? onBatch(pickedCells)
+                      : onDeposit();
+                }}
+              >
+                {!isMainPanel
+                  ? 'Transfer'
+                  : pickedCells.length >= 2
+                    ? 'Batch'
+                    : 'Deposit'
+                }
+              </button>
+            </>
+          )}
         </div>
 
         {ckbAddress &&
@@ -1252,18 +1176,16 @@ const App = () => {
                   return (
                     <div
                       key={index}
-                      className={`dao-cell`}
+                      className="dao-cell"
                       ref={(el) => {
                         if (el) {
                           el.style.setProperty("--cellWidth", `${cellWidth}px`);
-                          el.style.setProperty(
-                            "--cellHeight",
-                            `${cellHeight}px`
-                          );
-                          el.style.setProperty(
-                            "--backgroundColor",
-                            backgroundColor
-                          );
+                          el.style.setProperty("--cellHeight", `${cellHeight}px`);
+                          el.style.setProperty("--backgroundColor", backgroundColor);
+                          if (pickedCells.includes(cell))
+                            el.style.setProperty("--opacityCtrl", "1");
+                          else
+                            el.style.setProperty("--opacityCtrl", "0");
                         }
                       }}
                       onClick={(e) => {
@@ -1347,6 +1269,53 @@ const App = () => {
                         </div>
                       ))}
                       
+                      <span
+                        className="check-point"
+                        ref={(el) => {
+                          if (el) {
+                            if (pickedCells.includes(cell))
+                              el.style.setProperty("--opacityCtrl", "1");
+                            else
+                              el.style.setProperty("--opacityCtrl", "0");
+                          }
+                        }}
+
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          try {
+                            if (isLoading)
+                              throw new Error("Wait a second! joyDAO is loading data for you");
+
+                            if (!pickedCells.includes(cell)) {
+
+                              //TODO remove when supported
+                              if (!cell.isDeposit)
+                                throw new Error("Feature currently under development");
+
+                              if (!cell.isDeposit && !cell.ripe)
+                                throw new Error("Can not batch incomplete withdrawals");
+
+                              pickedCells.push(cell);
+                              setPickedCells(pickedCells);
+                              setRenderKick((prevRenderKick) => prevRenderKick + 1);
+                            } else {
+                              // remove cell if re-picked
+                              const index = pickedCells.indexOf(cell);
+                              if (index !== -1) {
+                                pickedCells.splice(index, 1);
+                                setPickedCells(pickedCells);
+                                setRenderKick((prevRenderKick) => prevRenderKick + 1);
+                              }
+                            }
+                          } catch (e: any) {
+                            enqueueSnackbar("Error: " + e.message, { variant: "error" });
+                          }
+
+                        }}
+                      >
+                        ✓
+                      </span>
+
                     </div>
                   );
                 })
