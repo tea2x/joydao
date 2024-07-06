@@ -402,9 +402,11 @@ export const isDefaultAddress = (address: string) => {
   );
 };
 
-// this function is only for joyID lock and omnilock
-export const addJoyIdWitnessPlaceHolder = async (
+// because joyID witness size varies + lumos doesn't support
+// because lumos::common-script::unlock is doesn't fully support joyID
+export const workAroundWitness = (
   transaction: TransactionSkeletonType,
+  daoUnlock = false
 ) => {
   if (transaction.witnesses.size !== 0) {
     throw new Error(
@@ -415,23 +417,28 @@ export const addJoyIdWitnessPlaceHolder = async (
   let uniqueLocks = new Set();
   for (const input of transaction.inputs) {
     let witness = "0x";
-    let lockScriptWitness = "0x";
+    let lockScriptWitness;
+    let inputTypeScriptWitness;
     const lockHash = computeScriptHash(input.cellOutput.lock);
 
     if (!uniqueLocks.has(lockHash)) {
       uniqueLocks.add(lockHash);
 
-      if (!(
+      if (
         input.cellOutput.lock.hashType === "type" &&
         input.cellOutput.lock.codeHash === JOYID_CELLDEP.codeHash
-      )) {
-        throw new Error("Withness place holder is a workaround for joyID only!");
+      ) {
+        lockScriptWitness = JOYID_SIGNATURE_PLACEHOLDER_DEFAULT;
       }
 
-      lockScriptWitness = JOYID_SIGNATURE_PLACEHOLDER_DEFAULT;
+      if (daoUnlock) {
+        inputTypeScriptWitness = "0x0000000000000000";
+      }
+
       witness = bytes.hexify(
         blockchain.WitnessArgs.pack({
           lock: lockScriptWitness,
+          inputType: inputTypeScriptWitness,
         })
       );
     }
@@ -450,10 +457,6 @@ export const getFee = (transaction: TransactionSkeletonType):number => {
   const outputCapacity = transaction.outputs
     .toArray()
     .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
-
-  console.log(">>>inputCapacity: ", inputCapacity.toString())
-  console.log(">>>outputCapacity: ", outputCapacity.toString())
-  console.log(">>>txFee: ", Number(inputCapacity - outputCapacity))
 
   return Number(inputCapacity - outputCapacity);
 };

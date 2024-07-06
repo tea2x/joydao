@@ -76,38 +76,8 @@ body {
   text-align: center;
 }
 
-.right-to-left-enter {
-  transform: translateX(100%);
-}
-
-.right-to-left-enter-active {
-  transform: translateX(0);
-  transition: all 1s ease;
-}
-
-.left-to-right-enter {
-  transform: translateX(-100%);
-}
-
-.left-to-right-enter-active {
-  transform: translateX(0);
-  transition: all 1s ease;
-}
-
 .deposit-field {
   font-size: 16px;
-}
-
-.underline {
-  display: inline-block;
-  border-bottom: 1px solid rgb(0, 0, 0);
-  width: 226.5px;
-  cursor: pointer;
-  outline: none;
-  white-space: nowrap;
-  overflow: hidden;
-  margin-bottom: -5px;
-  cursor: text;
 }
 
 .text-based-info {
@@ -317,7 +287,7 @@ body {
   }
 }
 
-.deposit-and-transfer-button {
+.poly-morph-button {
   background-color: #f8f8f8;
   color: #505050;
   padding: 10px 20px;
@@ -340,7 +310,7 @@ body {
   transition: transform 0.3s ease;
 }
 
-.deposit-and-transfer-button:hover {
+.poly-morph-button:hover {
   transform: translateY(-3px);
   background-color: #000;
   color: #a8e72f;
@@ -627,7 +597,7 @@ body {
   width: 18px;
   height: 18px;
   background-color: #ffffff;
-  border-radius: 50%;
+  border-radius: 7px;
   border: 0.5px solid #000;
   opacity: var(--opacityCtrl);
   transition: opacity 0.3s ease-in-out;
@@ -954,10 +924,6 @@ button.cancel:hover {
     width: 270px;
   }
 
-  .underline {
-    width: 180px;
-  }
-
   .title {
     font-size: 2.4em;
     height: 45px;
@@ -975,7 +941,7 @@ button.cancel:hover {
 
   .signin-button,
   .sign-out-button,
-  .deposit-and-transfer-button {
+  .poly-morph-button {
     width: 150px;
     height: 45px;
     padding: 5px 10px 5px 10px;

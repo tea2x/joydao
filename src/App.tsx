@@ -28,6 +28,7 @@ import {
   buildUnlockTransaction,
   collectDeposits,
   collectWithdrawals,
+  batchDaoCells,
 } from "./joy-dao";
 import { buildTransfer } from "./basic-wallet";
 import { ccc } from "@ckb-ccc/connector-react";
@@ -74,7 +75,7 @@ const App = () => {
     React.useState(false);
   const [compensation, setCompensation] = React.useState<number | null>(null);
   const [percentageLoading, setPercentageLoading] = React.useState<number>(0);
-  const [isNextPage, setIsNextPage] = React.useState(true);
+  const [isMainPanel, setIsMainPanel] = React.useState(true);
 
   // basic wallet
   const [transferTo, setTransferTo] = React.useState<string>("");
@@ -83,11 +84,10 @@ const App = () => {
   const { wallet, open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
   const { enqueueSnackbar } = useSnackbar();
+  const onMainPanel = () => setIsMainPanel(true);
+  const onToTransferPanel = () => setIsMainPanel(false);
 
   initializeConfig(NETWORK_CONFIG as Config);
-
-  const onNext = () => setIsNextPage(true);
-  const onPrevious = () => setIsNextPage(false);
 
   const sumDeposit = () => {
     const sum = [...depositCells].reduce(
@@ -196,6 +196,26 @@ const App = () => {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
   };
+
+  const onBatch = async (cells:DaoCell[]) => {
+    try {
+      if (!signer)
+        throw new Error("Wallet disconnected. Reconnect!");
+
+      const batchTx = await batchDaoCells(signer, cells);
+      const txid = await signer.sendTransaction(batchTx.tx);
+      enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
+      setIsWaitingTxConfirm(true);
+      setIsLoading(true);
+      await waitForTransactionConfirmation(txid);
+      setIsWaitingTxConfirm(false);
+      setDepositAmount("");
+      await updateJoyDaoInfo("deposit");
+      setIsLoading(false);
+    } catch (e: any) {
+      enqueueSnackbar("Error: " + e.message, { variant: "error" });
+    }
+  }
 
   const onTransfer = async () => {
     if (transferAmount == "") {
@@ -761,7 +781,7 @@ const App = () => {
   function tabNavigator() {
     return (
       <div>
-        {isNextPage ? (
+        {isMainPanel ? (
           <svg
             className="to-right-sign"
             xmlns="http://www.w3.org/2000/svg"
@@ -769,7 +789,7 @@ const App = () => {
             id="angle-right"
             width="30"
             height="30"
-            onClick={onPrevious}
+            onClick={onToTransferPanel}
           >
             <path 
               fill="#524540" 
@@ -784,7 +804,7 @@ const App = () => {
             id="angle-left"
             width="30"
             height="30"
-            onClick={onNext}
+            onClick={onMainPanel}
           >
             <path 
               fill="#524540" 
@@ -1017,7 +1037,6 @@ const App = () => {
           <div>
             <TransitionGroup>
               <CSSTransition
-                classNames={isNextPage ? 'right-to-left' : 'left-to-right'}
                 timeout={1000}
               >
                 <div
@@ -1025,7 +1044,7 @@ const App = () => {
                     marginBottom: '-30px',
                   }}
                 >
-                  {isNextPage ? (
+                  {isMainPanel ? (
                     daoInfoBoard()
                   ) : (
                     basicWallet()
@@ -1056,29 +1075,30 @@ const App = () => {
 
         <div className="main-buttons">
           {ckbAddress && (
-            <button className="sign-out-button" onClick={onSignOut}>
-              Sign Out
-            </button>
+            <>
+              <button className="sign-out-button" onClick={onSignOut}>
+                Sign Out
+              </button>
+              
+              <button
+                className="poly-morph-button"
+                onClick={(e) => {
+                  !isMainPanel
+                    ? onTransfer()
+                    : pickedCells.length >= 2
+                      ? onBatch(pickedCells)
+                      : onDeposit();
+                }}
+              >
+                {!isMainPanel
+                  ? 'Transfer'
+                  : pickedCells.length >= 2
+                    ? 'Batch'
+                    : 'Deposit'
+                }
+              </button>
+            </>
           )}
-          {ckbAddress && (isNextPage ? (
-            <button
-              className="deposit-and-transfer-button"
-              onClick={(e) => {
-                onDeposit();
-              }}
-            >
-              Deposit
-            </button>
-          ) : (
-            <button
-              className="deposit-and-transfer-button"
-              onClick={(e) => {
-                onTransfer();
-              }}
-            >
-              Transfer
-          </button>
-          ))}
         </div>
 
         {ckbAddress &&
@@ -1264,9 +1284,13 @@ const App = () => {
                           e.stopPropagation();
                           try {
                             if (isLoading)
-                              throw new Error("joyDAO is loading stuffs for you");
+                              throw new Error("Wait a second! joyDAO is loading data for you");
 
                             if (!pickedCells.includes(cell)) {
+
+                              //TODO remove when supported
+                              if (!cell.isDeposit)
+                                throw new Error("Feature currently under development");
 
                               if (!cell.isDeposit && !cell.ripe)
                                 throw new Error("Can not batch incomplete withdrawals");
