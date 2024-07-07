@@ -646,25 +646,10 @@ body {
   transition: transform 0.2s ease;
 }
 
-.dao-cell-button::before {
-  content: "";
-  position: absolute;
-  top: -1.5px;
-  left: -1.5px;
-  width: 3px;
-  height: 3px;
-  background-color: #fbff00;
-  border-radius: 50%;
-}
-
-.dao-cell-button.progressing {
-  animation: shake 2s;
-  animation-iteration-count: infinite;
-}
-
 .dao-cell-button.ripe {
-  animation: shake 0.9s;
+  animation: shake 0.8s;
   animation-iteration-count: infinite;
+  animation-delay: var(--animationDelay);
 }
 
 .button-border-progress-bar {
@@ -684,9 +669,21 @@ body {
   cursor: pointer;
 }
 
+.button-border-progress-bar::before {
+  content: "";
+  position: absolute;
+  top: -1.5px;
+  left: -1.5px;
+  width: 3px;
+  height: 3px;
+  background-color: #fbff00;
+  border-radius: 50%;
+}
+
 .button-border-progress-bar.ripe {
-  animation: shake 0.9s;
+  animation: shake 0.8s;
   animation-iteration-count: infinite;
+  animation-delay: var(--animationDelay);
 }
 
 .ReactModal__Content {

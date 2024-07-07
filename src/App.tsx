@@ -43,6 +43,8 @@ import {
   buildStyles,
 } from "react-circular-progressbar";
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import { utils, blockchain } from "@ckb-lumos/base";
+const { ckbHash } = utils;
 
 enum DaoFunction {
   none = 0,
@@ -210,8 +212,9 @@ const App = () => {
       await waitForTransactionConfirmation(txid);
       setIsWaitingTxConfirm(false);
       setDepositAmount("");
-      await updateJoyDaoInfo("deposit");
+      await updateJoyDaoInfo("all");
       setIsLoading(false);
+      setPickedCells([]);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
     }
@@ -358,6 +361,9 @@ const App = () => {
       if (!signer)
         throw new Error("Wallet disconnected. Reconnect!");
 
+      if (isLoading)
+        throw new Error("Please wait a moment! joyDAO is fetching data for you.");
+
       setDaoMode(DaoFunction.withdrawing);
       setModalIsOpen(true);
       setIsDaoTransitMsgLoading(true);
@@ -392,6 +398,9 @@ const App = () => {
     try {
       if (!signer)
         throw new Error("Wallet disconnected. Reconnect!");
+
+      if (isLoading)
+        throw new Error("Please wait a moment! joyDAO is fetching data for you.");
 
       setDaoMode(DaoFunction.unlocking);
       setModalIsOpen(true);
@@ -1118,6 +1127,15 @@ const App = () => {
                     parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
                 ),
               ].map((cell, index) => {
+                  // dao deposit complete shaking rythm
+                  const animationDelayRandomizer = new SeededRandom(
+                    parseInt(
+                      ckbHash(blockchain.OutPoint.pack(cell.outPoint!)).slice(-8),
+                      16
+                    )
+                  );
+                  const animationDelay = animationDelayRandomizer.next(0,1);
+
                   const scalingStep = 3;
 
                   let scaleFactorSmall;
@@ -1220,6 +1238,11 @@ const App = () => {
                               "--progressPercentage",
                               `${cell.currentCycleProgress}%`
                             );
+
+                            el.style.setProperty(
+                              "--animationDelay",
+                              `${animationDelay}s`
+                            );
                           }
                         }}
                         onClick={(e) => {
@@ -1243,6 +1266,11 @@ const App = () => {
                               el.style.setProperty(
                                 "--backgroundPos",
                                 calculateButtonBorderProgressBar(cell.currentCycleProgress)
+                              );
+
+                              el.style.setProperty(
+                                "--animationDelay",
+                                `${animationDelay}s`
                               );
                             }
                           }}
@@ -1284,13 +1312,13 @@ const App = () => {
                           e.stopPropagation();
                           try {
                             if (isLoading)
-                              throw new Error("Wait a second! joyDAO is loading data for you");
+                              throw new Error("Please wait a moment! joyDAO is fetching data for you.");
 
                             if (!pickedCells.includes(cell)) {
 
                               //TODO remove when supported
-                              if (!cell.isDeposit)
-                                throw new Error("Feature currently under development");
+                              // if (!cell.isDeposit)
+                              //   throw new Error("Feature currently under development");
 
                               if (!cell.isDeposit && !cell.ripe)
                                 throw new Error("Can not batch incomplete withdrawals");
