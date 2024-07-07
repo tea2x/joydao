@@ -8,6 +8,8 @@ import {
   utils,
   blockchain,
   PackedDao,
+  HexString,
+  WitnessArgs,
 } from "@ckb-lumos/base";
 const { computeScriptHash } = utils;
 const { parseSince } = since;
@@ -31,6 +33,7 @@ import { dao } from "@ckb-lumos/common-scripts";
 import { EpochSinceValue } from "@ckb-lumos/base/lib/since";
 import { BI, BIish } from "@ckb-lumos/bi";
 import { bytes, number } from "@ckb-lumos/codec";
+import { BytesLike } from "@ckb-ccc/core";
 
 const INDEXER = new Indexer(INDEXER_URL);
 const rpc = new RPC(NODE_URL);
@@ -46,6 +49,10 @@ export interface DaoCell extends Cell {
   currentCycleProgress: number;
   cycleEndInterval: number; //epoch
 }
+
+export type IndexMap = {
+  [key: number]: HexString;
+};
 
 export async function getBlockHash(blockNumber: string) {
   const blockHash = await rpc.getBlockHash(blockNumber);
@@ -403,53 +410,39 @@ export const isDefaultAddress = (address: string) => {
 };
 
 // because joyID witness size varies + lumos doesn't support
-// because lumos::common-script::unlock is doesn't fully support joyID
-export const workAroundWitness = (
-  transaction: TransactionSkeletonType,
-  daoUnlock = false
+export const insertJoyIdWithnessPlaceHolder = (
+  transaction: TransactionSkeletonType
 ) => {
-  if (transaction.witnesses.size !== 0) {
-    throw new Error(
-      "This function can only be used on an empty witnesses structure."
-    );
-  }
-
-  let uniqueLocks = new Set();
+  let inputIndex = 0;
   for (const input of transaction.inputs) {
-    let witness = "0x";
-    let lockScriptWitness;
-    let inputTypeScriptWitness;
-    const lockHash = computeScriptHash(input.cellOutput.lock);
+    const keyPath = [ "witnesses", inputIndex];
+    let witnessRaw = transaction.getIn(keyPath);
 
-    if (!uniqueLocks.has(lockHash)) {
-      uniqueLocks.add(lockHash);
-
-      if (
-        input.cellOutput.lock.hashType === "type" &&
-        input.cellOutput.lock.codeHash === JOYID_CELLDEP.codeHash
-      ) {
-        lockScriptWitness = JOYID_SIGNATURE_PLACEHOLDER_DEFAULT;
-      }
-
-      if (daoUnlock) {
-        inputTypeScriptWitness = "0x0000000000000000";
-      }
-
-      witness = bytes.hexify(
+    const lockScriptWitness = (inputIndex == 0) ? JOYID_SIGNATURE_PLACEHOLDER_DEFAULT : "0x";
+    if (witnessRaw === undefined) {
+      witnessRaw = bytes.hexify(
         blockchain.WitnessArgs.pack({
           lock: lockScriptWitness,
-          inputType: inputTypeScriptWitness,
         })
       );
+      transaction = transaction.setIn(keyPath, witnessRaw);
+    } else {
+      const withnessArgs:WitnessArgs = blockchain.WitnessArgs.unpack(witnessRaw as BytesLike);
+      withnessArgs.lock = lockScriptWitness;
+      witnessRaw = bytes.hexify(blockchain.WitnessArgs.pack(withnessArgs));
+      transaction = transaction.setIn(keyPath, witnessRaw);
     }
-    transaction = transaction.update("witnesses", (w) => w.push(witness));
+    inputIndex ++;
   }
 
   return transaction;
 };
 
 // this is for estimating purpose, use number instead of BigInt
-export const getFee = (transaction: TransactionSkeletonType):number => {
+export const getFee = (
+  transaction: TransactionSkeletonType,
+  reward: bigint | null = null
+):number => {
   const inputCapacity = transaction.inputs
     .toArray()
     .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
@@ -457,6 +450,10 @@ export const getFee = (transaction: TransactionSkeletonType):number => {
   const outputCapacity = transaction.outputs
     .toArray()
     .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
+
+  // dao unlocking
+  if (reward != null)
+    return Number(inputCapacity + reward - outputCapacity);
 
   return Number(inputCapacity - outputCapacity);
 };
