@@ -217,7 +217,6 @@ const App = () => {
       setIsLoading(true);
       await waitForTransactionConfirmation(txid);
       setIsWaitingTxConfirm(false);
-      setDepositAmount("");
       await updateJoyDaoInfo("all");
       setIsLoading(false);
       setPickedCells([]);
@@ -265,6 +264,8 @@ const App = () => {
       setIsLoading(true);
       await waitForTransactionConfirmation(txid);
       setIsWaitingTxConfirm(false);
+      setTransferTo("");
+      setTransferAmount("");
       await updateJoyDaoInfo("balance");
       setIsLoading(false);
     } catch (e: any) {
@@ -1210,6 +1211,8 @@ const App = () => {
                             el.style.setProperty("--opacityCtrl", "1");
                           else if (windowWidth > 768)
                             el.style.setProperty("--opacityCtrl", "0");
+                          else if (windowWidth <= 768)
+                            el.style.setProperty("--opacityCtrl", "0.2");
                         }
                       }}
                       onClick={(e) => {
