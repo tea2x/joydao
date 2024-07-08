@@ -8,7 +8,7 @@ import { generateDefaultScriptInfos } from "@ckb-ccc/lumos-patches";
 import { INDEXER_URL, DAO_MINIMUM_CAPACITY, FEE_RATE } from "./config";
 import { registerCustomLockScriptInfos } from "@ckb-lumos/common-scripts/lib/common";
 import { TransactionSkeleton, createTransactionFromSkeleton } from "@ckb-lumos/helpers";
-import { ckbytesToShannons, findDepositCellWith, insertJoyIdWithnessPlaceHolder, getFee, DaoCell, hexToInt, IndexMap } from "./lib/helpers";
+import { ckbytesToShannons, findDepositCellWith, insertJoyIdWithnessPlaceHolder, getFee, DaoCell, hexToInt, isJoyIdAddress } from "./lib/helpers";
 
 const indexer = new Indexer(INDEXER_URL);
 registerCustomLockScriptInfos(generateDefaultScriptInfos());
@@ -77,7 +77,8 @@ export const buildDepositTransaction = async (
   );
 
   // patching joyID tx fee and lumos::common-script::dao::unlock
-  txSkeleton = insertJoyIdWithnessPlaceHolder(txSkeleton);
+  if (isJoyIdAddress(fromAddresses[0]))
+    txSkeleton = insertJoyIdWithnessPlaceHolder(txSkeleton);
 
   txSkeleton = await common.payFeeByFeeRate(
     txSkeleton,
@@ -118,7 +119,8 @@ export const buildWithdrawTransaction = async (
   );
 
   // patching joyID tx fee and lumos::common-script::dao::unlock
-  txSkeleton = insertJoyIdWithnessPlaceHolder(txSkeleton);
+  if (isJoyIdAddress(fromAddresses[0]))
+    txSkeleton = insertJoyIdWithnessPlaceHolder(txSkeleton);
 
   txSkeleton = await common.payFeeByFeeRate(
     txSkeleton,
@@ -211,7 +213,8 @@ export const batchDaoCells = async (
   }
 
   // patching joyID tx fee and lumos::common-script::dao::unlock
-  txSkeleton = insertJoyIdWithnessPlaceHolder(txSkeleton);
+  if (isJoyIdAddress(fromAddresses[0]))
+    txSkeleton = insertJoyIdWithnessPlaceHolder(txSkeleton);
 
   // Batching withdrawal cells
   for (const cell of withdrawCells) {
@@ -220,7 +223,8 @@ export const batchDaoCells = async (
   }
 
   // patching joyID tx fee and lumos::common-script::dao::unlock
-  txSkeleton = insertJoyIdWithnessPlaceHolder(txSkeleton);
+  if (isJoyIdAddress(fromAddresses[0]))
+    txSkeleton = insertJoyIdWithnessPlaceHolder(txSkeleton);
 
   txSkeleton = await common.payFeeByFeeRate(
     txSkeleton,
@@ -453,7 +457,8 @@ export const buildUnlockTransaction = async (
   txSkeleton = await _daoUnlock(txSkeleton, fromAddresses[0], daoWithdrawalCell);
 
   // patching joyID tx fee and lumos::common-script::dao::unlock
-  txSkeleton = insertJoyIdWithnessPlaceHolder(txSkeleton);
+  if (isJoyIdAddress(fromAddresses[0]))
+    txSkeleton = insertJoyIdWithnessPlaceHolder(txSkeleton);
 
   // const targetOutputIndex: number = txSkeleton.get("outputs").size - 1;
   // const targetOutput: Cell = txSkeleton.get("outputs").get(targetOutputIndex)!;

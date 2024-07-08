@@ -50,10 +50,6 @@ export interface DaoCell extends Cell {
   cycleEndInterval: number; //epoch
 }
 
-export type IndexMap = {
-  [key: number]: HexString;
-};
-
 export async function getBlockHash(blockNumber: string) {
   const blockHash = await rpc.getBlockHash(blockNumber);
   return blockHash;

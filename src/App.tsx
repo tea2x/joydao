@@ -205,6 +205,12 @@ const App = () => {
         throw new Error("Wallet disconnected. Reconnect!");
 
       const batchTx = await batchDaoCells(signer, cells);
+
+      // might be over-cautious, but worth checking with utxo
+      // TODO remove when fully support fee-rate configuration
+      if (batchTx!.fee > 1*CKB_SHANNON_RATIO)
+        throw new Error("Paying too much transaction fee");
+
       const txid = await signer.sendTransaction(batchTx.tx);
       enqueueSnackbar(`Transaction Sent: ${txid}`, { variant: "success" });
       setIsWaitingTxConfirm(true);
@@ -1008,7 +1014,7 @@ const App = () => {
     return (
       <>
         {isLoading && (
-          <div className={isWaitingTxConfirm ? "loading-overlay" : "signin-loading-overlay"}>
+          <div className="loading-overlay">
             <div className="loading-circle-container">
               <div className="loading-circle"></div>
               {isWaitingTxConfirm && (
@@ -1202,19 +1208,19 @@ const App = () => {
                           el.style.setProperty("--backgroundColor", backgroundColor);
                           if (pickedCells.includes(cell))
                             el.style.setProperty("--opacityCtrl", "1");
-                          else
+                          else if (windowWidth > 768)
                             el.style.setProperty("--opacityCtrl", "0");
                         }
                       }}
                       onClick={(e) => {
                         window.open(
                           EXPLORER_PREFIX + `${cell.outPoint?.txHash}`,
-                          "_blank",
-                          "noreferrer"
+                          '_blank',
+                          'noreferrer'
                         );
                       }}
                     >
-                      <p className="dao-link">
+                      <p className="deposit-amount-label">
                         {(capacity / CKB_SHANNON_RATIO)
                           .toFixed(0)
                           .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
@@ -1298,7 +1304,7 @@ const App = () => {
                       ))}
                       
                       <span
-                        className="check-point"
+                        className="checkmark-area"
                         ref={(el) => {
                           if (el) {
                             if (pickedCells.includes(cell))
@@ -1316,12 +1322,8 @@ const App = () => {
 
                             if (!pickedCells.includes(cell)) {
 
-                              //TODO remove when supported
-                              // if (!cell.isDeposit)
-                              //   throw new Error("Feature currently under development");
-
                               if (!cell.isDeposit && !cell.ripe)
-                                throw new Error("Can not batch incomplete withdrawals");
+                                throw new Error("Can not batch processing withdrawals");
 
                               pickedCells.push(cell);
                               setPickedCells(pickedCells);
@@ -1340,9 +1342,7 @@ const App = () => {
                           }
 
                         }}
-                      >
-                        ✓
-                      </span>
+                      ></span>
 
                     </div>
                   );

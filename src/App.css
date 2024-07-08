@@ -25,7 +25,7 @@ body {
   color: rgb(86, 43, 27);
   border-radius: 10px;
   background: hsla(0, 0%, 72%, 0.834);
-  margin: 20px auto 10px auto;
+  margin: 20px auto;
   width: 320px;
   height: 150px;
   text-align: left;
@@ -122,7 +122,7 @@ body {
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
 .signin-button {
@@ -343,7 +343,7 @@ body {
   margin: 0 auto;
 }
 
-.dao-link {
+.deposit-amount-label {
   color: textColor;
   font-size: 1em;
   position: absolute;
@@ -406,15 +406,6 @@ body {
   50% {
     transform: translateY(-10px);
   }
-}
-
-.signin-loading-overlay {
-  position: sticky;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .loading-overlay {
@@ -592,14 +583,14 @@ body {
 .dao-cell::after {
   content: "";
   position: absolute;
-  top: 0px;
-  right: 0px;
+  top: -5px;
+  right: -5px;
   width: 18px;
   height: 18px;
-  background-color: #ffffff;
-  border-radius: 7px;
+  background-color: #e2e2e2;
+  border-radius: 50%;
   border: 0.5px solid #000;
-  opacity: var(--opacityCtrl);
+  opacity: var(--opacityCtrl, 0.2);
   transition: opacity 0.3s ease-in-out;
 }
 
@@ -607,7 +598,7 @@ body {
   opacity: 1;
 }
 
-.check-point {
+.checkmark-area {
   position: absolute;
   top: 0px;
   right: 0px;
@@ -617,7 +608,19 @@ body {
   z-index: 1;
 }
 
-.check-point:hover {
+.checkmark-area:before {
+  position: absolute;
+  height: 8px;
+  width: 4px;
+  border-bottom: 2px solid #000000;
+  border-right: 2px solid #000000;
+  content: "";
+  transform: rotate(45deg);
+  left: 10px;
+  top: -1px;
+}
+
+.checkmark-area:hover {
   opacity: 1;
 }
 
@@ -646,6 +649,17 @@ body {
   transition: transform 0.2s ease;
 }
 
+.dao-cell-button::before {
+  content: "";
+  position: absolute;
+  top: -1.5px;
+  left: -1.5px;
+  width: 3px;
+  height: 3px;
+  background-color: #fbff00;
+  border-radius: 50%;
+}
+
 .dao-cell-button.ripe {
   animation: shake 0.8s;
   animation-iteration-count: infinite;
@@ -667,17 +681,6 @@ body {
   top: 45px;
   z-index: 1;
   cursor: pointer;
-}
-
-.button-border-progress-bar::before {
-  content: "";
-  position: absolute;
-  top: -1.5px;
-  left: -1.5px;
-  width: 3px;
-  height: 3px;
-  background-color: #fbff00;
-  border-radius: 50%;
 }
 
 .button-border-progress-bar.ripe {
@@ -940,7 +943,7 @@ button.cancel:hover {
   .sign-out-button,
   .poly-morph-button {
     width: 150px;
-    height: 45px;
+    height: 40px;
     padding: 5px 10px 5px 10px;
     font-size: 14px;
     margin-bottom: 30px;
@@ -952,6 +955,7 @@ button.cancel:hover {
     background-size: 35px;
     padding-left: 2px;
     width: 180px;
+    height: 45px;
     font-size: 1.5em;
     position: relative;
     top: -50px;
@@ -995,7 +999,7 @@ button.cancel:hover {
 
   .dao-cell {
     padding: 3px;
-    margin: 3px;
+    margin: 4px;
     border-radius: 10px;
     font-size: 16px;
     height: var(--cellHeight);
