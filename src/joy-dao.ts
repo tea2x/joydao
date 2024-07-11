@@ -1,21 +1,35 @@
 import { Signer } from "@ckb-ccc/core";
-import { CKBTransaction } from '@joyid/ckb'
+import { CKBTransaction } from "@joyid/ckb";
 import { Indexer } from "@ckb-lumos/ckb-indexer";
 import { predefined } from "@ckb-lumos/config-manager";
 import { dao, common } from "@ckb-lumos/common-scripts";
-import { Address, Cell, Transaction, WitnessArgs } from "@ckb-lumos/base";
 import { generateDefaultScriptInfos } from "@ckb-ccc/lumos-patches";
 import { INDEXER_URL, DAO_MINIMUM_CAPACITY, FEE_RATE } from "./config";
+import { Address, Cell, Transaction, WitnessArgs } from "@ckb-lumos/base";
 import { registerCustomLockScriptInfos } from "@ckb-lumos/common-scripts/lib/common";
-import { TransactionSkeleton, createTransactionFromSkeleton } from "@ckb-lumos/helpers";
-import { ckbytesToShannons, findDepositCellWith, insertJoyIdWithnessPlaceHolder, getFee, DaoCell, hexToInt, isJoyIdAddress } from "./lib/helpers";
+import {
+  TransactionSkeleton,
+  createTransactionFromSkeleton,
+} from "@ckb-lumos/helpers";
+import {
+  ckbytesToShannons,
+  findDepositCellWith,
+  insertJoyIdWithnessPlaceHolder,
+  getFee,
+  DaoCell,
+  hexToInt,
+  isJoyIdAddress,
+} from "./lib/helpers";
 
 const indexer = new Indexer(INDEXER_URL);
 registerCustomLockScriptInfos(generateDefaultScriptInfos());
 
-/*
-  returns an array of deposit cells
-*/
+/**
+ * Fetch DAO deposits.
+ *
+ * @param ckbAddress - The ckb address.
+ * @returns An array of deposit cells.
+ */
 export const collectDeposits = async (ckbAddress: Address): Promise<Cell[]> => {
   let depositCells: Cell[] = [];
   const daoCellCollector = new dao.CellCollector(
@@ -27,11 +41,14 @@ export const collectDeposits = async (ckbAddress: Address): Promise<Cell[]> => {
     depositCells.push(inputCell);
   }
   return depositCells;
-}
+};
 
-/*
-  returns an array of withdrawal cells
-*/
+/**
+ * Fetch DAO withdrawals.
+ *
+ * @param ckbAddress - The ckb address.
+ * @returns An array of withdrawal cells.
+ */
 export const collectWithdrawals = async (
   ckbAddress: Address
 ): Promise<Cell[]> => {
@@ -45,26 +62,28 @@ export const collectWithdrawals = async (
     depositCells.push(inputCell);
   }
   return depositCells;
-}
+};
 
-/*
-  Buid DAO deposit raw transaction
-  returns a CKB raw transaction
-*/
+/**
+ * Buid DAO deposit transaction.
+ *
+ * @param signer - The transaction signer.
+ * @param amount - The amount to deposit.
+ * @returns A CKB raw transaction.
+ */
 export const buildDepositTransaction = async (
-  signer:Signer,
+  signer: Signer,
   amount: bigint
-): Promise<{tx: CKBTransaction, fee: number}> => {
+): Promise<{ tx: CKBTransaction; fee: number }> => {
   amount = ckbytesToShannons(amount);
-  if (amount < ckbytesToShannons(BigInt(DAO_MINIMUM_CAPACITY))) {
+  if (amount < ckbytesToShannons(BigInt(DAO_MINIMUM_CAPACITY)))
     throw new Error("Minimum DAO deposit is 104 CKB.");
-  }
 
   const prefix = await signer.client.addressPrefix;
   const fromAddresses = await signer.getAddresses();
   const configuration = prefix === "ckb" ? predefined.LINA : predefined.AGGRON4;
   let txSkeleton = new TransactionSkeleton({ cellProvider: indexer });
-  
+
   txSkeleton = await dao.deposit(
     txSkeleton,
     fromAddresses[0],
@@ -72,7 +91,7 @@ export const buildDepositTransaction = async (
     amount,
     {
       config: configuration,
-      enableNonSystemScript:true
+      enableNonSystemScript: true,
     }
   );
 
@@ -87,22 +106,25 @@ export const buildDepositTransaction = async (
     undefined,
     {
       config: configuration,
-    },
+    }
   );
 
   const txFee = getFee(txSkeleton);
   const daoDepositTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-  return {tx: daoDepositTx as CKBTransaction, fee: txFee};
-}
+  return { tx: daoDepositTx as CKBTransaction, fee: txFee };
+};
 
-/*
-  Buid DAO withdraw raw transaction
-  returns a CKB raw transaction
-*/
+/**
+ * Buid DAO withdraw raw transaction.
+ *
+ * @param signer - The transaction signer.
+ * @param daoDepositCell - The deposit cell.
+ * @returns A CKB raw transaction.
+ */
 export const buildWithdrawTransaction = async (
-  signer:Signer,
+  signer: Signer,
   daoDepositCell: Cell
-): Promise<{tx: CKBTransaction, fee: number}> => {
+): Promise<{ tx: CKBTransaction; fee: number }> => {
   const prefix = await signer.client.addressPrefix;
   const fromAddresses = await signer.getAddresses();
   const configuration = prefix === "ckb" ? predefined.LINA : predefined.AGGRON4;
@@ -114,7 +136,7 @@ export const buildWithdrawTransaction = async (
     fromAddresses[0],
     {
       config: configuration,
-      enableNonSystemScript:true
+      enableNonSystemScript: true,
     }
   );
 
@@ -129,19 +151,22 @@ export const buildWithdrawTransaction = async (
     undefined,
     {
       config: configuration,
-    },
+    }
   );
 
   const txFee = getFee(txSkeleton);
   const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-  return {tx: daoWithdrawTx as CKBTransaction, fee: txFee};
-}
+  return { tx: daoWithdrawTx as CKBTransaction, fee: txFee };
+};
 
-// /*
-//   WIP - lumos common script unlock doesn't cover joyID
-//   Buid DAO unlock raw transaction
-//   returns a CKB raw transaction
-// */
+// /**
+//  * WIP - lumos::common-script unlock doesn't cover joyID yet
+//  * Buid DAO unlock raw transaction.
+//  *
+//  * @param signer - The transaction signer.
+//  * @param daoWithdrawalCell - The withdrawal cell.
+//  * @returns A CKB raw transaction.
+//  */
 // export const buildUnlockTransaction = async (
 //   signer:Signer,
 //   daoWithdrawalCell: Cell
@@ -183,11 +208,13 @@ export const buildWithdrawTransaction = async (
 //   return {tx: daoUnlockTx as CKBTransaction, fee: txFee};
 // }
 
-
-/* WIP
-  Batch deposits cells to withdraw at once
-  returns a CKB raw transaction
-*/
+/**
+ * Batch deposits or/with cells to withdraw or/and unlock at once.
+ *
+ * @param signer - The transaction signer.
+ * @param cells - An array of deposit cells or/with at-end-cycle withdrawal cells.
+ * @returns A CKB raw transaction.
+ */
 export const batchDaoCells = async (
   signer: Signer,
   cells: DaoCell[]
@@ -239,44 +266,36 @@ export const batchDaoCells = async (
   const txFee = getFee(txSkeleton);
   const daoWithdrawTx: Transaction = createTransactionFromSkeleton(txSkeleton);
   return { tx: daoWithdrawTx as CKBTransaction, fee: txFee };
-}
+};
 
-
-
-
-
-
-
-
-
-
-
-
-
-// TODO replace by buildUnlockTransaction function above
-// temporary code for the WIP buildUnlockTransaction
+//////////////////////////////////////////////////////////////////////////////////////////
+// TODO replace the following by the commented buildUnlockTransaction function above
+// when lumos fully support joyID unlocking
+// This is a temporary code since lumos::common-script::unlock doesn't work with joyID
+//////////////////////////////////////////////////////////////////////////////////////////
 import {
   CellDep,
   DepType,
   HexString,
-  PackedDao,
   PackedSince,
   blockchain,
-  values
+  values,
 } from "@ckb-lumos/base";
+import { RPC } from "@ckb-lumos/rpc";
+import { BI, BIish } from "@ckb-lumos/bi";
+import { getBlockHash } from "./lib/helpers";
+import { bytes, number } from "@ckb-lumos/codec";
+import { getConfig } from "@ckb-lumos/config-manager";
 import { NODE_URL, JOYID_CELLDEP, OMNILOCK_CELLDEP } from "./config";
 import { addressToScript, TransactionSkeletonType } from "@ckb-lumos/helpers";
-import { getBlockHash, intToHex } from "./lib/helpers";
-import { bytes, number } from "@ckb-lumos/codec";
-import { getConfig, Config } from "@ckb-lumos/config-manager";
-import { BI, BIish } from "@ckb-lumos/bi";
-import { RPC } from "@ckb-lumos/rpc";
 
 const DAO_LOCK_PERIOD_EPOCHS_COMPATIBLE = BI.from(180);
 const rpc = new RPC(NODE_URL);
 
-// add cellDep function
-export function addCellDep(
+/**
+ * Add celldep to transaction.
+ */
+function _addCellDep(
   txSkeleton: TransactionSkeletonType,
   newCellDep: CellDep
 ): TransactionSkeletonType {
@@ -301,15 +320,20 @@ export function addCellDep(
   return txSkeleton;
 }
 
-// generate DAO unlock transaction structure
-// no fee added
-const _daoUnlock = async(
+/**
+ * Generate DAO unlock transaction structure with zero fee added.
+ * This is a modified version and a temporary replacement for
+ * lumos::common-script::unlock function
+ */
+const _daoUnlock = async (
   txSkeleton: TransactionSkeletonType,
   fromAddress: Address,
   daoWithdrawalCell: Cell
 ): Promise<TransactionSkeletonType> => {
   const config = getConfig();
-  _checkDaoScript(config);
+  const DAO_SCRIPT = config.SCRIPTS.DAO;
+  if (!DAO_SCRIPT)
+    throw new Error("Provided config does not have DAO script setup!");
 
   // add celldeps
   const template = config.SCRIPTS.DAO!;
@@ -321,21 +345,21 @@ const _daoUnlock = async(
     depType: template.DEP_TYPE,
   };
 
-  txSkeleton = addCellDep(txSkeleton, daoCellDep);
+  txSkeleton = _addCellDep(txSkeleton, daoCellDep);
 
   const fromScript = addressToScript(fromAddress, { config });
   if (fromScript.codeHash == JOYID_CELLDEP.codeHash) {
-    txSkeleton = addCellDep(txSkeleton, {
+    txSkeleton = _addCellDep(txSkeleton, {
       outPoint: JOYID_CELLDEP.outPoint,
       depType: JOYID_CELLDEP.depType as DepType,
     });
   } else if (fromScript.codeHash == OMNILOCK_CELLDEP.codeHash) {
-    txSkeleton = addCellDep(txSkeleton, {
+    txSkeleton = _addCellDep(txSkeleton, {
       outPoint: OMNILOCK_CELLDEP.outPoint,
       depType: OMNILOCK_CELLDEP.depType as DepType,
     });
 
-    txSkeleton = addCellDep(txSkeleton, {
+    txSkeleton = _addCellDep(txSkeleton, {
       outPoint: {
         txHash: config.SCRIPTS.SECP256K1_BLAKE160!.TX_HASH,
         index: config.SCRIPTS.SECP256K1_BLAKE160!.INDEX,
@@ -359,8 +383,8 @@ const _daoUnlock = async(
     rpc.getHeader(daoDepositCell.blockHash!),
     rpc.getHeader(daoWithdrawalCell.blockHash!),
   ]);
-  const depositEpoch = parseEpochCompatible(depositBlockHeader!.epoch);
-  const withdrawEpoch = parseEpochCompatible(withdrawBlockHeader!.epoch);
+  const depositEpoch = _parseEpochCompatible(depositBlockHeader!.epoch);
+  const withdrawEpoch = _parseEpochCompatible(withdrawBlockHeader!.epoch);
 
   const withdrawFraction = withdrawEpoch.index.mul(depositEpoch.length);
   const depositFraction = depositEpoch.index.mul(withdrawEpoch.length);
@@ -380,7 +404,7 @@ const _daoUnlock = async(
     index: BI.from(depositEpoch.index),
     length: BI.from(depositEpoch.length),
   };
-  const minimalSince = epochSinceCompatible(minimalSinceEpoch);
+  const minimalSince = _epochSinceCompatible(minimalSinceEpoch);
   const since: PackedSince = "0x" + minimalSince.toString(16);
 
   // adding dao withdrawal cell as the first input
@@ -391,7 +415,7 @@ const _daoUnlock = async(
     });
   }
 
-  // add header deps
+  // add dao unlock header deps
   txSkeleton = txSkeleton.update("headerDeps", (headerDeps) => {
     return headerDeps.push(
       daoDepositCell.blockHash!,
@@ -413,59 +437,61 @@ const _daoUnlock = async(
 
   // adding output
   const outputCapacity: HexString =
-  "0x" +
-  dao
-    .calculateMaximumWithdrawCompatible(
-      daoWithdrawalCell,
-      depositBlockHeader!.dao,
-      withdrawBlockHeader!.dao
-    )
-    .toString(16);
+    "0x" +
+    dao
+      .calculateMaximumWithdrawCompatible(
+        daoWithdrawalCell,
+        depositBlockHeader!.dao,
+        withdrawBlockHeader!.dao
+      )
+      .toString(16);
 
-    txSkeleton = txSkeleton.update("outputs", (outputs) => {
-      return outputs.push({
-        cellOutput: {
-          capacity: outputCapacity,
-          lock: addressToScript(fromAddress),
-          type: undefined,
-        },
-        data: "0x",
-        outPoint: undefined,
-        blockHash: undefined,
-      });
+  txSkeleton = txSkeleton.update("outputs", (outputs) => {
+    return outputs.push({
+      cellOutput: {
+        capacity: outputCapacity,
+        lock: addressToScript(fromAddress),
+        type: undefined,
+      },
+      data: "0x",
+      outPoint: undefined,
+      blockHash: undefined,
     });
+  });
 
-    return txSkeleton;
-}
+  return txSkeleton;
+};
 
-/*
-  Buid DAO unlock raw transaction
-  returns a CKB raw transaction
-*/
+/**
+ * WIP - lumos::common-script unlock doesn't cover joyID yet
+ * Buid DAO unlock raw transaction.
+ *
+ * @param signer - The transaction signer.
+ * @param daoWithdrawalCell - The withdrawal cell.
+ * @returns A CKB raw transaction.
+ */
 export const buildUnlockTransaction = async (
-  signer:Signer,
+  signer: Signer,
   daoWithdrawalCell: Cell
-): Promise<{tx: CKBTransaction, fee: number}> => {
-  const config = getConfig();
-  _checkDaoScript(config);
-
+): Promise<{ tx: CKBTransaction; fee: number }> => {
   const prefix = await signer.client.addressPrefix;
   const fromAddresses = await signer.getAddresses();
   const configuration = prefix === "ckb" ? predefined.LINA : predefined.AGGRON4;
   let txSkeleton = TransactionSkeleton({ cellProvider: indexer });
 
-  txSkeleton = await _daoUnlock(txSkeleton, fromAddresses[0], daoWithdrawalCell);
+  txSkeleton = await _daoUnlock(
+    txSkeleton,
+    fromAddresses[0],
+    daoWithdrawalCell
+  );
 
   // patching joyID tx fee and lumos::common-script::dao::unlock
   if (isJoyIdAddress(fromAddresses[0]))
     txSkeleton = insertJoyIdWithnessPlaceHolder(txSkeleton);
 
-  // const targetOutputIndex: number = txSkeleton.get("outputs").size - 1;
-  // const targetOutput: Cell = txSkeleton.get("outputs").get(targetOutputIndex)!;
-
   const inputCapacity = txSkeleton.inputs
-  .toArray()
-  .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
+    .toArray()
+    .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
   const outputCapacity = txSkeleton.outputs
     .toArray()
     .reduce((a, c) => a + hexToInt(c.cellOutput.capacity), BigInt(0));
@@ -483,10 +509,13 @@ export const buildUnlockTransaction = async (
 
   const txFee = getFee(txSkeleton, reward);
   const daoUnlockTx: Transaction = createTransactionFromSkeleton(txSkeleton);
-  return {tx: daoUnlockTx as CKBTransaction, fee: txFee};
-}
+  return { tx: daoUnlockTx as CKBTransaction, fee: txFee };
+};
 
-function epochSinceCompatible({
+/**
+ * _daoUnlock helper
+ */
+function _epochSinceCompatible({
   length,
   index,
   number,
@@ -505,33 +534,10 @@ function epochSinceCompatible({
     .add(_number);
 }
 
-export function extractDaoDataCompatible(dao: PackedDao): {
-  [key: string]: BI;
-} {
-  if (!/^(0x)?([0-9a-fA-F]){64}$/.test(dao)) {
-    throw new Error("Invalid dao format!");
-  }
-
-  const len = 8 * 2;
-  const hex = dao.startsWith("0x") ? dao.slice(2) : dao;
-
-  return ["c", "ar", "s", "u"]
-    .map((key, i) => {
-      return {
-        [key]: number.Uint64LE.unpack("0x" + hex.slice(len * i, len * (i + 1))),
-      };
-    })
-    .reduce((result, c) => ({ ...result, ...c }), {});
-}
-
-function _checkDaoScript(config: Config): void {
-  const DAO_SCRIPT = config.SCRIPTS.DAO;
-  if (!DAO_SCRIPT) {
-    throw new Error("Provided config does not have DAO script setup!");
-  }
-}
-
-function parseEpochCompatible(epoch: BIish): {
+/**
+ * _daoUnlock helper
+ */
+function _parseEpochCompatible(epoch: BIish): {
   length: BI;
   index: BI;
   number: BI;
@@ -542,26 +548,4 @@ function parseEpochCompatible(epoch: BIish): {
     index: _epoch.shr(24).and(0xfff),
     number: _epoch.and(0xffffff),
   };
-}
-
-function getTransactionSize(txSkeleton: TransactionSkeletonType): number {
-  const tx = createTransactionFromSkeleton(txSkeleton);
-  return getTransactionSizeByTx(tx);
-}
-
-export function getTransactionSizeByTx(tx: Transaction): number {
-  const serializedTx = blockchain.Transaction.pack(tx);
-  // 4 is serialized offset bytesize
-  const size = serializedTx.byteLength + 4;
-  return size;
-}
-
-function calculateFeeCompatible(size: number, feeRate: BIish): BI {
-  const ratio = BI.from(1000);
-  const base = BI.from(size).mul(feeRate);
-  const fee = base.div(ratio);
-  if (fee.mul(ratio).lt(base)) {
-    return fee.add(1);
-  }
-  return BI.from(fee);
 }

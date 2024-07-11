@@ -5,13 +5,10 @@ import {
   Cell,
   Transaction,
   since,
-  utils,
   blockchain,
   PackedDao,
-  HexString,
   WitnessArgs,
 } from "@ckb-lumos/base";
-const { computeScriptHash } = utils;
 const { parseSince } = since;
 import {
   NODE_URL,
@@ -27,7 +24,6 @@ import { addressToScript, TransactionSkeletonType } from "@ckb-lumos/helpers";
 import { CKBIndexerQueryOptions } from "@ckb-lumos/ckb-indexer/src/type";
 import { TerminableCellFetcher } from "@ckb-lumos/ckb-indexer/src/type";
 import { CellCollector, Indexer } from "@ckb-lumos/ckb-indexer";
-import { LightClientRPC } from "@ckb-lumos/light-client";
 import { getConfig } from "@ckb-lumos/config-manager";
 import { dao } from "@ckb-lumos/common-scripts";
 import { EpochSinceValue } from "@ckb-lumos/base/lib/since";
@@ -37,7 +33,11 @@ import { BytesLike } from "@ckb-ccc/core";
 
 const INDEXER = new Indexer(INDEXER_URL);
 const rpc = new RPC(NODE_URL);
-const lightClientRPC = new LightClientRPC(NODE_URL);
+
+export interface Balance {
+  available: string;
+  occupied: string;
+}
 
 export interface DaoCell extends Cell {
   isDeposit: boolean; // deposit/withdraw
@@ -50,17 +50,35 @@ export interface DaoCell extends Cell {
   cycleEndInterval: number; //epoch
 }
 
+/**
+ * Get block hash based on block number.
+ *
+ * @param blockNumber - CKB block number.
+ * @returns Block hash.
+ */
 export async function getBlockHash(blockNumber: string) {
   const blockHash = await rpc.getBlockHash(blockNumber);
   return blockHash;
 }
 
+/**
+ * Convert from CKB to Shannon.
+ *
+ * @param ckbytes - The CKB amount.
+ * @returns The shannon ammount.
+ */
 export function ckbytesToShannons(ckbytes: bigint) {
   ckbytes = BigInt(ckbytes);
 
   return ckbytes * BigInt(CKB_SHANNON_RATIO);
 }
 
+/**
+ * Convert integer to hex string.
+ *
+ * @param intValue - The integer number.
+ * @returns The converted hex string.
+ */
 export function intToHex(intValue: bigint): string {
   if (typeof intValue !== "bigint") {
     throw new Error("Input value must be a BigInt");
@@ -75,6 +93,12 @@ export function intToHex(intValue: bigint): string {
   return "0x" + hexString;
 }
 
+/**
+ * Convert hex string to integer.
+ *
+ * @param intValue - The hex string.
+ * @returns The converted bigint.
+ */
 export function hexToInt(hex: string) {
   hex = String(hex);
   if (hex.substr(0, 2) !== "0x" && hex.substr(0, 3) !== "-0x")
@@ -91,42 +115,18 @@ export function hexToInt(hex: string) {
   return bigInt;
 }
 
-export const collectInputs = async (
-  indexer: TerminableCellFetcher,
-  lockScript: Script,
-  capacityRequired: bigint
-): Promise<{ inputCells: Cell[]; inputCapacity: bigint }> => {
-  const query: CKBIndexerQueryOptions = { lock: lockScript, type: "empty" };
-  const cellCollector = new CellCollector(indexer, query);
-
-  let inputCells: Cell[] = [];
-  let inputCapacity = BigInt(0);
-
-  for await (const cell of cellCollector.collect()) {
-    inputCells.push(cell);
-    inputCapacity += hexToInt(cell.cellOutput.capacity);
-
-    if (inputCapacity >= capacityRequired) break;
-  }
-
-  if (inputCapacity < capacityRequired)
-    throw new Error(
-      "Insufficient balance. If you intend to have some CKB remained, be sure it's greater than 63!"
-    );
-
-  return { inputCells, inputCapacity };
-};
-
-export interface Balance {
-  available: string;
-  occupied: string;
-}
-export const queryBalance = async (joyidAddr: Address): Promise<Balance> => {
+/**
+ * Query balance and DAO status.
+ *
+ * @param ckbAddress - The ckb address.
+ * @returns An object typed Balance.
+ */
+export const queryBalance = async (ckbAddress: Address): Promise<Balance> => {
   const ret: Balance = { available: "", occupied: "" };
 
   // query available balance
   let query: CKBIndexerQueryOptions = {
-    lock: addressToScript(joyidAddr),
+    lock: addressToScript(ckbAddress),
     type: "empty",
   };
   const cellCollector = new CellCollector(INDEXER, query);
@@ -143,7 +143,7 @@ export const queryBalance = async (joyidAddr: Address): Promise<Balance> => {
     throw new Error("Provided config does not have DAO script setup!");
   }
   const daoQuery: CKBIndexerQueryOptions = {
-    lock: addressToScript(joyidAddr),
+    lock: addressToScript(ckbAddress),
     type: {
       codeHash: DAO_SCRIPT.CODE_HASH,
       hashType: DAO_SCRIPT.HASH_TYPE,
@@ -152,7 +152,6 @@ export const queryBalance = async (joyidAddr: Address): Promise<Balance> => {
   };
 
   const daoCellCollector = new CellCollector(INDEXER, daoQuery);
-
   balance = BigInt(0);
   for await (const cell of daoCellCollector.collect()) {
     balance += hexToInt(cell.cellOutput.capacity);
@@ -162,6 +161,12 @@ export const queryBalance = async (joyidAddr: Address): Promise<Balance> => {
   return ret;
 };
 
+/**
+ * Find deposit cell based on a withdrawal cell.
+ *
+ * @param withdrawalCell - The Withdrawal cell based on which the deposit cell is searched.
+ * @returns The trace of the deposit cell.
+ */
 export const findDepositCellWith = async (
   withdrawalCell: Cell
 ): Promise<Cell> => {
@@ -197,35 +202,10 @@ export const findDepositCellWith = async (
   return retCell;
 };
 
-export async function sendTransaction(signedTx: Transaction) {
-  let result;
-  try {
-    result = await rpc.sendTransaction(signedTx);
-  } catch (error: any) {
-    const regex = /^(\w+): ([\w\s]+) (\{.*\})$/;
-    const matches = error.message.match(regex);
-
-    if (!!matches && matches.length > 0) {
-      const category = matches[1];
-      const type = matches[2];
-      const json = JSON.parse(matches[3]);
-
-      console.log();
-      console.error(`Error: ${category}`);
-      console.error(`Type: ${type}`);
-      console.error(`Code: ${json.code}`);
-      console.error(`Message: ${json.message}`);
-      console.error(`Data: ${json.data}`);
-      console.log();
-
-      throw new Error("RPC Returned Error!");
-    } else throw error;
-  }
-
-  return result;
-}
-
-export async function waitForConfirmation(
+/**
+ * Query transaction and check status.
+ */
+async function waitForConfirmation(
   txid: string,
   updateProgress = (_status: any) => {},
   options: any
@@ -274,6 +254,12 @@ export async function waitForConfirmation(
   });
 }
 
+/**
+ * Wait for transaction confirmation.
+ *
+ * @param txid - The transaction id / transaction hash.
+ * @returns none.
+ */
 export async function waitForTransactionConfirmation(txid: string) {
   console.log("Waiting for transaction to confirm.");
   await waitForConfirmation(txid, (_status) => console.log("."), {
@@ -281,6 +267,9 @@ export async function waitForTransactionConfirmation(txid: string) {
   });
 }
 
+/**
+ * Decode epoch into a readable object.
+ */
 function parseEpochCompatible(epoch: BIish): {
   length: BI;
   index: BI;
@@ -294,17 +283,25 @@ function parseEpochCompatible(epoch: BIish): {
   };
 }
 
+/**
+ * Enrich deposit information for UI control.
+ *
+ * @param cell - The deposit/withdraw cell.
+ * @param isDeposit - Is this a deposit or a withdraw?
+ * @param tipEpoch - The CKB blockchain tip epoch
+ * @returns A CKB raw transaction.
+ */
 export const enrichDaoCellInfo = async (
   cell: DaoCell,
-  deposit: boolean,
+  isDeposit: boolean,
   tipEpoch: number
 ) => {
   if (cell.isDeposit == null) {
-    cell.isDeposit = deposit;
+    cell.isDeposit = isDeposit;
     cell.blockHash = await getBlockHash(cell.blockNumber!);
 
     let depositBlockHeader;
-    if (deposit) {
+    if (isDeposit) {
       depositBlockHeader = await rpc.getHeader(cell.blockHash!);
       cell.depositEpoch = parseEpochCompatible(
         depositBlockHeader.epoch
@@ -348,7 +345,7 @@ export const enrichDaoCellInfo = async (
     // enrich deposit info
     const step = tipEpoch - cell.depositEpoch;
     cell.completedCycles = Math.floor(step / 180);
-    if (deposit == false && cell.ripe) {
+    if (isDeposit == false && cell.ripe) {
       // when unlocking period arrives, current cycle halt at 100%
       cell.currentCycleProgress = 100;
     } else {
@@ -358,11 +355,17 @@ export const enrichDaoCellInfo = async (
   }
 };
 
+/**
+ * Fetch tip epoch from CKB and return it
+ */
 export const getTipEpoch = async (): Promise<number> => {
   const currentEpoch = await rpc.getCurrentEpoch();
   return parseInt(currentEpoch.number, 16);
 };
 
+/**
+ * A seeded random object, used in controling UI
+ */
 export class SeededRandom {
   private seed: number;
 
@@ -378,6 +381,9 @@ export class SeededRandom {
   }
 }
 
+/**
+ * Verify if an address is joyID address or not
+ */
 export const isJoyIdAddress = (address: string) => {
   const config = getConfig();
   const script = addressToScript(address, { config });
@@ -387,6 +393,9 @@ export const isJoyIdAddress = (address: string) => {
   );
 };
 
+/**
+ * Verify if an address is an omnilock address or not
+ */
 export const isOmnilockAddress = (address: string) => {
   const config = getConfig();
   const script = addressToScript(address, { config });
@@ -396,6 +405,9 @@ export const isOmnilockAddress = (address: string) => {
   );
 };
 
+/**
+ * Verify if an address is secp256k1 address or not
+ */
 export const isDefaultAddress = (address: string) => {
   const config = getConfig();
   const script = addressToScript(address, { config });
@@ -405,7 +417,13 @@ export const isDefaultAddress = (address: string) => {
   );
 };
 
-// because joyID witness size varies + lumos doesn't support
+/**
+ * A workardound for joyID transaction fee since
+ * joyID witness size varies + lumos doesn't support yet
+ * 
+ * @param transaction - The transaction skeleton.
+ * @returns A regulated transaction.
+ */
 export const insertJoyIdWithnessPlaceHolder = (
   transaction: TransactionSkeletonType
 ) => {
@@ -434,7 +452,13 @@ export const insertJoyIdWithnessPlaceHolder = (
   return transaction;
 };
 
-// this is for estimating purpose, use number instead of BigInt
+/**
+ * Get transaction fee from a transaction
+ * 
+ * @param transaction - The transaction skeleton.
+ * @param reward - Reward in case of a DAO unlock transaction.
+ * @returns A regulated transaction.
+ */
 export const getFee = (
   transaction: TransactionSkeletonType,
   reward: bigint | null = null
@@ -454,7 +478,10 @@ export const getFee = (
   return Number(inputCapacity - outputCapacity);
 };
 
-export function extractDaoDataCompatible(dao: PackedDao): {
+/**
+ * Decode dao data from block header dao
+ */
+function extractDaoDataCompatible(dao: PackedDao): {
   [key: string]: BI;
 } {
   if (!/^(0x)?([0-9a-fA-F]){64}$/.test(dao)) {
@@ -473,6 +500,13 @@ export function extractDaoDataCompatible(dao: PackedDao): {
     .reduce((result, c) => ({ ...result, ...c }), {});
 }
 
+/**
+ * Estimate reward when withdraw transaction is requested
+ * 
+ * @param depositCell - The deposit cell being withdrawn.
+ * @param tipEpoch - The CKB blockchain tip epoch
+ * @returns Reward estimation.
+ */
 export const estimateReturn = async (depositCell:DaoCell, tipEpoch: number):Promise<number> => {
   const c_o = DAO_MINIMUM_CAPACITY;
   const c_t = parseInt(depositCell.cellOutput.capacity, 16)/CKB_SHANNON_RATIO;
@@ -487,15 +521,3 @@ export const estimateReturn = async (depositCell:DaoCell, tipEpoch: number):Prom
   const result = ( c_t - c_o ) * (BI.from(tipDaoData.ar).toNumber()) / (BI.from(depositDaoData.ar).toNumber()) + c_o;
   return result;
 }
-
-export default {
-  sendTransaction,
-  waitForTransactionConfirmation,
-  getBlockHash,
-  ckbytesToShannons,
-  intToHex,
-  hexToInt,
-  collectInputs,
-  queryBalance,
-  findDepositCellWith,
-};
