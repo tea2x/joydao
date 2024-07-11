@@ -33,7 +33,7 @@ body {
 
 .to-right-sign {
   position: relative;
-  top: -100px;
+  top: -115px;
   right: -180px;
   margin: 0;
   opacity: 0.4;
@@ -46,7 +46,7 @@ body {
 
 .to-left-sign {
   position: relative;
-  top: -100px;
+  top: -115px;
   left: -180px;
   margin: 0;
   opacity: 0.4;
