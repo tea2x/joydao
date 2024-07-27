@@ -1143,24 +1143,36 @@ const App = () => {
       )}
 
       {!ckbAddress && (
-        <h1
-          className="title"
-          onClick={async () => {
-            await updateJoyDaoInfo("all");
-            window.location.reload();
-          }}
-        >
-          joyDAO
-        </h1>
+        <>
+          <h1
+            className="title"
+            onClick={async () => {
+              await updateJoyDaoInfo("all");
+              window.location.reload();
+            }}
+          >
+            joyDAO
+          </h1>
+          <div className="description">
+            <p>Multi-chain Nervos DAO portal</p>
+          </div>
+          <div className="entrance-decor"></div>
+          <button
+            className="signin-button"
+            onClick={() => {
+              try {
+                open();
+              } catch (e: any) {
+                enqueueSnackbar("Error: " + e.message, {
+                  variant: "error",
+                });
+              }
+            }}
+          >
+            Connect
+          </button>
+        </>
       )}
-
-      {!ckbAddress && (
-        <div className="description">
-          <p>Multi-chain Nervos DAO portal</p>
-        </div>
-      )}
-
-      {!ckbAddress && <div className="entrance-decor"></div>}
 
       {ckbAddress &&
         (isJoyIdAddress(ckbAddress) ? (
@@ -1181,23 +1193,6 @@ const App = () => {
             </TransitionGroup>
           </div>
         ))}
-
-      {!ckbAddress && (
-        <button
-          className="signin-button"
-          onClick={() => {
-            try {
-              open();
-            } catch (e: any) {
-              enqueueSnackbar("Error: " + e.message, {
-                variant: "error",
-              });
-            }
-          }}
-        >
-          Connect
-        </button>
-      )}
 
       <div className="main-buttons">
         {ckbAddress && (
