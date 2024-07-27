@@ -45,6 +45,8 @@ import {
 } from "react-circular-progressbar";
 
 import Modal from "react-modal";
+const bgVideo = require("./assets/videos/bg-video.mp4");
+
 Modal.setAppElement("#root");
 import "./App.css";
 
@@ -1129,6 +1131,12 @@ const App = () => {
 
   return (
     <>
+      <div className="background">
+        <video autoPlay loop id="myVideo">
+          <source src={bgVideo} type="video/mp4" />
+        </video>
+      </div>
+
       {isLoading && (
         <div className="loading-overlay">
           <div className="loading-circle-container">
@@ -1156,7 +1164,7 @@ const App = () => {
           <div className="description">
             <p>Multi-chain Nervos DAO portal</p>
           </div>
-          <div className="entrance-decor"></div>
+          {/* <div className="entrance-decor"></div> */}
           <button
             className="signin-button"
             onClick={() => {

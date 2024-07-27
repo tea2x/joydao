@@ -6,7 +6,7 @@ body {
   min-height: 100%;
   border: none;
   border-radius: 10px;
-  background-image: url("./images/plume-signin-background.png");
+  /* background-image: url("./images/plume-signin-background.png"); */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -16,6 +16,14 @@ body {
   text-align: center;
 }
 
+/* Background Video */
+#myVideo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* width: 100vw; */
+  height: 100vh;
+}
 .info-board {
   position: relative;
   font-size: large;
@@ -909,7 +917,7 @@ button.cancel:hover {
     top: -100px;
     right: -155px;
   }
-  
+
   .to-left-sign {
     top: -100px;
     left: -155px;
