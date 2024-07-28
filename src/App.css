@@ -16,7 +16,7 @@ body {
   text-align: center;
 }
 
-.info-board {
+/* .info-board {
   position: relative;
   font-size: large;
   font-family: sans-serif;
@@ -29,7 +29,7 @@ body {
   width: 320px;
   height: 150px;
   text-align: left;
-}
+} */
 
 .to-right-sign {
   position: relative;
@@ -80,12 +80,12 @@ body {
   font-size: 16px;
 }
 
-.text-based-info {
+/* .text-based-info {
   display: inline-flexbox;
   font-weight: bolder;
   padding: 2px;
   margin: 0 auto;
-}
+} */
 
 .notif {
   /* max-width: 200px; */
@@ -93,12 +93,12 @@ body {
   text-align: left;
 }
 
-.main-buttons {
+/* .main-buttons {
   display: flex;
   justify-content: center;
   width: 100%;
   margin-bottom: 40px;
-}
+} */
 
 .joyid-connect {
   background-color: #f8f8f8;
@@ -156,21 +156,6 @@ body {
   position: relative;
   box-shadow: 1px 1px 0 #555, 2px 2px 0 #333;
   transition: transform 0.3s ease;
-}
-
-.copy-sign {
-  position: relative;
-  font-size: 20px;
-  font-weight: bolder;
-  color: rgb(126, 78, 9);
-  left: 10px;
-  margin: 0 auto;
-}
-
-.copy-sign:hover {
-  opacity: 1;
-  animation: rainbow 5s linear infinite;
-  cursor: pointer;
 }
 
 @keyframes rainbow {
@@ -816,12 +801,12 @@ button.cancel:hover {
   margin: 10px;
 }
 
-.highlight {
+/* .highlight {
   margin: 0.1em;
   font-size: 1em;
   font-weight: bold;
   animation: warningAnimation 1s infinite alternate;
-}
+} */
 
 @keyframes warningAnimation {
   0% {
@@ -831,155 +816,5 @@ button.cancel:hover {
   100% {
     color: rgb(255, 123, 0);
     transform: scale(1.1);
-  }
-}
-
-@media only screen and (max-width: 768px) {
-  body {
-    background-image: url("./images/plume-signin-background_portrait.png");
-  }
-
-  .info-board {
-    font-size: medium;
-    width: 270px;
-  }
-
-  .to-right-sign {
-    top: -100px;
-    right: -155px;
-  }
-
-  .to-left-sign {
-    top: -100px;
-    left: -155px;
-  }
-
-  .control-panel-text-box {
-    width: 250px;
-    height: 30px;
-  }
-
-  .headline-separation {
-    width: 270px;
-  }
-
-  .title {
-    font-size: 2.4em;
-    height: 45px;
-    width: 150px;
-    font-weight: 600;
-  }
-
-  .description {
-    top: -30px;
-  }
-
-  .main-buttons {
-    margin-bottom: 5px;
-  }
-
-  .signin-button,
-  .sign-out-button,
-  .poly-morph-button {
-    width: 150px;
-    height: 40px;
-    padding: 5px 10px 5px 10px;
-    font-size: 14px;
-    margin-bottom: 30px;
-    font-weight: bold;
-  }
-
-  .signin-button {
-    background-position: right 10px center;
-    background-size: 35px;
-    padding-left: 2px;
-    width: 180px;
-    height: 45px;
-    font-size: 1.5em;
-    position: relative;
-    top: -50px;
-  }
-
-  .copy-sign {
-    font-size: 16px;
-  }
-
-  .joyid-connect {
-    font-size: 1em;
-    top: 25px;
-    padding: 1px 15px;
-    background-size: 30px;
-  }
-
-  .other-wallet-connect {
-    font-size: 1em;
-    top: 25px;
-  }
-
-  .entrance-decor {
-    left: 0.1%;
-    width: 45vh;
-    height: 45vh;
-    background-image: url("./images/poster-mobile.png");
-    background-size: 45vh;
-  }
-
-  .cell-grid {
-    max-width: 100%;
-  }
-
-  .dao-cell-dummy {
-    padding: 3px;
-    margin: 3px;
-    border-radius: 10px;
-    font-size: 16px;
-    height: var(--cellHeight);
-  }
-
-  .dao-cell {
-    padding: 3px;
-    margin: 4px;
-    border-radius: 10px;
-    font-size: 16px;
-    height: var(--cellHeight);
-  }
-
-  .dao-cell-button {
-    font-size: 0.8em;
-    border-radius: 2px;
-    width: 90px;
-    height: 30px;
-  }
-
-  .dao-cell-button::before {
-    border-radius: 7px;
-  }
-
-  .button-border-progress-bar {
-    width: 90px;
-    height: 30px;
-    border-radius: 2px;
-    background-size: 100% 1.5px, 1.5px 100%, 100% 1.5px, 1.5px 100%;
-    position: relative;
-    top: 38px;
-    z-index: 1;
-  }
-
-  /* .max-deposit {
-    font-size: smaller;
-  } */
-
-  .no-deposit-message {
-    font-size: 1em;
-  }
-
-  .tx-confirmation-message {
-    font-size: 14px;
-  }
-
-  .ReactModal__Content {
-    max-width: 40vh;
-    padding: 20px;
-    min-width: 200px;
   }
 }

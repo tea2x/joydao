@@ -93,7 +93,6 @@ const App = () => {
     React.useState(false);
   const [compensation, setCompensation] = React.useState<number | null>(null);
   const [percentageLoading, setPercentageLoading] = React.useState<number>(0);
-  const [isMainPanel, setIsMainPanel] = React.useState(true);
 
   // basic wallet
   const [transferTo, setTransferTo] = React.useState<string>("");
@@ -102,8 +101,6 @@ const App = () => {
   const { open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
   const { enqueueSnackbar } = useSnackbar();
-  const onMainPanel = () => setIsMainPanel(true);
-  const onToTransferPanel = () => setIsMainPanel(false);
 
   initializeConfig(NETWORK_CONFIG as Config);
 
@@ -808,51 +805,81 @@ const App = () => {
   /**
    * joyDAO front information board UI
    */
-  function daoInfoBoard() {
+  const accountBalances = () => {
     return (
-      <div className="info-board">
-        <div className="control-panel-headline">
-          Account: {shortenAddress(ckbAddress)}
-          <span
-            className="copy-sign"
-            onClick={(e) => {
-              e.stopPropagation();
-              copyAddress(ckbAddress);
-            }}
-          >
-            ⧉
+      <div className="balances">
+        <div className="balance-background"></div>
+        <p className="balance-index free-balance">
+          <span>Free</span>
+          <span>
+            {balance
+              ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+              : "Loading..."}
           </span>
-        </div>
-        <h3 className="headline-separation"> </h3>
+        </p>
 
-        <div className="text-based-info">
-          • Free:{" "}
-          {balance
-            ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-            : "Loading..."}
-        </div>
+        <p className="balance-index depositing-balance">
+          <span>Depositing</span>
+          <span>
+            {balance
+              ? (sumDeposit() / CKB_SHANNON_RATIO)
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+              : "Loading..."}
+          </span>
+        </p>
 
-        <div className="text-based-info">
-          • Deposited:{" "}
-          {balance
-            ? (sumDeposit() / CKB_SHANNON_RATIO)
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-            : "Loading..."}
-        </div>
+        <p className="balance-index withdrawing-balance">
+          <span>Withdrawing</span>
+          <span>
+            {balance
+              ? (sumLocked() / CKB_SHANNON_RATIO)
+                  .toString()
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+              : "Loading..."}
+          </span>
+        </p>
+      </div>
+    );
+  };
 
-        <div className="text-based-info">
-          • Withdrawing:{" "}
-          {balance
-            ? (sumLocked() / CKB_SHANNON_RATIO)
-                .toString()
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-            : "Loading..."}
-        </div>
+  const sidebarMenu = () => {
+    return (
+      <ul className="sidebar-menu">
+        <li className="sidebar-item">
+          <img
+            src={require("./assets/icons/transfer.svg").default}
+            className="icon"
+            draggable={false}
+          />
+          <span className="text">Transfer</span>
+        </li>
+        <li className="sidebar-item">
+          <img
+            src={require("./assets/icons/deposit.svg").default}
+            className="icon"
+            draggable={false}
+          />
+          <span className="text">Deposit</span>
+        </li>
+        <li className="sidebar-item sign-out" onClick={onSignOut}>
+          <img
+            src={require("./assets/icons/sign-out.svg").default}
+            className="icon"
+            draggable={false}
+          />
+          <span className="text">Sign Out</span>
+        </li>
+      </ul>
+    );
+  };
 
+  const depositForm = () => {
+    return (
+      <>
         <input
           type="text"
           className="control-panel-text-box"
@@ -861,27 +888,30 @@ const App = () => {
           onKeyDown={handleDepositKeyDown}
           placeholder="Enter amount to deposit!"
         />
-      </div>
+        <Button
+          onClick={() => onDeposit()}
+          style={{ display: pickedCells.length >= 2 ? "unset" : "none" }}
+        >
+          Deposit
+        </Button>
+      </>
     );
-  }
+  };
 
-  /**
-   * joyDAO basic wallet UI
-   */
-  function basicWallet() {
+  const transferForm = () => {
     return (
-      <div className="info-board">
+      <>
         <div className="control-panel-headline">Transfer</div>
-        <h3 className="headline-separation"> </h3>
-
-        <div className="text-based-info">
-          • Transferable:{" "}
-          {balance
-            ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-            : "Loading..."}
-        </div>
+        <p className="balance-index">
+          <span>Transferable</span>
+          <span>
+            {balance
+              ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+              : "Loading..."}
+          </span>
+        </p>
 
         <input
           className="control-panel-text-box"
@@ -898,48 +928,55 @@ const App = () => {
           onInput={(e) => setTransferAmount(e.currentTarget.value)}
           placeholder="Enter amount to transfer!"
         />
-      </div>
+        <Button onClick={() => onTransfer()}>Transfer</Button>
+      </>
+    );
+  };
+
+  function daoInfoBoard() {
+    return (
+      <>
+        <header>
+          <img
+            className="logo"
+            src={require("./assets/icons/logo.svg").default}
+            alt="joyDAO"
+            draggable={false}
+          />
+          <p className="address">{shortenAddress(ckbAddress)}</p>
+          <Button
+            type="ghost"
+            icon={require("./assets/icons/copy.svg").default}
+            className="copy"
+            onClick={(e) => {
+              e.stopPropagation();
+              copyAddress(ckbAddress);
+            }}
+          />
+        </header>
+        {accountBalances()}
+        {sidebarMenu()}
+        <Button
+          type="ghost"
+          icon={require("./assets/icons/sidebar-control.svg").default}
+          className="sidebar-control"
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+      </>
     );
   }
 
   /**
-   * joyDAO front information board navigator UI
+   * joyDAO basic wallet UI
    */
-  function tabNavigator() {
+  function basicWallet() {
     return (
-      <div>
-        {isMainPanel ? (
-          <svg
-            className="to-right-sign"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            id="angle-right"
-            width="30"
-            height="30"
-            onClick={onToTransferPanel}
-          >
-            <path
-              fill="#524540"
-              d="M14.83,11.29,10.59,7.05a1,1,0,0,0-1.42,0,1,1,0,0,0,0,1.41L12.71,12,9.17,15.54a1,1,0,0,0,0,1.41,1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29l4.24-4.24A1,1,0,0,0,14.83,11.29Z"
-            ></path>
-          </svg>
-        ) : (
-          <svg
-            className="to-left-sign"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            id="angle-left"
-            width="30"
-            height="30"
-            onClick={onMainPanel}
-          >
-            <path
-              fill="#524540"
-              d="M11.29,12l3.54-3.54a1,1,0,0,0,0-1.41,1,1,0,0,0-1.42,0L9.17,11.29a1,1,0,0,0,0,1.42L13.41,17a1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41Z"
-            ></path>
-          </svg>
-        )}
-      </div>
+      <>
+        {daoInfoBoard()}
+        {/* {transferForm()} */}
+        {/* {depositForm()} */}
+        {/* <Button onClick={() => onBatch(pickedCells)}>Batch</Button> */}
+      </>
     );
   }
 
@@ -1138,6 +1175,9 @@ const App = () => {
     bgVideo.playbackRate = 0.6;
   });
 
+  const [isSidebarCollapsed, setIsSidebarCollapsed] =
+    React.useState<Boolean>(false);
+
   return (
     <>
       <div className="background">
@@ -1209,46 +1249,7 @@ const App = () => {
       )}
 
       {ckbAddress && (
-        <>
-          {isJoyIdAddress(ckbAddress) ? (
-            daoInfoBoard()
-          ) : (
-            <div>
-              <TransitionGroup>
-                <CSSTransition timeout={1000}>
-                  <div
-                    style={{
-                      marginBottom: "-30px",
-                    }}
-                  >
-                    {isMainPanel ? daoInfoBoard() : basicWallet()}
-                    {tabNavigator()}
-                  </div>
-                </CSSTransition>
-              </TransitionGroup>
-            </div>
-          )}
-          <div className="main-buttons">
-            <button className="sign-out-button" onClick={onSignOut}>
-              Sign Out
-            </button>
-            <button
-              className="poly-morph-button"
-              onClick={(e) => {
-                !isMainPanel
-                  ? onTransfer()
-                  : pickedCells.length >= 2
-                  ? onBatch(pickedCells)
-                  : onDeposit();
-              }}
-            >
-              {!isMainPanel
-                ? "Transfer"
-                : pickedCells.length >= 2
-                ? "Batch"
-                : "Deposit"}
-            </button>
-          </div>
+        <div className="auth--screen">
           {daoCellNum === 0 && isLoading == false ? (
             <div className="no-deposit-message">
               <h2>Whoops, no deposits found!</h2>
@@ -1530,7 +1531,10 @@ const App = () => {
               )}
             </div>
           )}
-        </>
+          <aside className={isSidebarCollapsed ? "collapsed" : "expanded"}>
+            {isJoyIdAddress(ckbAddress) ? daoInfoBoard() : basicWallet()}
+          </aside>
+        </div>
       )}
       {daoTransitInfoModal()}
     </>

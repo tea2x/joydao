@@ -5,6 +5,20 @@
   font-weight: 500;
 }
 
+@mixin txt-m-semibold {
+  font-size: 1.4rem;
+  line-height: 2rem;
+  letter-spacing: 0.015rem;
+  font-weight: 600;
+}
+
+@mixin txt-l-semibold {
+  font-size: 1.6rem;
+  line-height: 2.4rem;
+  letter-spacing: 0.015rem;
+  font-weight: 600;
+}
+
 @mixin txt-xl-medium {
   font-size: 1.8rem;
   line-height: 2.8rem;
