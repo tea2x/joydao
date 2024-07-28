@@ -93,63 +93,11 @@ body {
   text-align: left;
 }
 
-.title {
-  font-size: 2.5em;
-  color: #f8f8f8;
-  text-shadow: 1px 1px 0 #505050, 2px 2px 0 #333;
-  transform: rotate(-0.5deg);
-  margin: 50px auto;
-  cursor: pointer;
-  border: 1px solid #505050;
-  padding: 5px;
-  background-color: #505050;
-  height: 65px;
-  width: 200px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.3s ease, background-color 0.3s ease;
-  z-index: 0;
-}
-
-.title:hover {
-  color: #a8e72f;
-  background-color: #000;
-}
-
 .main-buttons {
   display: flex;
   justify-content: center;
   width: 100%;
   margin-bottom: 40px;
-}
-
-.signin-button {
-  background-color: #f8f8f8;
-  color: #505050;
-  padding: 10px 20px;
-  border: 1px solid #505050;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 200px;
-  height: 40px;
-  box-shadow: 1px 1px 0 #555, 2px 2px 0 #333;
-  transition: transform 0.3s ease;
-  position: relative;
-  top: -50px;
-  margin: 0 auto;
-}
-
-.signin-button:hover {
-  transform: translateY(-3px);
-  background-color: #000;
-  color: #f8f8f8;
 }
 
 .joyid-connect {
@@ -518,15 +466,6 @@ body {
   font-size: 16px;
   font-weight: bold;
   color: #333;
-}
-
-.description {
-  position: relative;
-  top: -40px;
-  font-size: 20px;
-  font-family: Arial, Helvetica, sans-serif;
-  color: #cecece;
-  transform: rotate(-0.5deg);
 }
 
 @keyframes blink {

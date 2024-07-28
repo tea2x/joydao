@@ -1,0 +1,20 @@
+@import "/src/styles/variables.scss";
+
+.baseBtn {
+  width: fit-content;
+  padding: 0.8rem 2.4rem;
+  display: flex;
+  gap: 1.2rem;
+
+  border-radius: 1.2rem;
+  border: none;
+  background-color: $stem-green;
+
+  font-size: 1.6rem;
+  line-height: 2.4rem;
+  letter-spacing: 0.015rem;
+
+  color: $dark-primary;
+
+  cursor: pointer;
+}

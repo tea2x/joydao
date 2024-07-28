@@ -1,3 +1,6 @@
+@import "./styles/variables.scss";
+@import "./styles/typography.scss";
+
 /* Background Video */
 #myVideo {
   position: fixed;
@@ -6,18 +9,73 @@
   /* width: 100vw; */
   height: 100vh;
   z-index: -1;
+
+  opacity: 0.4;
 }
 
 /* Login page */
 .guest--screen {
+  height: 100%;
   display: flex;
+
+  color: $nokia-black;
+
+  cursor: default;
+
+  .guest--content {
+    position: relative;
+    width: 50%;
+    padding: 4.8rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    @include txt-m-medium;
+
+    .logo {
+      margin: 0 0 2.4rem;
+    }
+
+    .title {
+      // font-size: 1.8rem;
+      // line-height: 2.8rem;
+
+      @include txt-xl-medium;
+
+      color: $stem-green;
+    }
+
+    .sub-title {
+      margin: 0 0 6.4rem;
+    }
+
+    .signin-button {
+    }
+
+    footer {
+      width: 100%;
+      box-sizing: border-box;
+
+      position: absolute;
+
+      bottom: 0;
+      left: 0;
+      padding: 4.8rem;
+
+      p {
+        width: inherit;
+        display: flex;
+        justify-content: space-between;
+      }
+    }
+  }
   .guest--slider {
-    right: 0;
-    width: 50vw;
-    height: 100vh;
+    width: 50%;
     img {
-      width: inherit;
-      height: inherit;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
     }
   }

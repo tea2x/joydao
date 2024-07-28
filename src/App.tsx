@@ -47,10 +47,12 @@ import {
 import Modal from "react-modal";
 import bgVideo from "./assets/videos/bg-video.mp4";
 import bgGuestLogin01 from "./assets/images/bg-login-01.jpeg";
+import gradientLogo from "./assets/icons/logo.svg";
 
 Modal.setAppElement("#root");
 import "./App.css";
 import "./index.scss";
+import { Button } from "./components";
 
 const { ckbHash } = utils;
 
@@ -1131,6 +1133,11 @@ const App = () => {
   const maxDummyCellWidth = 150;
   const dummyCellWidthRandomizer = new SeededRandom(daoCellNum);
 
+  React.useEffect(() => {
+    const bgVideo = document.getElementById("myVideo") as HTMLVideoElement;
+    bgVideo.playbackRate = 0.6;
+  });
+
   return (
     <>
       <div className="background">
@@ -1155,20 +1162,23 @@ const App = () => {
       {!ckbAddress && (
         <div className="guest--screen">
           <div className="guest--content">
+            <img
+              src={gradientLogo}
+              alt="joyDAO"
+              className="logo"
+              draggable={false}
+            />
             <h1
               className="title"
               onClick={async () => {
                 await updateJoyDaoInfo("all");
-                window.location.reload();
               }}
             >
-              joyDAO
+              joyDAO.cc
             </h1>
-            <div className="description">
-              <p>Multi-chain Nervos DAO portal</p>
-            </div>
+            <p className="sub-title">Multi-chain Nervos DAO portal</p>
             {/* <div className="entrance-decor"></div> */}
-            <button
+            <Button
               className="signin-button"
               onClick={() => {
                 try {
@@ -1181,7 +1191,16 @@ const App = () => {
               }}
             >
               Connect
-            </button>
+            </Button>
+            <footer>
+              <p>
+                <span>joyDAO © 2024</span>
+                <span>
+                  Deposit to <span className="highlight-txt">Nervos DAO</span>{" "}
+                  today!
+                </span>
+              </p>
+            </footer>
           </div>
           <div className="guest--slider">
             <img src={bgGuestLogin01} alt="blockchain-mountain" />
