@@ -1,0 +1,24 @@
+/* Background Video */
+#myVideo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* width: 100vw; */
+  height: 100vh;
+  z-index: -1;
+}
+
+/* Login page */
+.guest--screen {
+  display: flex;
+  .guest--slider {
+    right: 0;
+    width: 50vw;
+    height: 100vh;
+    img {
+      width: inherit;
+      height: inherit;
+      object-fit: cover;
+    }
+  }
+}

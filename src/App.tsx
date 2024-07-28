@@ -45,10 +45,12 @@ import {
 } from "react-circular-progressbar";
 
 import Modal from "react-modal";
-const bgVideo = require("./assets/videos/bg-video.mp4");
+import bgVideo from "./assets/videos/bg-video.mp4";
+import bgGuestLogin01 from "./assets/images/bg-login-01.jpeg";
 
 Modal.setAppElement("#root");
 import "./App.css";
+import "./index.scss";
 
 const { ckbHash } = utils;
 
@@ -1151,35 +1153,40 @@ const App = () => {
       )}
 
       {!ckbAddress && (
-        <>
-          <h1
-            className="title"
-            onClick={async () => {
-              await updateJoyDaoInfo("all");
-              window.location.reload();
-            }}
-          >
-            joyDAO
-          </h1>
-          <div className="description">
-            <p>Multi-chain Nervos DAO portal</p>
+        <div className="guest--screen">
+          <div className="guest--content">
+            <h1
+              className="title"
+              onClick={async () => {
+                await updateJoyDaoInfo("all");
+                window.location.reload();
+              }}
+            >
+              joyDAO
+            </h1>
+            <div className="description">
+              <p>Multi-chain Nervos DAO portal</p>
+            </div>
+            {/* <div className="entrance-decor"></div> */}
+            <button
+              className="signin-button"
+              onClick={() => {
+                try {
+                  open();
+                } catch (e: any) {
+                  enqueueSnackbar("Error: " + e.message, {
+                    variant: "error",
+                  });
+                }
+              }}
+            >
+              Connect
+            </button>
           </div>
-          {/* <div className="entrance-decor"></div> */}
-          <button
-            className="signin-button"
-            onClick={() => {
-              try {
-                open();
-              } catch (e: any) {
-                enqueueSnackbar("Error: " + e.message, {
-                  variant: "error",
-                });
-              }
-            }}
-          >
-            Connect
-          </button>
-        </>
+          <div className="guest--slider">
+            <img src={bgGuestLogin01} alt="blockchain-mountain" />
+          </div>
+        </div>
       )}
 
       {ckbAddress && (

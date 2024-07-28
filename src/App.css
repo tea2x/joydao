@@ -16,14 +16,6 @@ body {
   text-align: center;
 }
 
-/* Background Video */
-#myVideo {
-  position: fixed;
-  top: 0;
-  left: 0;
-  /* width: 100vw; */
-  height: 100vh;
-}
 .info-board {
   position: relative;
   font-size: large;
