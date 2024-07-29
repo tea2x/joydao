@@ -888,22 +888,31 @@ const App = () => {
 
   const depositForm = () => {
     return (
-      <>
-        <input
-          type="text"
-          className="control-panel-text-box"
+      <div className="deposit-form">
+        <div className="form-header">
+          <Button
+            type="ghost"
+            icon={require("./assets/icons/back.svg").default}
+            onClick={() => setSidebarMode(0)}
+          />
+          <h3>
+            <span className="highlight-txt">Deposit CKB</span>
+            <span>to Nervos DAO</span>
+          </h3>
+        </div>
+        <Input
+          className="form-field"
+          htmlType="text"
           value={depositAmount}
           onChange={(e) => setDepositAmount(e.target.value)}
           onKeyDown={handleDepositKeyDown}
-          placeholder="Enter amount to deposit!"
+          placeholder="Deposit amount"
+          leadIcon={require("./assets/icons/zap.svg").default}
         />
-        <Button
-          onClick={() => onDeposit()}
-          style={{ display: pickedCells.length >= 2 ? "unset" : "none" }}
-        >
-          Deposit
+        <Button className="submit" type="glass" onClick={() => onDeposit()}>
+          Execute
         </Button>
-      </>
+      </div>
     );
   };
 
@@ -969,12 +978,14 @@ const App = () => {
         {sidebarMode === 0 && sidebarMenu()}
         {sidebarMode === 1 && transferForm()}
         {sidebarMode === 2 && depositForm()}
-        <Button
-          type="ghost"
-          icon={require("./assets/icons/sidebar-control.svg").default}
-          className="sidebar-control"
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        />
+        {sidebarMode === 0 && (
+          <Button
+            type="ghost"
+            icon={require("./assets/icons/sidebar-control.svg").default}
+            className="sidebar-control"
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          />
+        )}
       </>
     );
   }
