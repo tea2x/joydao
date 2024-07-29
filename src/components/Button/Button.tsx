@@ -14,7 +14,7 @@ const Button: React.FC<ButtonProps> = ({
       className={cx([styles.baseBtn, className, `${type}-type`])}
       {...rest}
     >
-      {children}
+      {children && <div className="inside">{children}</div>}
       {icon && (
         <img src={icon} alt="btn-action" draggable="false" className="icon" />
       )}
@@ -24,6 +24,6 @@ const Button: React.FC<ButtonProps> = ({
 
 type ButtonProps = React.HTMLAttributes<HTMLButtonElement> & {
   icon?: string;
-  type?: "primary" | "secondary" | "tertiary" | "ghost";
+  type?: "primary" | "secondary" | "tertiary" | "ghost" | "glass";
 };
 export default Button;

@@ -1,9 +1,12 @@
 @import "/src/styles/variables.scss";
+@import "/src/styles/typography.scss";
 
 .baseBtn {
   width: fit-content;
   padding: 0.8rem 2.4rem;
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 1.2rem;
 
   border-radius: 1.2rem;
@@ -42,6 +45,23 @@
 
       &:hover::before {
         opacity: 1;
+      }
+    }
+
+    &.glass-type {
+      background: linear-gradient(
+        180deg,
+        #d7eded70 -50%,
+        rgba(204, 235, 235, 0) 110%
+      );
+      border: none;
+      border-radius: 1.2rem;
+      height: 4.8rem;
+      color: #9b9c9e;
+
+      &:hover {
+        color: #0c1132;
+        background: #b6f09c;
       }
     }
 

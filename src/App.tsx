@@ -52,7 +52,7 @@ import gradientLogo from "./assets/icons/logo.svg";
 Modal.setAppElement("#root");
 import "./App.css";
 import "./index.scss";
-import { Button } from "./components";
+import { Button, Input } from "./components";
 
 const { ckbHash } = utils;
 
@@ -802,6 +802,12 @@ const App = () => {
     return backgroundPos;
   }
 
+  // Sidebar Mode
+  // 0. default
+  // 1. transfer
+  // 2. deposit
+  const [sidebarMode, setSidebarMode] = React.useState(1);
+
   /**
    * joyDAO front information board UI
    */
@@ -819,29 +825,32 @@ const App = () => {
               : "Loading..."}
           </span>
         </p>
+        {sidebarMode !== 1 && (
+          <>
+            <p className="balance-index depositing-balance">
+              <span>Depositing</span>
+              <span>
+                {balance
+                  ? (sumDeposit() / CKB_SHANNON_RATIO)
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+                  : "Loading..."}
+              </span>
+            </p>
 
-        <p className="balance-index depositing-balance">
-          <span>Depositing</span>
-          <span>
-            {balance
-              ? (sumDeposit() / CKB_SHANNON_RATIO)
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-              : "Loading..."}
-          </span>
-        </p>
-
-        <p className="balance-index withdrawing-balance">
-          <span>Withdrawing</span>
-          <span>
-            {balance
-              ? (sumLocked() / CKB_SHANNON_RATIO)
-                  .toString()
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-              : "Loading..."}
-          </span>
-        </p>
+            <p className="balance-index withdrawing-balance">
+              <span>Withdrawing</span>
+              <span>
+                {balance
+                  ? (sumLocked() / CKB_SHANNON_RATIO)
+                      .toString()
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+                  : "Loading..."}
+              </span>
+            </p>
+          </>
+        )}
       </div>
     );
   };
@@ -849,7 +858,7 @@ const App = () => {
   const sidebarMenu = () => {
     return (
       <ul className="sidebar-menu">
-        <li className="sidebar-item">
+        <li className="sidebar-item" onClick={() => setSidebarMode(1)}>
           <img
             src={require("./assets/icons/transfer.svg").default}
             className="icon"
@@ -857,7 +866,7 @@ const App = () => {
           />
           <span className="text">Transfer</span>
         </li>
-        <li className="sidebar-item">
+        <li className="sidebar-item" onClick={() => setSidebarMode(2)}>
           <img
             src={require("./assets/icons/deposit.svg").default}
             className="icon"
@@ -900,36 +909,38 @@ const App = () => {
 
   const transferForm = () => {
     return (
-      <>
-        <div className="control-panel-headline">Transfer</div>
-        <p className="balance-index">
-          <span>Transferable</span>
-          <span>
-            {balance
-              ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-              : "Loading..."}
-          </span>
-        </p>
-
-        <input
-          className="control-panel-text-box"
-          type="text"
+      <div className="transfer-form">
+        <div className="form-header">
+          <Button
+            type="ghost"
+            icon={require("./assets/icons/back.svg").default}
+            onClick={() => setSidebarMode(0)}
+          />
+          <h3>
+            <span className="highlight-txt">Transfer</span>
+            <span>to destination address</span>
+          </h3>
+        </div>
+        <Input
+          className="form-field"
+          htmlType="text"
           value={transferTo}
           onInput={(e) => setTransferTo(e.currentTarget.value)}
-          placeholder="Enter address to transfer to!"
+          placeholder="Destination address"
+          leadIcon={require("./assets/icons/user.svg").default}
         />
-
-        <input
-          className="control-panel-text-box"
-          type="text"
+        <Input
+          className="form-field"
+          htmlType="text"
           value={transferAmount}
           onInput={(e) => setTransferAmount(e.currentTarget.value)}
-          placeholder="Enter amount to transfer!"
+          placeholder="Amount of transfer"
+          leadIcon={require("./assets/icons/zap.svg").default}
         />
-        <Button onClick={() => onTransfer()}>Transfer</Button>
-      </>
+        <Button className="submit" type="glass" onClick={() => onTransfer()}>
+          Execute
+        </Button>
+      </div>
     );
   };
 
@@ -955,7 +966,9 @@ const App = () => {
           />
         </header>
         {accountBalances()}
-        {sidebarMenu()}
+        {sidebarMode === 0 && sidebarMenu()}
+        {sidebarMode === 1 && transferForm()}
+        {sidebarMode === 2 && depositForm()}
         <Button
           type="ghost"
           icon={require("./assets/icons/sidebar-control.svg").default}

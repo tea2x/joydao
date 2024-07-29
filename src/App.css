@@ -13,7 +13,7 @@ body {
   background-attachment: fixed;
   overflow: auto;
   position: absolute;
-  text-align: center;
+  /* text-align: center; */
 }
 
 /* .info-board {

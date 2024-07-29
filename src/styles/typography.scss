@@ -12,11 +12,25 @@
   font-weight: 600;
 }
 
+@mixin txt-l-medium {
+  font-size: 1.6rem;
+  line-height: 2.4rem;
+  letter-spacing: 0.015rem;
+  font-weight: 500;
+}
+
 @mixin txt-l-semibold {
   font-size: 1.6rem;
   line-height: 2.4rem;
   letter-spacing: 0.015rem;
   font-weight: 600;
+}
+
+@mixin txt-l-bold {
+  font-size: 1.6rem;
+  line-height: 2.4rem;
+  letter-spacing: 0.015rem;
+  font-weight: 700;
 }
 
 @mixin txt-xl-medium {
