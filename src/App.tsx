@@ -806,7 +806,7 @@ const App = () => {
   // 0. default
   // 1. transfer
   // 2. deposit
-  const [sidebarMode, setSidebarMode] = React.useState(1);
+  const [sidebarMode, setSidebarMode] = React.useState(0);
 
   /**
    * joyDAO front information board UI
@@ -876,6 +876,16 @@ const App = () => {
           />
           <span className="text">Deposit</span>
         </li>
+        {pickedCells.length >= 2 && (
+          <li className="sidebar-item" onClick={() => onBatch(pickedCells)}>
+            <img
+              src={require("./assets/icons/batch.svg").default}
+              className="icon"
+              draggable={false}
+            />
+            <span className="text">Batch</span>
+          </li>
+        )}
         <li className="sidebar-item sign-out" onClick={onSignOut}>
           <img
             src={require("./assets/icons/sign-out.svg").default}
@@ -978,8 +988,6 @@ const App = () => {
         </header>
         {accountBalances()}
         {sidebarMode === 0 && sidebarMenu()}
-        {sidebarMode === 1 && transferForm()}
-        {sidebarMode === 2 && depositForm()}
         {sidebarMode === 0 && (
           <Button
             type="ghost"
@@ -999,8 +1007,8 @@ const App = () => {
     return (
       <>
         {daoInfoBoard()}
-        {/* {transferForm()} */}
-        {/* {depositForm()} */}
+        {sidebarMode === 1 && transferForm()}
+        {sidebarMode === 2 && depositForm()}
         {/* <Button onClick={() => onBatch(pickedCells)}>Batch</Button> */}
       </>
     );
