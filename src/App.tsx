@@ -815,17 +815,19 @@ const App = () => {
     return (
       <div className="balances">
         <div className="balance-background"></div>
-        <p className="balance-index free-balance">
-          <span>Free</span>
-          <span>
-            {balance
-              ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-              : "Loading..."}
-          </span>
-        </p>
-        {sidebarMode !== 1 && (
+        {sidebarMode !== 2 && (
+          <p className="balance-index free-balance">
+            <span>Free</span>
+            <span>
+              {balance
+                ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
+                    .toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+                : "Loading..."}
+            </span>
+          </p>
+        )}
+        {sidebarMode === 0 && (
           <>
             <p className="balance-index depositing-balance">
               <span>Depositing</span>
