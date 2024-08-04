@@ -344,4 +344,18 @@
       text-align: center;
     }
   }
+
+  .cell-diagram {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .dao-cell {
+    width: 25.6rem;
+    height: 25.6rem;
+  }
+  .dao-cell-dummy {
+    width: 25.6rem;
+    height: 25.6rem;
+  }
 }
