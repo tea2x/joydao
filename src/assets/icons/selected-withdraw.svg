@@ -1,0 +1,18 @@
+<svg xml:space="preserve" viewBox="0 0 100 100" y="0" x="0" xmlns="http://www.w3.org/2000/svg" id="圖層_1" version="1.1" style="margin: initial; display: block; shape-rendering: auto; background: rgba(255, 255, 255, 0);" preserveAspectRatio="xMidYMid" width="200" height="200">
+  <g class="ldl-scale" style="transform-origin: 50% 50%;">
+    <animateTransform attributeType="XML" attributeName="transform" type="scale" values="0.9;1.1;0.9" dur="1s" repeatCount="indefinite" />
+    <g class="ldl-ani">
+      <g class="ldl-layer">
+        <g class="ldl-ani">
+          <g>
+            <g class="ldl-layer">
+              <g class="ldl-ani" style="transform-box:view-box;transform-origin:50px 50px;transform:matrix(0.91, 0, 0, 0.91, 0, 0);animation-duration:1s;animation-timing-function:linear;animation-delay:-1s;animation-iteration-count:infinite;animation-direction:normal;animation-fill-mode:forwards;animation-play-state:paused;animation-name:animate;animation-timeline:auto;animation-range-start:normal;animation-range-end:normal;;animation:none">
+                <path d="M39.273 82.965L7.5 46.115l6.603-6.604 25.17 21.318 48.682-43.794L92.5 21.58z" fill="#849b87" style="stroke-width:1px;fill:rgb(212, 108, 0);;animation:none"></path>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

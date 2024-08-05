@@ -1,4 +1,4 @@
-const cx = (classNames: (string | undefined | null)[]) =>
+const cx = (classNames: (string | undefined | null | boolean)[]) =>
   classNames.filter(Boolean).join(" ");
 
 export { cx };

@@ -5,7 +5,14 @@ import { cx } from "../../utils/classname";
 const VALUE_THRESHOLD_1 = 150;
 const VALUE_THRESHOLD_2 = 200;
 
-const Cell: React.FC<CellProps> = ({ className, type, value, ...rest }) => {
+const Cell: React.FC<CellProps> = ({
+  className,
+  type,
+  value,
+  selected = false,
+  onClick,
+  ...rest
+}) => {
   let size: "large" | "medium" | "small";
   console.log(value);
   switch (true) {
@@ -30,8 +37,9 @@ const Cell: React.FC<CellProps> = ({ className, type, value, ...rest }) => {
         className,
         `${type}-type`,
         `${size}-size`,
+        selected && "selected",
       ])}
-      onClick={(e) => e.stopPropagation()}
+      onClick={onClick}
       style={{ "--progress": "120deg" } as CSSProperties}
     >
       <div className="amount">
@@ -70,6 +78,7 @@ type CellProps = React.HTMLAttributes<HTMLDivElement> & {
   type: "deposit" | "withdraw";
   progress: number;
   value: number;
+  selected?: boolean;
 };
 
 export default Cell;

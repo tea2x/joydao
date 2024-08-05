@@ -5,39 +5,23 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  // background-color: var(--backgroundColor);
   animation: fadeIntro 0.5s ease-in-out;
   font-size: 1.2em;
   position: relative;
-  // cursor: pointer;
   background-color: rgba(26, 29, 33, 0.5);
 
-  // background-size: contain;
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 18px;
-    height: 18px;
-    background-color: #e2e2e2;
-    border-radius: 50%;
-    border: 0.5px solid #000;
-    opacity: var(--opacityCtrl, 0.2);
-    transition: opacity 0.3s ease-in-out;
-  }
-
-  &:hover {
-    color: textColor;
-    position: relative;
-
-    &::after {
-      opacity: 1;
-    }
-  }
-
   &:global {
+    &.selected::after {
+      content: "";
+      position: absolute;
+      top: -2rem;
+      right: -2rem;
+      display: block;
+      width: 7.2rem;
+      height: 7.2rem;
+      border-radius: 50%;
+    }
+
     &.large-size {
       width: 25.6rem;
       height: 25.6rem;
@@ -199,6 +183,11 @@
         --progress-color: #b6f09c;
       }
 
+      &.selected::after {
+        background: url("../../assets/icons/selected-deposit.svg")
+          center/contain no-repeat;
+      }
+
       &.large-size {
         box-shadow: inset 10px 10px 32px 0 rgba(56, 239, 254, 0.5),
           4px 4px 32px 0 rgba(56, 239, 254, 0.25),
@@ -261,6 +250,11 @@
           inset -2px -2px 8px 0 rgba(247, 247, 207, 0.4);
         background-color: #352520;
         --progress-color: #d46c00;
+      }
+
+      &.selected::after {
+        background: url("../../assets/icons/selected-withdraw.svg")
+          center/contain no-repeat;
       }
 
       &.large-size {
