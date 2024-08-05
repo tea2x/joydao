@@ -22,8 +22,6 @@ const Cell: React.FC<CellProps> = ({ className, type, value, ...rest }) => {
     }
   }
 
-  size = "medium";
-
   const isDeposit = type === "deposit";
   return (
     <div
@@ -57,7 +55,7 @@ const Cell: React.FC<CellProps> = ({ className, type, value, ...rest }) => {
           src={
             isDeposit
               ? require("../../assets/icons/getout-deposit.svg").default
-              : require("../../assets/icons/getout-withdraw.svg").default
+              : require("../../assets/icons/withdraw-processing.svg").default
           }
           className="btn-icon"
           draggable="false"
