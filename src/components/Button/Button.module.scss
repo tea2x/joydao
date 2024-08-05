@@ -15,7 +15,12 @@
   line-height: 2.4rem;
   letter-spacing: 0.015rem;
 
-  cursor: pointer;
+  &:not(:disabled) {
+    cursor: pointer;
+  }
+  &:disabled {
+    cursor: not-allowed;
+  }
 
   &:global {
     &.primary-type {
@@ -43,7 +48,7 @@
         border-radius: inherit;
       }
 
-      &:hover::before {
+      &:not(:disabled):hover::before {
         opacity: 1;
       }
     }
@@ -59,7 +64,7 @@
       height: 4.8rem;
       color: #9b9c9e;
 
-      &:hover {
+      &:not(:disabled):hover {
         color: #0c1132;
         background: #b6f09c;
       }

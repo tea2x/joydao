@@ -1,61 +1,61 @@
-import * as React from "react";
-import { CKBTransaction } from "@joyid/ckb";
-import { buildTransfer } from "./basic-wallet";
 import { ccc } from "@ckb-ccc/connector-react";
-import { utils, blockchain } from "@ckb-lumos/base";
-import { initializeConfig, Config } from "@ckb-lumos/config-manager";
-import { ClientPublicTestnet, ClientPublicMainnet } from "@ckb-ccc/core";
+import { ClientPublicMainnet, ClientPublicTestnet } from "@ckb-ccc/core";
+import { blockchain, utils } from "@ckb-lumos/base";
+import { Config, initializeConfig } from "@ckb-lumos/config-manager";
+import { CKBTransaction } from "@joyid/ckb";
+import * as React from "react";
+import { buildTransfer } from "./basic-wallet";
 import {
-  waitForTransactionConfirmation,
-  queryBalance,
   Balance,
-  enrichDaoCellInfo,
   DaoCell,
-  getTipEpoch,
   SeededRandom,
+  enrichDaoCellInfo,
+  estimateReturn,
+  getTipEpoch,
+  isDefaultAddress,
   isJoyIdAddress,
   isOmnilockAddress,
-  isDefaultAddress,
-  estimateReturn,
+  queryBalance,
+  waitForTransactionConfirmation,
 } from "./lib/helpers";
 
 import {
-  NETWORK_CONFIG,
   CKB_SHANNON_RATIO,
+  DAO_MINIMUM_CAPACITY,
   EXPLORER_PREFIX,
   ISMAINNET,
-  DAO_MINIMUM_CAPACITY,
+  NETWORK_CONFIG,
 } from "./config";
 
 import {
+  batchDaoCells,
   buildDepositTransaction,
-  buildWithdrawTransaction,
   buildUnlockTransaction,
+  buildWithdrawTransaction,
   collectDeposits,
   collectWithdrawals,
-  batchDaoCells,
 } from "./joy-dao";
 
-import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { SnackbarProvider, useSnackbar } from "notistack";
-import "react-circular-progressbar/dist/styles.css";
 import {
   CircularProgressbarWithChildren,
   buildStyles,
 } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 import Modal from "react-modal";
-import bgVideo from "./assets/videos/bg-video.mp4";
-import bgGuestLogin01 from "./assets/images/bg-login-01.jpeg";
+import "./App.css";
 import gradientLogo from "./assets/icons/logo.svg";
+import bgGuestLogin01 from "./assets/images/bg-login-01.jpeg";
+import bgVideo from "./assets/videos/bg-video.mp4";
+import { Button, Input } from "./components";
+import "./index.scss";
 
 Modal.setAppElement("#root");
-import "./App.css";
-import "./index.scss";
-import { Button, Input } from "./components";
 
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import Cell from "./components/Cell";
+import { cx } from "./utils/classname";
 
 const { ckbHash } = utils;
 
@@ -809,6 +809,7 @@ const App = () => {
   // 0. default
   // 1. transfer
   // 2. deposit
+  // 3. batch
   const [sidebarMode, setSidebarMode] = React.useState(0);
 
   /**
@@ -863,7 +864,13 @@ const App = () => {
   const sidebarMenu = () => {
     return (
       <ul className="sidebar-menu">
-        <li className="sidebar-item" onClick={() => setSidebarMode(1)}>
+        <li
+          className="sidebar-item"
+          onClick={() => {
+            setIsSidebarCollapsed(false);
+            setSidebarMode(1);
+          }}
+        >
           <img
             src={require("./assets/icons/transfer.svg").default}
             className="icon"
@@ -871,7 +878,13 @@ const App = () => {
           />
           <span className="text">Transfer</span>
         </li>
-        <li className="sidebar-item" onClick={() => setSidebarMode(2)}>
+        <li
+          className="sidebar-item"
+          onClick={() => {
+            setIsSidebarCollapsed(false);
+            setSidebarMode(2);
+          }}
+        >
           <img
             src={require("./assets/icons/deposit.svg").default}
             className="icon"
@@ -879,16 +892,21 @@ const App = () => {
           />
           <span className="text">Deposit</span>
         </li>
-        {pickedCells.length >= 2 && (
-          <li className="sidebar-item" onClick={() => onBatch(pickedCells)}>
-            <img
-              src={require("./assets/icons/batch.svg").default}
-              className="icon"
-              draggable={false}
-            />
-            <span className="text">Batch</span>
-          </li>
-        )}
+        <li
+          className="sidebar-item"
+          onClick={() => {
+            setIsSidebarCollapsed(false);
+            setPickedCells([]);
+            setSidebarMode(3);
+          }}
+        >
+          <img
+            src={require("./assets/icons/batch.svg").default}
+            className="icon"
+            draggable={false}
+          />
+          <span className="text">Batch</span>
+        </li>
         <li className="sidebar-item sign-out" onClick={onSignOut}>
           <img
             src={require("./assets/icons/sign-out.svg").default}
@@ -968,6 +986,47 @@ const App = () => {
     );
   };
 
+  const batchForm = () => {
+    return (
+      <div className="transfer-form">
+        <div className="form-header">
+          <Button
+            type="ghost"
+            icon={require("./assets/icons/back.svg").default}
+            onClick={() => {
+              setPickedCells([]);
+              setSidebarMode(0);
+            }}
+          />
+          <h3>
+            <span className="highlight-txt">Batch</span>
+            <span>{`${pickedCells.length} ${
+              pickedCells.length > 1 ? " transactions" : " transaction"
+            }`}</span>
+          </h3>
+        </div>
+        {pickedCells.length === 0 && (
+          <p>
+            <i>Please select cells</i>
+          </p>
+        )}
+        {pickedCells.length === 1 && (
+          <p>
+            <i>Please select at least 2 cells</i>
+          </p>
+        )}
+        <Button
+          className="submit"
+          type="glass"
+          onClick={() => onBatch(pickedCells)}
+          disabled={pickedCells.length < 2}
+        >
+          Execute
+        </Button>
+      </div>
+    );
+  };
+
   function daoInfoBoard() {
     return (
       <>
@@ -1016,7 +1075,7 @@ const App = () => {
         {daoInfoBoard()}
         {sidebarMode === 1 && transferForm()}
         {sidebarMode === 2 && depositForm()}
-        {/* <Button onClick={() => onBatch(pickedCells)}>Batch</Button> */}
+        {sidebarMode === 3 && batchForm()}
       </>
     );
   }
@@ -1219,6 +1278,8 @@ const App = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState<Boolean>(
     !!Number(localStorage.getItem("isSidebarCollapse"))
   );
+
+  const [batchMode, setBatchMode] = React.useState<Boolean>(false);
 
   const onExploringCell = (cell: any) => {
     window.open(
@@ -1463,7 +1524,21 @@ const App = () => {
                               .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                           )}
                           selected={pickedCells.includes(cell)}
-                          onClick={(e) => onSelectCell(e, cell)}
+                          onSelectCell={(e) => {
+                            if (sidebarMode === 3) {
+                              e.stopPropagation();
+                              onSelectCell(e, cell);
+                            }
+                          }}
+                          onCellAction={(e: any) => {
+                            e.stopPropagation();
+                            isDeposit ? onWithdraw(cell) : onUnlock(cell);
+                          }}
+                          onExploringTransaction={(e: any) => {
+                            e.stopPropagation();
+                            onExploringCell(cell);
+                          }}
+                          className={cx([sidebarMode === 3 && "selectable"])}
                         />
                       );
                     })}

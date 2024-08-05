@@ -10,99 +10,15 @@
   position: relative;
   background-color: rgba(26, 29, 33, 0.5);
 
+  cursor: pointer;
+
   &:global {
-    &.selected::after {
-      content: "";
-      position: absolute;
-      top: -2rem;
-      right: -2rem;
-      display: block;
-      width: 7.2rem;
-      height: 7.2rem;
-      border-radius: 50%;
-    }
-
-    &.large-size {
-      width: 25.6rem;
-      height: 25.6rem;
-      border-radius: 3.6rem;
-      transition: box-shadow 0.5s;
-
-      &:hover {
-        transition: box-shadow 0.3s;
-      }
-
-      .amount-icon {
-        width: 3rem;
-      }
-      .amount {
-        gap: 0.8rem;
-        margin-bottom: 3.6rem;
-        font-size: 3.2rem;
-      }
-      .dao-cell-btn {
-        height: 4.8rem;
-      }
-      .btn-icon {
-        height: 2rem;
-      }
-    }
-    &.medium-size {
-      width: 19.6rem;
-      height: 19.6rem;
-      border-radius: 2.4rem;
-      transition: box-shadow 0.4s;
-
-      &:hover {
-        transition: box-shadow 0.4s;
-      }
-
-      .amount-icon {
-        width: 2.4rem;
-      }
-      .amount {
-        gap: 0.6rem;
-        margin-bottom: 2.4rem;
-        font-size: 2.8rem;
-      }
-      .dao-cell-btn {
-        height: 4.2rem;
-      }
-      .btn-icon {
-        height: 1.8rem;
-      }
-    }
-    &.small-size {
-      width: 12.2rem;
-      height: 12.2rem;
-      border-radius: 1.2rem;
-      transition: box-shadow 0.3s;
-
-      &:hover {
-        transition: box-shadow 0.3s;
-      }
-
-      .amount-icon {
-        width: 1.8rem;
-      }
-      .amount {
-        gap: 0.4rem;
-        margin-bottom: 1.2rem;
-        font-size: 1.6rem;
-      }
-      .dao-cell-btn {
-        height: 2.8rem;
-      }
-      .btn-icon {
-        height: 1.2rem;
-      }
-    }
-
     > .amount {
       display: flex;
       align-items: center;
       color: transparent;
       font-weight: bold;
+      margin-bottom: var(--vertical-spacing);
     }
 
     > .dao-cell-btn {
@@ -143,6 +59,37 @@
       }
     }
 
+    > .explore-transaction {
+      background-color: transparent;
+      border: none;
+      margin-bottom: 0;
+
+      transition: 0.4s;
+
+      cursor: pointer;
+
+      > img {
+        width: var(--globe-size);
+        aspect-ratio: 1/1;
+        max-height: 0;
+        transition: 0.4s;
+      }
+      &:hover {
+        filter: drop-shadow(0 0 0.4rem var(--globe-shadow-color));
+        transform: scale(1.1);
+      }
+    }
+
+    &:hover {
+      > .explore-transaction {
+        margin-bottom: var(--vertical-spacing);
+
+        img {
+          max-height: 3.6rem;
+        }
+      }
+    }
+
     &:not(.small-size):hover {
       .dao-cell-btn {
         padding: 0.8rem 2.4rem;
@@ -166,6 +113,95 @@
       }
     }
 
+    &.large-size {
+      width: 25.6rem;
+      height: 25.6rem;
+      border-radius: 3.6rem;
+      transition: box-shadow 0.5s;
+
+      --vertical-spacing: 3.6rem;
+
+      &:hover {
+        transition: box-shadow 0.3s;
+      }
+
+      .amount-icon {
+        width: 3rem;
+      }
+      .amount {
+        gap: 0.8rem;
+        margin-bottom: 3.6rem;
+        font-size: 3.2rem;
+      }
+      .dao-cell-btn {
+        height: 4.8rem;
+      }
+      .btn-icon {
+        height: 2rem;
+      }
+      .explore-transaction {
+        --globe-size: 3.6rem;
+      }
+    }
+
+    &.medium-size {
+      width: 19.6rem;
+      height: 19.6rem;
+      border-radius: 2.4rem;
+      transition: box-shadow 0.4s;
+
+      --vertical-spacing: 2.4rem;
+
+      &:hover {
+        transition: box-shadow 0.4s;
+      }
+
+      .amount-icon {
+        width: 2.4rem;
+      }
+      .amount {
+        gap: 0.6rem;
+        font-size: 2.8rem;
+      }
+      .dao-cell-btn {
+        height: 4.2rem;
+      }
+      .btn-icon {
+        height: 1.8rem;
+      }
+    }
+
+    &.small-size {
+      width: 12.2rem;
+      height: 12.2rem;
+      border-radius: 1.2rem;
+      transition: box-shadow 0.3s;
+
+      --vertical-spacing: 1.2rem;
+
+      &:hover {
+        transition: box-shadow 0.3s;
+      }
+
+      .amount-icon {
+        width: 1.8rem;
+      }
+      .amount {
+        gap: 0.4rem;
+        margin-bottom: 1.2rem;
+        font-size: 1.6rem;
+      }
+      .dao-cell-btn {
+        height: 2.8rem;
+      }
+      .btn-icon {
+        height: 1.2rem;
+      }
+      .explore-transaction {
+        --globe-size: 2.4rem;
+      }
+    }
+
     &.deposit-type {
       background: url("../../assets/icons/chip-deposit.svg") center/contain
         no-repeat;
@@ -183,54 +219,84 @@
         --progress-color: #b6f09c;
       }
 
-      &.selected::after {
-        background: url("../../assets/icons/selected-deposit.svg")
-          center/contain no-repeat;
+      > .explore-transaction {
+        &:hover {
+          --globe-shadow-color: #b6f09c;
+        }
+      }
+
+      &::after {
+        ::after {
+          --checkmark-size: 7.2rem;
+        }
+      }
+
+      &.selected {
+        box-shadow: inset 0 0 4px 4px #38effe, 0 0 4px 0 #00ebff,
+          inset 0 0 64px 0 #00ebff;
+
+        &::after {
+          --checkbox-size: 5rem;
+          content: "";
+          position: absolute;
+          top: -1rem;
+          right: -1rem;
+          display: block;
+          width: var(--checkbox-size);
+          height: var(--checkbox-size);
+          z-index: 1;
+          background: url("../../assets/icons/selected-deposit.svg")
+            center/var(--checkbox-size) var(--checkbox-size) no-repeat;
+        }
       }
 
       &.large-size {
-        box-shadow: inset 10px 10px 32px 0 rgba(56, 239, 254, 0.5),
-          4px 4px 32px 0 rgba(56, 239, 254, 0.25),
-          inset -2px -2px 16px 0 #38effe;
-
         .dao-cell-btn {
           --progress-width: 0.6rem;
         }
 
-        &:hover {
+        &:not(.selected) {
           box-shadow: inset 10px 10px 32px 0 rgba(56, 239, 254, 0.5),
             4px 4px 32px 0 rgba(56, 239, 254, 0.25),
-            inset -2px -2px 128px 0 #38effe;
+            inset -2px -2px 16px 0 #38effe;
+          &:hover {
+            box-shadow: inset 10px 10px 32px 0 rgba(56, 239, 254, 0.5),
+              4px 4px 32px 0 rgba(56, 239, 254, 0.25),
+              inset -2px -2px 128px 0 #38effe;
+          }
         }
       }
       &.medium-size {
-        box-shadow: inset 8px 8px 28px 0 rgba(56, 239, 254, 0.5),
-          4px 4px 32px 0 rgba(56, 239, 254, 0.25),
-          inset -2px -2px 8px 0 rgba(56, 239, 254, 0.25);
-
         .dao-cell-btn {
           --progress-width: 0.5rem;
         }
 
-        &:hover {
-          box-shadow: inset 8px 8px 64px 0 rgba(56, 239, 254, 0.5),
+        &:not(.selected) {
+          box-shadow: inset 8px 8px 28px 0 rgba(56, 239, 254, 0.5),
             4px 4px 32px 0 rgba(56, 239, 254, 0.25),
-            inset -2px -2px 64px 0 rgba(56, 239, 254, 0.5);
+            inset -2px -2px 8px 0 rgba(56, 239, 254, 0.25);
+
+          &:hover {
+            box-shadow: inset 8px 8px 64px 0 rgba(56, 239, 254, 0.5),
+              4px 4px 32px 0 rgba(56, 239, 254, 0.25),
+              inset -2px -2px 64px 0 rgba(56, 239, 254, 0.5);
+          }
         }
       }
       &.small-size {
-        box-shadow: inset 4px 4px 16px 0 rgba(56, 239, 254, 0.7),
-          2px 2px 16px 0 rgba(56, 239, 254, 0.5),
-          inset 0 0 8px 0 rgba(56, 239, 254, 0.25);
-
         .dao-cell-btn {
           --progress-width: 0.4rem;
         }
 
-        &:hover {
-          box-shadow: inset 4px 4px 28px 0 rgba(56, 239, 254, 0.7),
+        &:not(.selected) {
+          box-shadow: inset 4px 4px 16px 0 rgba(56, 239, 254, 0.7),
             2px 2px 16px 0 rgba(56, 239, 254, 0.5),
-            inset 0 0 92px 0 rgba(56, 239, 254, 0.25);
+            inset 0 0 8px 0 rgba(56, 239, 254, 0.25);
+          &:hover {
+            box-shadow: inset 4px 4px 28px 0 rgba(56, 239, 254, 0.7),
+              2px 2px 16px 0 rgba(56, 239, 254, 0.5),
+              inset 0 0 92px 0 rgba(56, 239, 254, 0.25);
+          }
         }
       }
     }
@@ -252,20 +318,20 @@
         --progress-color: #d46c00;
       }
 
-      &.selected::after {
-        background: url("../../assets/icons/selected-withdraw.svg")
-          center/contain no-repeat;
+      > .explore-transaction {
+        &:hover {
+          --globe-shadow-color: #d46c00;
+        }
       }
 
       &.large-size {
-        box-shadow: inset 10px 10px 32px 0 rgba(255, 205, 141, 0.5),
-          4px 4px 32px 0 rgba(255, 205, 141, 0.25),
-          inset -2px -2px 16px 0 #ffcd8d;
-        transition: 0.3s;
-
         .dao-cell-btn {
           --progress-width: 0.6rem;
         }
+
+        box-shadow: inset 10px 10px 32px 0 rgba(255, 205, 141, 0.5),
+          4px 4px 32px 0 rgba(255, 205, 141, 0.25),
+          inset -2px -2px 16px 0 #ffcd8d;
 
         &:hover {
           box-shadow: inset 10px 10px 32px 0 #ffcd8d,
@@ -275,13 +341,13 @@
         }
       }
       &.medium-size {
-        box-shadow: inset 8px 8px 28px 0 rgba(255, 205, 141, 0.5),
-          4px 4px 32px 0 rgba(255, 205, 141, 0.25),
-          inset -2px -2px 8px 0 rgba(255, 205, 141, 0.25);
-
         .dao-cell-btn {
           --progress-width: 0.5rem;
         }
+
+        box-shadow: inset 8px 8px 28px 0 rgba(255, 205, 141, 0.5),
+          4px 4px 32px 0 rgba(255, 205, 141, 0.25),
+          inset -2px -2px 8px 0 rgba(255, 205, 141, 0.25);
 
         &:hover {
           box-shadow: inset 8px 8px 64px 0 rgba(255, 205, 141, 0.5),
@@ -290,13 +356,13 @@
         }
       }
       &.small-size {
-        box-shadow: inset 4px 4px 16px 0 rgba(255, 205, 141, 0.7),
-          2px 2px 16px 0 rgba(255, 205, 141, 0.5),
-          inset 0 0 8px 0 rgba(255, 205, 141, 0.25);
-
         .dao-cell-btn {
           --progress-width: 0.4rem;
         }
+
+        box-shadow: inset 4px 4px 16px 0 rgba(255, 205, 141, 0.7),
+          2px 2px 16px 0 rgba(255, 205, 141, 0.5),
+          inset 0 0 8px 0 rgba(255, 205, 141, 0.25);
 
         &:hover {
           box-shadow: inset 4px 4px 28px 0 rgba(255, 205, 141, 0.7),

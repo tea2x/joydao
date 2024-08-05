@@ -7,11 +7,13 @@ const Button: React.FC<ButtonProps> = ({
   icon,
   className,
   type = "primary",
+  disabled = false,
   ...rest
 }) => {
   return (
     <button
       className={cx([styles.baseBtn, className, `${type}-type`])}
+      disabled={disabled}
       {...rest}
     >
       {children && <div className="inside">{children}</div>}
@@ -25,5 +27,6 @@ const Button: React.FC<ButtonProps> = ({
 type ButtonProps = React.HTMLAttributes<HTMLButtonElement> & {
   icon?: string;
   type?: "primary" | "secondary" | "tertiary" | "ghost" | "glass";
+  disabled?: boolean;
 };
 export default Button;

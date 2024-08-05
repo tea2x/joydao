@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react";
+import React, { CSSProperties, MouseEventHandler } from "react";
 import styles from "./Cell.module.scss";
 import { cx } from "../../utils/classname";
 
@@ -11,6 +11,9 @@ const Cell: React.FC<CellProps> = ({
   value,
   selected = false,
   onClick,
+  onCellAction,
+  onSelectCell,
+  onExploringTransaction,
   ...rest
 }) => {
   let size: "large" | "medium" | "small";
@@ -39,9 +42,21 @@ const Cell: React.FC<CellProps> = ({
         `${size}-size`,
         selected && "selected",
       ])}
-      onClick={onClick}
+      onClick={onSelectCell}
       style={{ "--progress": "120deg" } as CSSProperties}
     >
+      <button className="explore-transaction" onClick={onExploringTransaction}>
+        <img
+          src={
+            isDeposit
+              ? require("../../assets/icons/globe-deposit.svg").default
+              : require("../../assets/icons/globe-withdraw.svg").default
+          }
+          draggable="false"
+          alt="globe"
+        />
+      </button>
+
       <div className="amount">
         <img
           src={
@@ -55,7 +70,7 @@ const Cell: React.FC<CellProps> = ({
         />
         <span>{value} CKB</span>
       </div>
-      <button className="dao-cell-btn">
+      <button className="dao-cell-btn" onClick={onCellAction}>
         <span className="btn-text">
           {isDeposit ? "Withdraw" : "Processing"}
         </span>
@@ -79,6 +94,9 @@ type CellProps = React.HTMLAttributes<HTMLDivElement> & {
   progress: number;
   value: number;
   selected?: boolean;
+  onCellAction: MouseEventHandler<HTMLButtonElement>;
+  onSelectCell: MouseEventHandler<HTMLDivElement>;
+  onExploringTransaction: MouseEventHandler<HTMLButtonElement>;
 };
 
 export default Cell;
