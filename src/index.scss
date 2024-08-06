@@ -346,9 +346,6 @@
   }
 
   .cell-diagram {
-    width: 100svw;
-    height: 100svh;
-
     display: flex;
     justify-content: center;
     align-items: center;
@@ -370,5 +367,16 @@
   .dao-cell-dummy {
     width: 25.6rem;
     height: 25.6rem;
+  }
+}
+
+.react-transform-wrapper {
+  box-sizing: border-box;
+  width: 100svw !important;
+  height: 100svh !important;
+
+  .react-transform-component {
+    padding: 7.2rem !important;
+    box-sizing: border-box;
   }
 }

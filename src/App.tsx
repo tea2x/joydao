@@ -1193,6 +1193,26 @@ const App = () => {
     const bgVideo = document.getElementById("myVideo") as HTMLVideoElement;
     bgVideo.playbackRate = 0.6;
   });
+  const [mouseDown, setMouseDown] = React.useState(false);
+
+  const handleMouseDown = () => {
+    setMouseDown(true);
+    console.log("mouse down");
+  };
+
+  const handleMouseUp = () => {
+    setMouseDown(false);
+    console.log("mouse up");
+  };
+
+  React.useEffect(() => {
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState<Boolean>(
     !!Number(localStorage.getItem("isSidebarCollapse"))
@@ -1339,7 +1359,10 @@ const App = () => {
           ) : (
             <TransformWrapper>
               <TransformComponent>
-                <div className="cell-diagram">
+                <div
+                  className="cell-diagram"
+                  style={{ cursor: mouseDown ? "grabbing" : "grab" }}
+                >
                   {splitCells.map((cellsGroup) => (
                     <div className="cells-group">
                       {cellsGroup.map((cell, index) => {
@@ -1352,6 +1375,7 @@ const App = () => {
                             16
                           )
                         );
+
                         const animationDelay = animationDelayRandomizer.next(
                           0,
                           1
