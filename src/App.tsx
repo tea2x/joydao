@@ -736,75 +736,6 @@ const App = () => {
     return () => clearInterval(interval);
   }, [depositCells, withdrawalCells, tipEpoch, percentageLoading]);
 
-  /**
-   * Calculate background position for an overlay,
-   * showing cycle progress bar on top of each deposit
-   */
-  function calculateButtonBorderProgressBar(percentage: number) {
-    let backgroundPos = "";
-    const targetBtnSize = {
-      width: windowWidth <= 768 ? 90 : 110,
-      height: windowWidth <= 768 ? 30 : 30,
-    };
-    const deltaH = windowWidth <= 768 ? 1.5 : 2;
-    const deltaW = windowWidth <= 768 ? 1.5 : 2;
-    const totalLength = (targetBtnSize.width + targetBtnSize.height) * 2;
-    const borderLen = (percentage / 100) * totalLength;
-
-    if (borderLen <= targetBtnSize.width) {
-      backgroundPos =
-        "" +
-        (-targetBtnSize.width + borderLen) +
-        "px 0px, " +
-        (targetBtnSize.width - deltaW) +
-        "px -" +
-        targetBtnSize.height +
-        "px, " +
-        targetBtnSize.width +
-        "px " +
-        (targetBtnSize.height - deltaH) +
-        "px, 0px " +
-        targetBtnSize.height +
-        "px";
-    } else if (borderLen <= targetBtnSize.width + targetBtnSize.height) {
-      backgroundPos =
-        "0px 0px, " +
-        (targetBtnSize.width - deltaW) +
-        "px " +
-        (-targetBtnSize.height + (borderLen - targetBtnSize.width)) +
-        "px, " +
-        targetBtnSize.width +
-        "px " +
-        (targetBtnSize.height - deltaH) +
-        "px, 0px " +
-        targetBtnSize.height +
-        "px";
-    } else if (borderLen <= targetBtnSize.width * 2 + targetBtnSize.height) {
-      backgroundPos =
-        "0px 0px, " +
-        (targetBtnSize.width - deltaW) +
-        "px 0px, " +
-        (targetBtnSize.width -
-          (borderLen - targetBtnSize.width - targetBtnSize.height)) +
-        "px " +
-        (targetBtnSize.height - deltaH) +
-        "px, 0px " +
-        targetBtnSize.height +
-        "px";
-    } else {
-      backgroundPos =
-        "0px 0px, " +
-        (targetBtnSize.width - deltaW) +
-        "px 0px, 0px " +
-        (targetBtnSize.height - deltaH) +
-        "px, 0px " +
-        (targetBtnSize.height -
-          (borderLen - targetBtnSize.width * 2 - targetBtnSize.height)) +
-        "px";
-    }
-    return backgroundPos;
-  }
-
   // Sidebar Mode
   // 0. default
   // 1. transfer
@@ -819,7 +750,7 @@ const App = () => {
     return (
       <div className="balances">
         <div className="balance-background"></div>
-        {sidebarMode !== 2 && (
+        {(sidebarMode === 1 || sidebarMode === 0) && (
           <p className="balance-index free-balance">
             <span>Free</span>
             <span>
@@ -1255,20 +1186,8 @@ const App = () => {
   }
 
   const daoCellNum = [...depositCells, ...withdrawalCells].length;
-  const smallScreenDeviceMinCellWidth = 110;
-  const largeScreenDeviceMinCellWidth = 120;
-
-  // fix cell heights and minimum cell width,
-  // ensuring the smallest deposit stays in square form
-  const cellHeight =
-    windowWidth <= 768
-      ? smallScreenDeviceMinCellWidth
-      : largeScreenDeviceMinCellWidth;
 
   // in case there're too few deposit, fill up dummy cells
-  const fillerNum = windowWidth <= 768 ? 12 : 20;
-  const maxDummyCellWidth = 150;
-  const dummyCellWidthRandomizer = new SeededRandom(daoCellNum);
 
   React.useEffect(() => {
     const bgVideo = document.getElementById("myVideo") as HTMLVideoElement;
@@ -1279,7 +1198,28 @@ const App = () => {
     !!Number(localStorage.getItem("isSidebarCollapse"))
   );
 
-  const [batchMode, setBatchMode] = React.useState<Boolean>(false);
+  const cells = [
+    ...depositCells,
+    ...withdrawalCells,
+    ...depositCells,
+    ...withdrawalCells,
+    ...depositCells,
+    ...withdrawalCells,
+    ...depositCells,
+    ...withdrawalCells,
+    ...depositCells,
+    ...withdrawalCells,
+    ...depositCells,
+    ...withdrawalCells,
+  ].sort((a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16));
+
+  const cellsChunk = Math.ceil(Math.sqrt(cells.length));
+
+  const splitCells = [];
+
+  for (let i = 0; i < cells.length; i += cellsChunk) {
+    splitCells.push(cells.slice(i, i + cellsChunk));
+  }
 
   const onExploringCell = (cell: any) => {
     window.open(
@@ -1400,148 +1340,62 @@ const App = () => {
             <TransformWrapper>
               <TransformComponent>
                 <div className="cell-diagram">
-                  {[...depositCells, ...withdrawalCells]
-                    .sort(
-                      (a, b) =>
-                        parseInt(b.blockNumber!, 16) -
-                        parseInt(a.blockNumber!, 16)
-                    )
-                    .map((cell, index) => {
-                      // dao deposit complete shaking rythm
-                      const animationDelayRandomizer = new SeededRandom(
-                        parseInt(
-                          ckbHash(
-                            blockchain.OutPoint.pack(cell.outPoint!)
-                          ).slice(-8),
-                          16
-                        )
-                      );
-                      const animationDelay = animationDelayRandomizer.next(
-                        0,
-                        1
-                      );
+                  {splitCells.map((cellsGroup) => (
+                    <div className="cells-group">
+                      {cellsGroup.map((cell, index) => {
+                        // dao deposit complete shaking rythm
+                        const animationDelayRandomizer = new SeededRandom(
+                          parseInt(
+                            ckbHash(
+                              blockchain.OutPoint.pack(cell.outPoint!)
+                            ).slice(-8),
+                            16
+                          )
+                        );
+                        const animationDelay = animationDelayRandomizer.next(
+                          0,
+                          1
+                        );
 
-                      const capacity = parseInt(cell.cellOutput.capacity, 16);
+                        const capacity = parseInt(cell.cellOutput.capacity, 16);
 
-                      const isDeposit = depositCells.some(
-                        (c) => c.outPoint?.txHash === cell.outPoint?.txHash
-                      );
-                      const backgroundColor = isDeposit ? "#ade129" : "#e58603";
+                        const isDeposit = depositCells.some(
+                          (c) => c.outPoint?.txHash === cell.outPoint?.txHash
+                        );
+                        const backgroundColor = isDeposit
+                          ? "#ade129"
+                          : "#e58603";
 
-                      return (
-                        <div
-                          key={index}
-                          className="dao-cell"
-                          ref={(el) => {
-                            if (el) {
-                              el.style.setProperty(
-                                "--backgroundColor",
-                                backgroundColor
-                              );
-                            }
-                          }}
-                          onClick={(e) => onExploringCell(cell)}
-                        >
-                          <p className="deposit-amount-label">
-                            {(capacity / CKB_SHANNON_RATIO)
-                              .toFixed(0)
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                            CKB
-                          </p>
-                          <button
-                            className={`dao-cell-button ripe ${
-                              cell.ripe ? "ripe" : ""
-                            }`}
-                            ref={(el) => {
-                              if (el) {
-                                el.style.setProperty(
-                                  "--animationDelay",
-                                  `${animationDelay}s`
-                                );
+                        return (
+                          <Cell
+                            type={isDeposit ? "deposit" : "withdraw"}
+                            progress={50}
+                            value={Number(
+                              (capacity / CKB_SHANNON_RATIO)
+                                .toFixed(0)
+                                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                            )}
+                            selected={pickedCells.includes(cell)}
+                            onSelectCell={(e) => {
+                              if (sidebarMode === 3) {
+                                e.stopPropagation();
+                                onSelectCell(e, cell);
                               }
                             }}
-                            onClick={(e) => {
+                            onCellAction={(e: any) => {
                               e.stopPropagation();
                               isDeposit ? onWithdraw(cell) : onUnlock(cell);
                             }}
-                          >
-                            {isDeposit
-                              ? "Withdraw"
-                              : cell.ripe
-                              ? "Complete"
-                              : "Processing ..."}
-                          </button>
-
-                          <span
-                            className="checkmark-area"
-                            ref={(el) => {
-                              if (el) {
-                                if (pickedCells.includes(cell))
-                                  el.style.setProperty("--opacityCtrl", "1");
-                                else el.style.setProperty("--opacityCtrl", "0");
-                              }
-                            }}
-                            onClick={(e) => onSelectCell(e, cell)}
-                          ></span>
-                        </div>
-                      );
-                    })}
-                  {[...depositCells, ...withdrawalCells]
-                    .sort(
-                      (a, b) =>
-                        parseInt(b.blockNumber!, 16) -
-                        parseInt(a.blockNumber!, 16)
-                    )
-                    .map((cell, index) => {
-                      // dao deposit complete shaking rythm
-                      const animationDelayRandomizer = new SeededRandom(
-                        parseInt(
-                          ckbHash(
-                            blockchain.OutPoint.pack(cell.outPoint!)
-                          ).slice(-8),
-                          16
-                        )
-                      );
-                      const animationDelay = animationDelayRandomizer.next(
-                        0,
-                        1
-                      );
-
-                      const capacity = parseInt(cell.cellOutput.capacity, 16);
-
-                      const isDeposit = depositCells.some(
-                        (c) => c.outPoint?.txHash === cell.outPoint?.txHash
-                      );
-                      const backgroundColor = isDeposit ? "#ade129" : "#e58603";
-
-                      return (
-                        <Cell
-                          type={isDeposit ? "deposit" : "withdraw"}
-                          progress={50}
-                          value={Number(
-                            (capacity / CKB_SHANNON_RATIO)
-                              .toFixed(0)
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                          )}
-                          selected={pickedCells.includes(cell)}
-                          onSelectCell={(e) => {
-                            if (sidebarMode === 3) {
+                            onExploringTransaction={(e: any) => {
                               e.stopPropagation();
-                              onSelectCell(e, cell);
-                            }
-                          }}
-                          onCellAction={(e: any) => {
-                            e.stopPropagation();
-                            isDeposit ? onWithdraw(cell) : onUnlock(cell);
-                          }}
-                          onExploringTransaction={(e: any) => {
-                            e.stopPropagation();
-                            onExploringCell(cell);
-                          }}
-                          className={cx([sidebarMode === 3 && "selectable"])}
-                        />
-                      );
-                    })}
+                              onExploringCell(cell);
+                            }}
+                            className={cx([sidebarMode === 3 && "selectable"])}
+                          />
+                        );
+                      })}
+                    </div>
+                  ))}
                 </div>
               </TransformComponent>
             </TransformWrapper>

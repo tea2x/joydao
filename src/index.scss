@@ -346,8 +346,21 @@
   }
 
   .cell-diagram {
+    width: 100svw;
+    height: 100svh;
+
     display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
     flex-wrap: wrap;
+
+    .cells-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
   }
 
   .dao-cell {
