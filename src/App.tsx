@@ -1364,7 +1364,7 @@ const App = () => {
                   style={{ cursor: mouseDown ? "grabbing" : "grab" }}
                 >
                   {splitCells.map((cellsGroup) => (
-                    <div className="cells-group">
+                    <>
                       {cellsGroup.map((cell, index) => {
                         // dao deposit complete shaking rythm
                         const animationDelayRandomizer = new SeededRandom(
@@ -1418,7 +1418,7 @@ const App = () => {
                           />
                         );
                       })}
-                    </div>
+                    </>
                   ))}
                 </div>
               </TransformComponent>

@@ -81,230 +81,230 @@
   }
 }
 
-.auth--screen {
-  height: 100%;
+aside {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
 
-  aside {
-    position: absolute;
-    top: 0.8rem;
-    left: 0.8rem;
+  width: 31.2rem;
+  box-sizing: border-box;
+  padding: 0.8rem;
+  border-radius: 1.6rem;
+  background-color: #161616;
 
-    width: 31.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+
+  @include txt-l-semibold;
+  // color: $nokia-black;
+  color: #cdcecf;
+
+  box-shadow: inset 0.6rem 0.4rem 3.2rem -0.4rem rgba(255, 255, 255, 0.4),
+    1.2rem 1.2rem 3.2rem 0.4rem #000,
+    inset 2.8rem 1.6rem 6.4rem -2.4rem rgba(255, 255, 255, 0.4),
+    0 0 12.8rem 1.6rem #000;
+
+  header {
+    display: flex;
+    align-items: center;
     box-sizing: border-box;
     padding: 0.8rem;
-    border-radius: 1.6rem;
-    background-color: #161616;
+    justify-content: space-between;
+    cursor: default;
 
-    display: flex;
-    flex-direction: column;
-    gap: 1.6rem;
+    .logo {
+      width: 4.8rem;
+    }
+  }
 
-    @include txt-l-semibold;
-    // color: $nokia-black;
-    color: #cdcecf;
+  .balances {
+    position: relative;
+    margin: 0.8rem;
+    border-radius: 0.8rem;
+    box-shadow: inset 0 0 0.8rem 0 rgba(255, 248, 248, 0.75),
+      0 0.4rem 0.4rem 0 rgba(0, 0, 0, 0.25);
 
-    box-shadow: inset 0.6rem 0.4rem 3.2rem -0.4rem rgba(255, 255, 255, 0.4),
-      1.2rem 1.2rem 3.2rem 0.4rem #000,
-      inset 2.8rem 1.6rem 6.4rem -2.4rem rgba(255, 255, 255, 0.4),
-      0 0 12.8rem 1.6rem #000;
+    background-image: url("./assets/images/bg-login-01.jpeg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
 
-    header {
-      display: flex;
-      align-items: center;
-      box-sizing: border-box;
-      padding: 0.8rem;
-      justify-content: space-between;
-      cursor: default;
+    cursor: default;
 
-      .logo {
-        width: 4.8rem;
-      }
+    &:has(.balance-background:only-child) {
+      display: none;
     }
 
-    .balances {
-      position: relative;
-      margin: 0.8rem;
-      border-radius: 0.8rem;
-      box-shadow: inset 0 0 0.8rem 0 rgba(255, 248, 248, 0.75),
-        0 0.4rem 0.4rem 0 rgba(0, 0, 0, 0.25);
+    .balance-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+
+      border-radius: inherit;
 
       background-image: url("./assets/images/bg-login-01.jpeg");
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center;
 
-      cursor: default;
+      filter: blur(0.2rem) grayscale(60%) brightness(61%);
+      -webkit-filter: blur(0.2rem) grayscale(60%) brightness(61%);
+      -moz-filter: blur(0.2rem) grayscale(60%) brightness(61%);
+    }
 
-      &:has(.balance-background:only-child) {
-        display: none;
+    .balance-index {
+      padding: 0.8rem 1.6rem;
+      margin: 0;
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+
+      @include txt-m-semibold;
+      transition: text-shadow 0.4s;
+
+      text-shadow: 0 0 0 #ffffff;
+
+      &:hover {
+        text-shadow: 0 0 2rem #ffffff;
       }
 
-      .balance-background {
+      + .balance-index {
+        border-top: 0.1rem solid #ffffff20;
+      }
+
+      &.free-balance {
+        color: #bfeb87;
+      }
+      &.depositing-balance {
+        color: #38effe;
+      }
+      &.withdrawing-balance {
+        color: #ffcd8d;
+      }
+    }
+  }
+
+  .sidebar-menu {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      padding: 1.6rem;
+      gap: 1.6rem;
+
+      border-radius: 0.8rem;
+      border-top: solid 0.1rem rgba(255, 255, 255, 0.08);
+
+      cursor: pointer;
+
+      opacity: 0.8;
+
+      position: relative;
+      transition: 0.4s;
+
+      &:hover {
+        opacity: 1;
+      }
+
+      > .icon {
+        width: 2.4rem;
+      }
+
+      &.sign-out {
+        color: #d0302f;
+      }
+
+      &:before {
+        content: "";
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-
         border-radius: inherit;
-
-        background-image: url("./assets/images/bg-login-01.jpeg");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center;
-
-        filter: blur(0.2rem) grayscale(60%) brightness(61%);
-        -webkit-filter: blur(0.2rem) grayscale(60%) brightness(61%);
-        -moz-filter: blur(0.2rem) grayscale(60%) brightness(61%);
+        background: linear-gradient(105deg, #d7eded15 0%, #ccebeb00 130%);
+        opacity: 0;
+        transition: 0.4s;
       }
 
-      .balance-index {
-        padding: 0.8rem 1.6rem;
-        margin: 0;
-        display: flex;
-        justify-content: space-between;
-        position: relative;
-        z-index: 1;
+      &:hover:before {
+        opacity: 1;
+      }
 
-        @include txt-m-semibold;
-        transition: text-shadow 0.4s;
+      + .sidebar-item {
+        margin: 0.8rem 0 0;
+      }
+    }
+  }
 
-        text-shadow: 0 0 0 #ffffff;
+  .sidebar-control {
+    align-self: center;
+    opacity: 0.4;
+    transition: opacity 0.4s;
+    width: 100%;
 
-        &:hover {
-          text-shadow: 0 0 2rem #ffffff;
-        }
+    > .icon {
+      margin: 0 auto;
+    }
 
-        + .balance-index {
-          border-top: 0.1rem solid #ffffff20;
-        }
+    &:hover {
+      opacity: 1;
+      &::before {
+        opacity: 0;
+      }
+    }
+  }
 
-        &.free-balance {
-          color: #bfeb87;
-        }
-        &.depositing-balance {
-          color: #38effe;
-        }
-        &.withdrawing-balance {
-          color: #ffcd8d;
-        }
+  &.collapsed {
+    width: 7.2rem;
+
+    opacity: 0.6;
+    transition: opacity 0.3s;
+    &:hover {
+      opacity: 1;
+    }
+
+    header {
+      padding: 0.4rem;
+      .address,
+      .copy {
+        display: none;
       }
     }
 
+    .balances {
+      display: none;
+    }
+
     .sidebar-menu {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-
       .sidebar-item {
-        display: flex;
-        align-items: center;
-        padding: 1.6rem;
-        gap: 1.6rem;
-
-        border-radius: 0.8rem;
-        border-top: solid 0.1rem rgba(255, 255, 255, 0.08);
-
-        cursor: pointer;
-
-        opacity: 0.8;
-
-        position: relative;
-        transition: 0.4s;
-
-        &:hover {
-          opacity: 1;
+        .text {
+          display: none;
         }
-
-        > .icon {
-          width: 2.4rem;
-        }
-
         &.sign-out {
-          color: #d0302f;
-        }
-
-        &:before {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          border-radius: inherit;
-          background: linear-gradient(105deg, #d7eded15 0%, #ccebeb00 130%);
-          opacity: 0;
-          transition: 0.4s;
-        }
-
-        &:hover:before {
-          opacity: 1;
-        }
-
-        + .sidebar-item {
-          margin: 0.8rem 0 0;
+          display: none;
         }
       }
     }
 
     .sidebar-control {
-      align-self: center;
-      opacity: 0.4;
-      transition: opacity 0.4s;
-      width: 100%;
-
-      > .icon {
-        margin: 0 auto;
-      }
-
-      &:hover {
-        opacity: 1;
-        &::before {
-          opacity: 0;
-        }
-      }
-    }
-
-    &.collapsed {
-      width: 7.2rem;
-
-      opacity: 0.6;
-      transition: opacity 0.3s;
-      &:hover {
-        opacity: 1;
-      }
-
-      header {
-        padding: 0.4rem;
-        .address,
-        .copy {
-          display: none;
-        }
-      }
-
-      .balances {
-        display: none;
-      }
-
-      .sidebar-menu {
-        .sidebar-item {
-          .text {
-            display: none;
-          }
-          &.sign-out {
-            display: none;
-          }
-        }
-      }
-
-      .sidebar-control {
-        margin: 0 0 0.4rem 0;
-        .icon {
-          transform: rotate(180deg);
-        }
+      margin: 0 0 0.4rem 0;
+      .icon {
+        transform: rotate(180deg);
       }
     }
   }
+}
+
+.auth--screen {
+  height: 100%;
 
   .transfer-form,
   .deposit-form {
@@ -344,30 +344,6 @@
       text-align: center;
     }
   }
-
-  .cell-diagram {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-
-    .cells-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-    }
-  }
-
-  .dao-cell {
-    width: 25.6rem;
-    height: 25.6rem;
-  }
-  .dao-cell-dummy {
-    width: 25.6rem;
-    height: 25.6rem;
-  }
 }
 
 .react-transform-wrapper {
@@ -378,5 +354,21 @@
   .react-transform-component {
     padding: 7.2rem !important;
     box-sizing: border-box;
+
+    .cell-diagram {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      height: 100%;
+
+      .cells-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+    }
   }
 }
