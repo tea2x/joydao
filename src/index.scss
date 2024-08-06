@@ -125,7 +125,7 @@
       position: relative;
       margin: 0.8rem;
       border-radius: 0.8rem;
-      box-shadow: inset 0 0 8px 0 rgba(255, 248, 248, 0.75),
+      box-shadow: inset 0 0 0.8rem 0 rgba(255, 248, 248, 0.75),
         0 0.4rem 0.4rem 0 rgba(0, 0, 0, 0.25);
 
       background-image: url("./assets/images/bg-login-01.jpeg");
@@ -153,9 +153,9 @@
         background-repeat: no-repeat;
         background-position: center;
 
-        filter: blur(2px) grayscale(60%) brightness(61%);
-        -webkit-filter: blur(2px) grayscale(60%) brightness(61%);
-        -moz-filter: blur(2px) grayscale(60%) brightness(61%);
+        filter: blur(0.2rem) grayscale(60%) brightness(61%);
+        -webkit-filter: blur(0.2rem) grayscale(60%) brightness(61%);
+        -moz-filter: blur(0.2rem) grayscale(60%) brightness(61%);
       }
 
       .balance-index {
