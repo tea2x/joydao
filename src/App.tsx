@@ -1214,10 +1214,9 @@ const App = () => {
     !!Number(localStorage.getItem("isSidebarCollapse"))
   );
 
-  const cells = [
-    ...depositCells,
-    ...withdrawalCells,
-  ].sort((a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16));
+  const cells = [...depositCells, ...withdrawalCells].sort(
+    (a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
+  );
 
   const onExploringCell = (cell: any) => {
     window.open(
@@ -1354,7 +1353,9 @@ const App = () => {
 
                     const animationDelay = animationDelayRandomizer.next(0, 1);
 
-                    const capacity = parseInt(cell.cellOutput.capacity, 16);
+                    const capacity =
+                      parseInt(cell.cellOutput.capacity, 16) /
+                      CKB_SHANNON_RATIO;
 
                     const isDeposit = depositCells.some(
                       (c) => c.outPoint?.txHash === cell.outPoint?.txHash
@@ -1364,11 +1365,7 @@ const App = () => {
                       <Cell
                         type={isDeposit ? "deposit" : "withdraw"}
                         progress={cell.currentCycleProgress}
-                        value={Number(
-                          (capacity / CKB_SHANNON_RATIO)
-                            .toFixed(0)
-                            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                        )}
+                        value={capacity}
                         selected={pickedCells.includes(cell)}
                         onSelectCell={(e) => {
                           if (sidebarMode === 3) {

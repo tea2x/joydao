@@ -77,7 +77,9 @@ const Cell: React.FC<CellProps> = ({
           draggable="false"
           alt="mine"
         />
-        <span>{value} CKB</span>
+        <span>
+          {value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
+        </span>
       </div>
       <button className="dao-cell-btn" onClick={onCellAction}>
         <span className="btn-text">
