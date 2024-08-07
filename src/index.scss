@@ -355,15 +355,6 @@ aside {
     padding: 7.2rem !important;
     box-sizing: border-box;
     height: 100%;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-    height: 100%;
-    width: max-content;
     min-width: 100%;
 
     .cell-diagram {
@@ -374,13 +365,8 @@ aside {
       gap: 1rem;
       flex-wrap: wrap;
       height: 100%;
-
-      .cells-group {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-      }
+      width: max-content;
+      min-width: 100%;
     }
   }
 }

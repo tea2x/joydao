@@ -1185,8 +1185,6 @@ const App = () => {
     );
   }
 
-  const daoCellNum = [...depositCells, ...withdrawalCells].length;
-
   // in case there're too few deposit, fill up dummy cells
 
   React.useEffect(() => {
@@ -1197,12 +1195,10 @@ const App = () => {
 
   const handleMouseDown = () => {
     setMouseDown(true);
-    console.log("mouse down");
   };
 
   const handleMouseUp = () => {
     setMouseDown(false);
-    console.log("mouse up");
   };
 
   React.useEffect(() => {
@@ -1218,9 +1214,10 @@ const App = () => {
     !!Number(localStorage.getItem("isSidebarCollapse"))
   );
 
-  const cells = [...depositCells, ...withdrawalCells].sort(
-    (a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
-  );
+  const cells = [
+    ...depositCells,
+    ...withdrawalCells,
+  ].sort((a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16));
 
   const onExploringCell = (cell: any) => {
     window.open(
@@ -1333,60 +1330,67 @@ const App = () => {
 
       {ckbAddress && (
         <div className="auth--screen">
-          {daoCellNum === 0 && isLoading == false ? (
+          {cells.length === 0 && isLoading == false ? (
             <div className="no-deposit-message">
               <h2>Whoops, no deposits found!</h2>
             </div>
           ) : (
             <TransformWrapper>
               <TransformComponent>
-                {cells.map((cell, index) => {
-                  // dao deposit complete shaking rythm
-                  const animationDelayRandomizer = new SeededRandom(
-                    parseInt(
-                      ckbHash(blockchain.OutPoint.pack(cell.outPoint!)).slice(
-                        -8
-                      ),
-                      16
-                    )
-                  );
+                <div
+                  className="cell-diagram"
+                  style={{ cursor: mouseDown ? "grabbing" : "grab" }}
+                >
+                  {cells.map((cell, index) => {
+                    // dao deposit complete shaking rythm
+                    const animationDelayRandomizer = new SeededRandom(
+                      parseInt(
+                        ckbHash(blockchain.OutPoint.pack(cell.outPoint!)).slice(
+                          -8
+                        ),
+                        16
+                      )
+                    );
 
-                  const animationDelay = animationDelayRandomizer.next(0, 1);
+                    const animationDelay = animationDelayRandomizer.next(0, 1);
 
-                  const capacity = parseInt(cell.cellOutput.capacity, 16);
+                    const capacity = parseInt(cell.cellOutput.capacity, 16);
 
-                  const isDeposit = depositCells.some(
-                    (c) => c.outPoint?.txHash === cell.outPoint?.txHash
-                  );
+                    const isDeposit = depositCells.some(
+                      (c) => c.outPoint?.txHash === cell.outPoint?.txHash
+                    );
 
-                  return (
-                    <Cell
-                      type={isDeposit ? "deposit" : "withdraw"}
-                      progress={cell.currentCycleProgress}
-                      value={Number(
-                        (capacity / CKB_SHANNON_RATIO)
-                          .toFixed(0)
-                          .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                      )}
-                      selected={pickedCells.includes(cell)}
-                      onSelectCell={(e) => {
-                        if (sidebarMode === 3) {
+                    return (
+                      <Cell
+                        type={isDeposit ? "deposit" : "withdraw"}
+                        progress={cell.currentCycleProgress}
+                        value={Number(
+                          (capacity / CKB_SHANNON_RATIO)
+                            .toFixed(0)
+                            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        )}
+                        selected={pickedCells.includes(cell)}
+                        onSelectCell={(e) => {
+                          if (sidebarMode === 3) {
+                            e.stopPropagation();
+                            onSelectCell(e, cell);
+                          }
+                        }}
+                        onCellAction={(e: any) => {
                           e.stopPropagation();
-                          onSelectCell(e, cell);
-                        }
-                      }}
-                      onCellAction={(e: any) => {
-                        e.stopPropagation();
-                        isDeposit ? onWithdraw(cell) : onUnlock(cell);
-                      }}
-                      onExploringTransaction={(e: any) => {
-                        e.stopPropagation();
-                        onExploringCell(cell);
-                      }}
-                      className={cx([sidebarMode === 3 && "selectable"])}
-                    />
-                  );
-                })}
+                          isDeposit ? onWithdraw(cell) : onUnlock(cell);
+                        }}
+                        onExploringTransaction={(e: any) => {
+                          e.stopPropagation();
+                          onExploringCell(cell);
+                        }}
+                        className={cx([sidebarMode === 3 && "selectable"])}
+                        isRipe={cell.ripe}
+                        animationDelay={animationDelay}
+                      />
+                    );
+                  })}
+                </div>
               </TransformComponent>
             </TransformWrapper>
           )}

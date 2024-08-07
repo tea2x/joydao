@@ -11,6 +11,8 @@ const Cell: React.FC<CellProps> = ({
   value,
   selected = false,
   progress,
+  isRipe = false,
+  animationDelay = 0,
   onClick,
   onCellAction,
   onSelectCell,
@@ -42,9 +44,15 @@ const Cell: React.FC<CellProps> = ({
         `${type}-type`,
         `${size}-size`,
         selected && "selected",
+        isRipe && "ripe",
       ])}
       onClick={onSelectCell}
-      style={{ "--progress": `${progress * 3.6}deg` } as CSSProperties}
+      style={
+        {
+          "--progress": `${progress * 3.6}deg`,
+          "--animationDelay": `${animationDelay}s`,
+        } as CSSProperties
+      }
     >
       <button className="explore-transaction" onClick={onExploringTransaction}>
         <img
@@ -73,7 +81,7 @@ const Cell: React.FC<CellProps> = ({
       </div>
       <button className="dao-cell-btn" onClick={onCellAction}>
         <span className="btn-text">
-          {isDeposit ? "Withdraw" : "Processing"}
+          {isRipe ? "Completed" : isDeposit ? "Withdraw" : "Processing"}
         </span>
         <img
           src={
@@ -95,6 +103,8 @@ type CellProps = React.HTMLAttributes<HTMLDivElement> & {
   progress: number;
   value: number;
   selected?: boolean;
+  isRipe?: boolean;
+  animationDelay?: number;
   onCellAction: MouseEventHandler<HTMLButtonElement>;
   onSelectCell: MouseEventHandler<HTMLDivElement>;
   onExploringTransaction: MouseEventHandler<HTMLButtonElement>;

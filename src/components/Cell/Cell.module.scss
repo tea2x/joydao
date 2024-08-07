@@ -10,9 +10,13 @@
   position: relative;
   background-color: rgba(26, 29, 33, 0.5);
 
-  cursor: pointer;
-
   &:global {
+    &.ripe {
+      animation: shake 2s;
+      animation-iteration-count: infinite;
+      animation-delay: var(--animationDelay);
+    }
+
     > .amount {
       display: flex;
       align-items: center;
@@ -377,11 +381,13 @@
 @keyframes rotateShadow {
   0% {
     box-shadow: inset 1rem 1rem 3.2rem 0 rgba(56, 239, 254, 0.5),
-      0.4rem 0.4rem 3.2rem 0 rgba(56, 239, 254, 0.25), inset -0.2rem -0.2rem 12.8rem 0 #38effe;
+      0.4rem 0.4rem 3.2rem 0 rgba(56, 239, 254, 0.25),
+      inset -0.2rem -0.2rem 12.8rem 0 #38effe;
   }
   100% {
     box-shadow: inset -1rem -1rem 2.4rem 0 rgba(56, 239, 254, 0.5),
-      -0.4rem -0.4rem 2.4rem 0 rgba(56, 239, 254, 0.25), inset 0.2rem 0.2rem 9.6rem 0 #38effe;
+      -0.4rem -0.4rem 2.4rem 0 rgba(56, 239, 254, 0.25),
+      inset 0.2rem 0.2rem 9.6rem 0 #38effe;
   }
 }
 
