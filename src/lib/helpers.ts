@@ -289,7 +289,7 @@ function parseEpochCompatible(epoch: BIish): {
  * @param cell - The deposit/withdraw cell.
  * @param isDeposit - Is this a deposit or a withdraw?
  * @param tipEpoch - The CKB blockchain tip epoch
- * @returns A CKB raw transaction.
+ * @returns none.
  */
 export const enrichDaoCellInfo = async (
   cell: DaoCell,
