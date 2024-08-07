@@ -10,6 +10,7 @@ const Cell: React.FC<CellProps> = ({
   type,
   value,
   selected = false,
+  progress,
   onClick,
   onCellAction,
   onSelectCell,
@@ -43,7 +44,7 @@ const Cell: React.FC<CellProps> = ({
         selected && "selected",
       ])}
       onClick={onSelectCell}
-      style={{ "--progress": "120deg" } as CSSProperties}
+      style={{ "--progress": `${progress * 3.6}deg` } as CSSProperties}
     >
       <button className="explore-transaction" onClick={onExploringTransaction}>
         <img

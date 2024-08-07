@@ -1362,7 +1362,7 @@ const App = () => {
                   return (
                     <Cell
                       type={isDeposit ? "deposit" : "withdraw"}
-                      progress={50}
+                      progress={cell.currentCycleProgress}
                       value={Number(
                         (capacity / CKB_SHANNON_RATIO)
                           .toFixed(0)
