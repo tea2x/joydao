@@ -2,8 +2,8 @@ import React, { CSSProperties, MouseEventHandler } from "react";
 import styles from "./Cell.module.scss";
 import { cx } from "../../utils/classname";
 
-const VALUE_THRESHOLD_1 = 150;
-const VALUE_THRESHOLD_2 = 200;
+const VALUE_THRESHOLD_1 = 50000;
+const VALUE_THRESHOLD_2 = 500000;
 
 const Cell: React.FC<CellProps> = ({
   className,
