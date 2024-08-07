@@ -1135,6 +1135,8 @@ const App = () => {
           setModalIsOpen(false);
           setPickedDaoCell(null);
         }}
+        shouldCloseOnOverlayClick
+        shouldCloseOnEsc
       >
         {isDaoTransitMsgLoading && (
           <div className="modal-loading-overlay">
