@@ -256,6 +256,8 @@ const App = () => {
       setPickedCells([]);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
+    } finally {
+      setSidebarMode(0);
     }
   };
 
@@ -319,6 +321,8 @@ const App = () => {
       setIsLoading(false);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
+    } finally {
+      setSidebarMode(0);
     }
   };
 
@@ -404,6 +408,8 @@ const App = () => {
       setIsDaoTransitMsgLoading(false);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
+    } finally {
+      setSidebarMode(0);
     }
   };
 
