@@ -87,7 +87,11 @@ const Cell: React.FC<CellProps> = ({
         </span>
         <img
           src={
-            isDeposit
+            isRipe
+              ? isDeposit
+                ? require("../../assets/icons/selected-deposit.svg").default
+                : require("../../assets/icons/selected-withdraw.svg").default
+              : isDeposit
               ? require("../../assets/icons/getout-deposit.svg").default
               : require("../../assets/icons/withdraw-processing.svg").default
           }
