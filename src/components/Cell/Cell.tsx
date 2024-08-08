@@ -67,7 +67,7 @@ const Cell: React.FC<CellProps> = ({
       </button>
 
       <div className="amount">
-        <img
+        {/* <img
           src={
             isDeposit
               ? require("../../assets/icons/deposit-mine.svg").default
@@ -76,7 +76,7 @@ const Cell: React.FC<CellProps> = ({
           className="amount-icon"
           draggable="false"
           alt="mine"
-        />
+        /> */}
         <span>
           {value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
         </span>

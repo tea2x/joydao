@@ -409,8 +409,6 @@ const App = () => {
       setIsDaoTransitMsgLoading(false);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
-    } finally {
-      setSidebarMode(0);
     }
   };
 
@@ -1024,82 +1022,137 @@ const App = () => {
   function daoDepositCircularProgressBarInfo() {
     return (
       <div className="deposit-circular-progress-bar">
+        <svg style={{ height: 0 }}>
+          <defs>
+            <linearGradient
+              id="deposit_progress"
+              x1="0.5"
+              y1="26.5"
+              x2="26.5"
+              y2="0.5"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop stop-color="#82DBF7" />
+              <stop offset="1" stop-color="#B6F09C" />
+            </linearGradient>
+          </defs>
+          <defs>
+            <linearGradient
+              id="withdraw_progress"
+              x1="0.5"
+              y1="26"
+              x2="26.5"
+              y2="-3.74348e-07"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop stop-color="#CA6100" />
+              <stop offset="1" stop-color="#FF9900" />
+            </linearGradient>
+          </defs>
+        </svg>
         <CircularProgressbarWithChildren
           value={pickedDaoCell?.currentCycleProgress!}
-          styles={buildStyles({
-            pathColor:
-              pickedDaoCell?.currentCycleProgress! < 93 ? "#99c824" : "#e58603",
-          })}
+          styles={{
+            path: {
+              stroke: `url(#${
+                pickedDaoCell?.currentCycleProgress! < 93
+                  ? "deposit_progress"
+                  : "withdraw_progress"
+              })`,
+              height: "100%",
+            },
+            trail: {
+              stroke: "#2e2e2e",
+            },
+          }}
         >
-          <p className="dao-transition-message">
-            Cycle{" "}
-            {pickedDaoCell
-              ? !pickedDaoCell?.isDeposit && pickedDaoCell?.ripe
-                ? pickedDaoCell?.completedCycles!
-                : pickedDaoCell?.completedCycles! + 1
-              : "~"}{" "}
-            | Progress:{" "}
-            {pickedDaoCell ? pickedDaoCell.currentCycleProgress! + "%" : "~"}
-          </p>
-
-          {!pickedDaoCell?.isDeposit && (
-            <p className="dao-transition-message">
-              Compensation:{" "}
-              {pickedDaoCell ? getCompensation(pickedDaoCell) : "~"}
-            </p>
-          )}
-
-          {!pickedDaoCell?.isDeposit &&
-            (!pickedDaoCell?.ripe ? (
-              <p className="dao-transition-message highlight">
-                Complete in:{" "}
+          {isDaoTransitMsgLoading ? (
+            <div className="modal-loading-overlay">
+              <div className="modal-loading-circle"></div>
+            </div>
+          ) : (
+            <>
+              <p className="dao-transition-message">
+                Cycle{" "}
                 {pickedDaoCell
-                  ? (pickedDaoCell?.cycleEndInterval! + 1) / 6 > 2
-                    ? `${((pickedDaoCell?.cycleEndInterval! + 1) / 6).toFixed(
-                        2
-                      )}d`
-                    : `${(pickedDaoCell?.cycleEndInterval! + 1) * 4}h`
+                  ? !pickedDaoCell?.isDeposit && pickedDaoCell?.ripe
+                    ? pickedDaoCell?.completedCycles!
+                    : pickedDaoCell?.completedCycles! + 1
+                  : "~"}{" "}
+                | Progress:{" "}
+                {pickedDaoCell
+                  ? pickedDaoCell.currentCycleProgress! + "%"
                   : "~"}
               </p>
-            ) : (
-              <p className="dao-transition-message highlight">Complete now!</p>
-            ))}
 
-          {pickedDaoCell?.isDeposit && (
-            <p className="dao-transition-message">
-              Compensation:{" "}
-              {compensation != null ? `${compensation?.toFixed(2)} CKB` : "~"}
-            </p>
-          )}
+              {!pickedDaoCell?.isDeposit && (
+                <p className="dao-transition-message">
+                  Compensation:{" "}
+                  {pickedDaoCell ? getCompensation(pickedDaoCell) : "~"}
+                </p>
+              )}
 
-          {pickedDaoCell?.isDeposit && pickedDaoCell.ripe && (
-            <p className="dao-transition-message highlight">
-              New Lock Cycle in: {pickedDaoCell?.cycleEndInterval! * 4}h
-            </p>
-          )}
+              {!pickedDaoCell?.isDeposit &&
+                (!pickedDaoCell?.ripe ? (
+                  <p className="dao-transition-message highlight">
+                    Complete in:{" "}
+                    {pickedDaoCell
+                      ? (pickedDaoCell?.cycleEndInterval! + 1) / 6 > 2
+                        ? `${(
+                            (pickedDaoCell?.cycleEndInterval! + 1) /
+                            6
+                          ).toFixed(2)}d`
+                        : `${(pickedDaoCell?.cycleEndInterval! + 1) * 4}h`
+                      : "~"}
+                  </p>
+                ) : (
+                  <p className="dao-transition-message highlight">
+                    Complete now!
+                  </p>
+                ))}
 
-          {pickedDaoCell?.isDeposit &&
-            (!pickedDaoCell.ripe ? (
-              <p className="dao-transition-message highlight">
-                Max Reward in:{" "}
-                {pickedDaoCell?.cycleEndInterval! >= 12 &&
-                (pickedDaoCell?.cycleEndInterval! - 12) / 6 > 2
-                  ? `${((pickedDaoCell?.cycleEndInterval! - 12) / 6).toFixed(
-                      2
-                    )}d`
-                  : `${(pickedDaoCell?.cycleEndInterval! - 12) * 4}h`}
-              </p>
-            ) : (
-              <p className="dao-transition-message highlight">Withdraw now!</p>
-            ))}
+              {pickedDaoCell?.isDeposit && (
+                <p className="dao-transition-message">
+                  Compensation:{" "}
+                  {compensation != null
+                    ? `${compensation?.toFixed(2)} CKB`
+                    : "~"}
+                </p>
+              )}
 
-          {!(!pickedDaoCell?.isDeposit && !pickedDaoCell?.ripe) && (
-            <p className="dao-transition-message">
-              Tx fee:{" "}
-              {currentTx.fee
-                ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB`
-                : `${" ~ CKB"}`}
-            </p>
+              {pickedDaoCell?.isDeposit && pickedDaoCell.ripe && (
+                <p className="dao-transition-message highlight">
+                  New Lock Cycle in: {pickedDaoCell?.cycleEndInterval! * 4}h
+                </p>
+              )}
+
+              {pickedDaoCell?.isDeposit &&
+                (!pickedDaoCell.ripe ? (
+                  <p className="dao-transition-message highlight">
+                    Max Reward in:{" "}
+                    {pickedDaoCell?.cycleEndInterval! >= 12 &&
+                    (pickedDaoCell?.cycleEndInterval! - 12) / 6 > 2
+                      ? `${(
+                          (pickedDaoCell?.cycleEndInterval! - 12) /
+                          6
+                        ).toFixed(2)}d`
+                      : `${(pickedDaoCell?.cycleEndInterval! - 12) * 4}h`}
+                  </p>
+                ) : (
+                  <p className="dao-transition-message highlight">
+                    Withdraw now!
+                  </p>
+                ))}
+
+              {!(!pickedDaoCell?.isDeposit && !pickedDaoCell?.ripe) && (
+                <p className="dao-transition-message">
+                  Tx fee:{" "}
+                  {currentTx.fee
+                    ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB`
+                    : `${" ~ CKB"}`}
+                </p>
+              )}
+            </>
           )}
         </CircularProgressbarWithChildren>
       </div>
@@ -1111,22 +1164,28 @@ const App = () => {
    */
   function depositTransitionMessage() {
     return (
-      <div>
-        <p className="dao-transition-message headline">
-          Depositing {depositAmount} CKB
-        </p>
-        <h3 className="headline-separation"> </h3>
-        <p className="dao-transition-message deposit">
-          • Withdrawals can be initiated any time later on but each withdrawal
-          is only completed at the end of its 30-day cycle
-        </p>
-        {/* <p className="dao-transition-message-sample-image"></p> */}
-        <p className="dao-transition-message deposit">
-          • Tx fee:{" "}
-          {currentTx.fee
-            ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB`
-            : `${" ~ CKB"}`}
-        </p>
+      <div className="deposit-confirmation-modal">
+        {isDaoTransitMsgLoading && (
+          <div className="modal-loading-overlay">
+            <div className="modal-loading-circle"></div>
+          </div>
+        )}
+        <h2 className="highlight-txt">Depositing {depositAmount} CKB</h2>
+        <div className="description">
+          <p className="dao-transition-message deposit">
+            Withdrawals can be initiated any time later on but each withdrawal
+            is only completed at the end of its{" "}
+            <span className="highlight-txt">30-day</span> cycle
+          </p>
+          <p className="dao-transition-message deposit">
+            Tx fee:{" "}
+            <span className="highlight-txt">
+              {currentTx.fee
+                ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB`
+                : `${" ~ CKB"}`}
+            </span>
+          </p>
+        </div>
       </div>
     );
   }
@@ -1145,17 +1204,11 @@ const App = () => {
         shouldCloseOnOverlayClick
         shouldCloseOnEsc
       >
-        {isDaoTransitMsgLoading && (
-          <div className="modal-loading-overlay">
-            <div className="modal-loading-circle"></div>
-          </div>
-        )}
-
         {daoMode == DaoFunction.depositing
           ? depositTransitionMessage()
           : daoDepositCircularProgressBarInfo()}
 
-        <div className="button">
+        <div className="modal-btns">
           <button
             className="proceed"
             disabled={
@@ -1178,16 +1231,6 @@ const App = () => {
             }}
           >
             Proceed
-          </button>
-
-          <button
-            className="cancel"
-            onClick={() => {
-              setModalIsOpen(false);
-              setPickedDaoCell(null);
-            }}
-          >
-            Cancel
           </button>
         </div>
       </Modal>
@@ -1269,7 +1312,10 @@ const App = () => {
   const sidebarRef = React.useRef(null);
 
   useOnClickOutside(sidebarRef, () => {
-    if (!isSidebarCollapsed && cells.length > 0) setIsSidebarCollapsed(true);
+    if (!isSidebarCollapsed && cells.length > 0 && !modalIsOpen) {
+      setSidebarMode(0);
+      setIsSidebarCollapsed(true);
+    }
   });
 
   return (
@@ -1281,9 +1327,9 @@ const App = () => {
       </div>
 
       {isLoading && (
-        <div className="loading-overlay">
+        <div className="modal-loading-overlay">
           <div className="loading-circle-container">
-            <div className="loading-circle"></div>
+            <div className="modal-loading-circle"></div>
             {isWaitingTxConfirm && (
               <p className="tx-confirmation-message">
                 Your transaction can take a few minutes to process!

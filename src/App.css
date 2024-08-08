@@ -182,11 +182,9 @@ body {
 @keyframes fadeIntro {
   0% {
     opacity: 0;
-    transform: scale(0.9);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
@@ -379,16 +377,8 @@ body {
     transform: rotate(0deg);
   }
   to {
-    transform: rotate(360deg);
+    transform: rotate(-180deg);
   }
-}
-
-.loading-circle-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: fixed;
-  top: 40vh;
 }
 
 .tx-confirmation-message {
@@ -537,53 +527,6 @@ body {
   cursor: pointer;
 }
 
-.ReactModal__Content {
-  max-width: 30rem;
-  margin: 2rem auto;
-  padding: 1rem;
-  background-color: #ffffff;
-  border: none;
-  border-radius: 1rem !important;
-  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.05), 0 0 2rem rgba(0, 0, 0, 0.1),
-    0 0 3rem rgba(0, 0, 0, 0.15);
-  transition: transform 0.5s ease-in-out;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  align-self: flex-start;
-  margin-top: 25vh;
-  min-height: 20vh;
-  animation: fadeIntro 0.5s ease-in-out;
-}
-
-.ReactModal__Overlay {
-  background-color: rgba(18, 19, 24, 0.7) !important;
-}
-
-.modal-loading-overlay {
-  position: absolute;
-  width: 100%;
-  height: 90%;
-  background-color: rgba(255, 255, 255, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.modal-loading-circle {
-  border: 0.4rem solid #333;
-  border-top-color: transparent;
-  border-radius: 50%;
-  width: 6rem;
-  height: 6rem;
-  position: relative;
-  animation: spin 1s linear infinite;
-}
-
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -591,45 +534,6 @@ body {
   to {
     transform: rotate(360deg);
   }
-}
-
-.buttons {
-  display: flex;
-  justify-content: space-around;
-}
-
-button.proceed,
-button.cancel {
-  padding: 1rem 2rem;
-  border-width: 0.5rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-size: 1.6rem;
-  margin: 0.5rem;
-  transition: transform 0.3s ease;
-}
-
-button.proceed {
-  background-color: #6ec824; /* Green */
-  color: rgb(0, 0, 0);
-}
-
-button.proceed:hover {
-  transform: translateY(-0.3rem);
-}
-
-button.proceed:disabled {
-  background-color: #cccccc; /* Gray */
-  cursor: not-allowed;
-}
-
-button.cancel {
-  background-color: #e55603; /* Red */
-  color: rgb(0, 0, 0);
-}
-
-button.cancel:hover {
-  transform: translateY(-0.3rem);
 }
 
 @keyframes shake {
@@ -692,45 +596,6 @@ button.cancel:hover {
   width: 100%;
   margin: 0 auto 1rem auto;
 }
-
-.dao-transition-message {
-  margin: 0.1em;
-  font-size: 1em;
-  font-weight: bold;
-  color: cadetblue;
-}
-
-.dao-transition-message.deposit {
-  text-align: left;
-}
-
-.dao-transition-message.headline {
-  text-align: center;
-  font-weight: bolder;
-}
-
-.dao-transition-message-sample-image {
-  background-image: url("./images/example-progess.png");
-  width: 10rem;
-  height: 3.5rem;
-  background-size: 100%;
-  background-repeat: no-repeat;
-  text-align: center;
-  position: relative;
-  margin: 0 auto;
-  border-radius: 0.5rem;
-}
-
-.deposit-circular-progress-bar {
-  margin: 1rem;
-}
-
-/* .highlight {
-  margin: 0.1em;
-  font-size: 1em;
-  font-weight: bold;
-  animation: warningAnimation 1s infinite alternate;
-} */
 
 @keyframes warningAnimation {
   0% {
