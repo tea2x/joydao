@@ -56,6 +56,7 @@ Modal.setAppElement("#root");
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import Cell from "./components/Cell";
 import { cx } from "./utils/classname";
+import { useOnClickOutside } from "./hooks";
 
 const { ckbHash } = utils;
 
@@ -1265,6 +1266,12 @@ const App = () => {
     }
   };
 
+  const sidebarRef = React.useRef(null);
+
+  useOnClickOutside(sidebarRef, () => {
+    if (!isSidebarCollapsed && sidebarMode === 0) setIsSidebarCollapsed(true);
+  });
+
   return (
     <>
       <div className="background">
@@ -1399,7 +1406,10 @@ const App = () => {
               </TransformComponent>
             </TransformWrapper>
           )}
-          <aside className={isSidebarCollapsed ? "collapsed" : "expanded"}>
+          <aside
+            ref={sidebarRef}
+            className={isSidebarCollapsed ? "collapsed" : "expanded"}
+          >
             {isJoyIdAddress(ckbAddress) ? daoInfoBoard() : basicWallet()}
           </aside>
         </div>
