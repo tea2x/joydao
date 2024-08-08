@@ -1269,7 +1269,7 @@ const App = () => {
   const sidebarRef = React.useRef(null);
 
   useOnClickOutside(sidebarRef, () => {
-    if (!isSidebarCollapsed && sidebarMode === 0) setIsSidebarCollapsed(true);
+    if (!isSidebarCollapsed && cells.length > 0) setIsSidebarCollapsed(true);
   });
 
   return (
@@ -1346,7 +1346,15 @@ const App = () => {
         <div className="auth--screen">
           {cells.length === 0 && isLoading == false ? (
             <div className="no-deposit-message">
-              <h2>Whoops, no deposits found!</h2>
+              <h2 className="highlight-txt">You don't have any deposit yet</h2>
+              <Button
+                onClick={() => {
+                  setIsSidebarCollapsed(false);
+                  setSidebarMode(2);
+                }}
+              >
+                Deposit Now
+              </Button>
             </div>
           ) : (
             <TransformWrapper>

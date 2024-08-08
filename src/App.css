@@ -276,31 +276,6 @@ body {
   }
 }
 
-.no-deposit-message {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 5%;
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #f8f8f8;
-  text-shadow: 0.2rem 0.2rem 0.4rem rgba(0, 0, 0, 0.3), 0.2rem 0.2rem 0 #505050;
-  background-color: #505050;
-  border-radius: 1rem;
-  padding: 2rem;
-  animation: bounce 1s ease-in-out infinite;
-  position: relative;
-  top: 10rem;
-  border: 0.1rem solid #505050;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.no-deposit-message:hover {
-  color: #a8e72f;
-  background-color: #000;
-}
-
 @keyframes bounce {
   0%,
   100% {
