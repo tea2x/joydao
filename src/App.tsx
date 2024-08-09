@@ -1303,7 +1303,9 @@ const App = () => {
   const sidebarRef = React.useRef(null);
 
   useOnClickOutside(sidebarRef, () => {
-    if (!isSidebarCollapsed && cells.length > 0 && !modalIsOpen) {
+    const isFirstDeposit =
+      !cells.length && !isSidebarCollapsed && sidebarMode === 2;
+    if (!isFirstDeposit && !modalIsOpen) {
       setSidebarMode(0);
       setIsSidebarCollapsed(true);
     }
