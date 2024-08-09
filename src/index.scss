@@ -25,7 +25,6 @@
   .guest--content {
     position: relative;
     width: 50%;
-    min-width: 63.5rem;
     padding: 4.8rem;
     box-sizing: border-box;
 
@@ -42,9 +41,6 @@
     }
 
     .title {
-      // font-size: 1.8rem;
-      // line-height: 2.8rem;
-
       @include txt-xl-medium;
 
       color: $stem-green;
@@ -89,7 +85,6 @@
       position: absolute;
       height: 86%;
       width: 86%;
-      min-width: unset;
       border-radius: 2.4rem;
       box-shadow: 0 0 12.8rem 0 #000;
       backdrop-filter: blur(1.6rem);
