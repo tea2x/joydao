@@ -37,17 +37,13 @@ import {
 } from "./joy-dao";
 
 import { SnackbarProvider, useSnackbar } from "notistack";
-import {
-  CircularProgressbarWithChildren,
-  buildStyles,
-} from "react-circular-progressbar";
+import { CircularProgressbarWithChildren } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 
 import Modal from "react-modal";
 import "./App.css";
 import gradientLogo from "./assets/icons/logo.svg";
 import bgGuestLogin01 from "./assets/images/bg-login-01.jpeg";
-import bgVideo from "./assets/videos/bg-video.mp4";
 import { Button, Input } from "./components";
 import "./index.scss";
 
@@ -55,8 +51,8 @@ Modal.setAppElement("#root");
 
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import Cell from "./components/Cell";
-import { cx } from "./utils/classname";
 import { useOnClickOutside } from "./hooks";
+import { cx } from "./utils/classname";
 
 const { ckbHash } = utils;
 
@@ -1232,10 +1228,6 @@ const App = () => {
 
   // in case there're too few deposit, fill up dummy cells
 
-  React.useEffect(() => {
-    const bgVideo = document.getElementById("myVideo") as HTMLVideoElement;
-    bgVideo.playbackRate = 0.6;
-  });
   const [mouseDown, setMouseDown] = React.useState(false);
 
   const handleMouseDown = () => {
@@ -1316,9 +1308,7 @@ const App = () => {
   return (
     <>
       <div className="background">
-        <video autoPlay loop id="myVideo">
-          <source src={bgVideo} type="video/mp4" />
-        </video>
+        <img src={require("./assets/videos/dynamic-bg.gif")} id="dynamicBg" />
       </div>
       {(isLoading || isDaoTransitMsgLoading) && (
         <div className="modal-loading-overlay">
