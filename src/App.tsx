@@ -793,64 +793,6 @@ const App = () => {
     );
   };
 
-  const sidebarMenu = () => {
-    return (
-      <ul className="sidebar-menu">
-        <li
-          className="sidebar-item"
-          onClick={() => {
-            setIsSidebarCollapsed(false);
-            setSidebarMode(1);
-          }}
-        >
-          <img
-            src={require("./assets/icons/transfer.svg").default}
-            className="icon"
-            draggable={false}
-          />
-          <span className="text">Transfer</span>
-        </li>
-        <li
-          className="sidebar-item"
-          onClick={() => {
-            setIsSidebarCollapsed(false);
-            setSidebarMode(2);
-          }}
-        >
-          <img
-            src={require("./assets/icons/deposit.svg").default}
-            className="icon"
-            draggable={false}
-          />
-          <span className="text">Deposit</span>
-        </li>
-        <li
-          className="sidebar-item"
-          onClick={() => {
-            setIsSidebarCollapsed(false);
-            setPickedCells([]);
-            setSidebarMode(3);
-          }}
-        >
-          <img
-            src={require("./assets/icons/batch.svg").default}
-            className="icon"
-            draggable={false}
-          />
-          <span className="text">Batch</span>
-        </li>
-        <li className="sidebar-item sign-out" onClick={onSignOut}>
-          <img
-            src={require("./assets/icons/sign-out.svg").default}
-            className="icon"
-            draggable={false}
-          />
-          <span className="text">Sign Out</span>
-        </li>
-      </ul>
-    );
-  };
-
   const depositForm = () => {
     return (
       <div className="deposit-form">
@@ -958,59 +900,6 @@ const App = () => {
       </div>
     );
   };
-
-  function daoInfoBoard() {
-    return (
-      <>
-        <header>
-          <img
-            className="logo"
-            src={require("./assets/icons/logo.svg").default}
-            alt="joyDAO"
-            draggable={false}
-          />
-          <p className="address">{shortenAddress(ckbAddress)}</p>
-          <Button
-            type="ghost"
-            icon={require("./assets/icons/copy.svg").default}
-            className="copy"
-            onClick={(e) => {
-              e.stopPropagation();
-              copyAddress(ckbAddress);
-            }}
-          />
-        </header>
-        {accountBalances()}
-        {sidebarMode === 0 && sidebarMenu()}
-        {sidebarMode === 0 && (
-          <Button
-            type="ghost"
-            icon={require("./assets/icons/sidebar-control.svg").default}
-            className="sidebar-control"
-            onClick={() => {
-              const newState = !isSidebarCollapsed;
-              localStorage.setItem("isSidebarCollapse", newState ? "1" : "0");
-              setIsSidebarCollapsed(newState);
-            }}
-          />
-        )}
-      </>
-    );
-  }
-
-  /**
-   * joyDAO basic wallet UI
-   */
-  function basicWallet() {
-    return (
-      <>
-        {daoInfoBoard()}
-        {sidebarMode === 1 && transferForm()}
-        {sidebarMode === 2 && depositForm()}
-        {sidebarMode === 3 && batchForm()}
-      </>
-    );
-  }
 
   /**
    * joyDAO deposit information UI
@@ -1446,7 +1335,100 @@ const App = () => {
             ref={sidebarRef}
             className={isSidebarCollapsed ? "collapsed" : "expanded"}
           >
-            {isJoyIdAddress(ckbAddress) ? daoInfoBoard() : basicWallet()}
+            <header>
+              <img
+                className="logo"
+                src={require("./assets/icons/logo.svg").default}
+                alt="joyDAO"
+                draggable={false}
+              />
+              <p className="address">{shortenAddress(ckbAddress)}</p>
+              <Button
+                type="ghost"
+                icon={require("./assets/icons/copy.svg").default}
+                className="copy"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  copyAddress(ckbAddress);
+                }}
+              />
+            </header>
+            {accountBalances()}
+            {sidebarMode === 0 && (
+              <>
+                <ul className="sidebar-menu">
+                  {!isJoyIdAddress(ckbAddress) && (
+                    <li
+                      className="sidebar-item"
+                      onClick={() => {
+                        setIsSidebarCollapsed(false);
+                        setSidebarMode(1);
+                      }}
+                    >
+                      <img
+                        src={require("./assets/icons/transfer.svg").default}
+                        className="icon"
+                        draggable={false}
+                      />
+                      <span className="text">Transfer</span>
+                    </li>
+                  )}
+                  <li
+                    className="sidebar-item"
+                    onClick={() => {
+                      setIsSidebarCollapsed(false);
+                      setSidebarMode(2);
+                    }}
+                  >
+                    <img
+                      src={require("./assets/icons/deposit.svg").default}
+                      className="icon"
+                      draggable={false}
+                    />
+                    <span className="text">Deposit</span>
+                  </li>
+                  <li
+                    className="sidebar-item"
+                    onClick={() => {
+                      setIsSidebarCollapsed(false);
+                      setPickedCells([]);
+                      setSidebarMode(3);
+                    }}
+                  >
+                    <img
+                      src={require("./assets/icons/batch.svg").default}
+                      className="icon"
+                      draggable={false}
+                    />
+                    <span className="text">Batch</span>
+                  </li>
+                  <li className="sidebar-item sign-out" onClick={onSignOut}>
+                    <img
+                      src={require("./assets/icons/sign-out.svg").default}
+                      className="icon"
+                      draggable={false}
+                    />
+                    <span className="text">Sign Out</span>
+                  </li>
+                </ul>
+                <Button
+                  type="ghost"
+                  icon={require("./assets/icons/sidebar-control.svg").default}
+                  className="sidebar-control"
+                  onClick={() => {
+                    const newState = !isSidebarCollapsed;
+                    localStorage.setItem(
+                      "isSidebarCollapse",
+                      newState ? "1" : "0"
+                    );
+                    setIsSidebarCollapsed(newState);
+                  }}
+                />
+              </>
+            )}
+            {!isJoyIdAddress(ckbAddress) && sidebarMode === 1 && transferForm()}
+            {sidebarMode === 2 && depositForm()}
+            {sidebarMode === 3 && batchForm()}
           </aside>
         </div>
       )}
