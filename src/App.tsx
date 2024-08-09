@@ -1199,31 +1199,33 @@ const App = () => {
           ? depositTransitionMessage()
           : daoDepositCircularProgressBarInfo()}
 
-        <div className="modal-btns">
-          <button
-            className="proceed"
-            disabled={
-              daoMode == DaoFunction.unlocking && pickedDaoCell
-                ? !pickedDaoCell.isDeposit && !pickedDaoCell.ripe
-                : false
-            }
-            onClick={() => {
-              if (daoMode == DaoFunction.withdrawing) {
-                onWithdrawProceed();
-              } else if (daoMode == DaoFunction.unlocking) {
-                onUnlockProceed();
-              } else if (daoMode == DaoFunction.depositing) {
-                onDepositProceed();
-              } else {
-                //nothing
+        {!isDaoTransitMsgLoading && (
+          <div className="modal-btns">
+            <button
+              className="proceed"
+              disabled={
+                daoMode == DaoFunction.unlocking && pickedDaoCell
+                  ? !pickedDaoCell.isDeposit && !pickedDaoCell.ripe
+                  : false
               }
-              setModalIsOpen(false);
-              setDaoMode(DaoFunction.none);
-            }}
-          >
-            Proceed
-          </button>
-        </div>
+              onClick={() => {
+                if (daoMode == DaoFunction.withdrawing) {
+                  onWithdrawProceed();
+                } else if (daoMode == DaoFunction.unlocking) {
+                  onUnlockProceed();
+                } else if (daoMode == DaoFunction.depositing) {
+                  onDepositProceed();
+                } else {
+                  //nothing
+                }
+                setModalIsOpen(false);
+                setDaoMode(DaoFunction.none);
+              }}
+            >
+              Proceed
+            </button>
+          </div>
+        )}
       </Modal>
     );
   }
