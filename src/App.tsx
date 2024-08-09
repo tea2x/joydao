@@ -1066,11 +1066,7 @@ const App = () => {
             },
           }}
         >
-          {isDaoTransitMsgLoading ? (
-            <div className="modal-loading-overlay">
-              <div className="modal-loading-circle"></div>
-            </div>
-          ) : (
+          {!isDaoTransitMsgLoading && (
             <>
               <p className="dao-transition-message">
                 Cycle{" "}
@@ -1165,11 +1161,6 @@ const App = () => {
   function depositTransitionMessage() {
     return (
       <div className="deposit-confirmation-modal">
-        {isDaoTransitMsgLoading && (
-          <div className="modal-loading-overlay">
-            <div className="modal-loading-circle"></div>
-          </div>
-        )}
         <h2 className="highlight-txt">Depositing {depositAmount} CKB</h2>
         <div className="description">
           <p className="dao-transition-message deposit">
@@ -1325,17 +1316,14 @@ const App = () => {
           <source src={bgVideo} type="video/mp4" />
         </video>
       </div>
-
-      {isLoading && (
+      {(isLoading || isDaoTransitMsgLoading) && (
         <div className="modal-loading-overlay">
-          <div className="loading-circle-container">
-            <div className="modal-loading-circle"></div>
-            {isWaitingTxConfirm && (
-              <p className="tx-confirmation-message">
-                Your transaction can take a few minutes to process!
-              </p>
-            )}
-          </div>
+          <div className="modal-loading-circle" />
+          {isWaitingTxConfirm && (
+            <p className="tx-confirmation-message highlight-txt">
+              Your transaction can take a few minutes to process!
+            </p>
+          )}
         </div>
       )}
 
