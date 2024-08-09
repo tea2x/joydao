@@ -1370,7 +1370,7 @@ const App = () => {
                 }
               }}
             >
-              Connect
+              Login Now
             </Button>
             <footer>
               <p>
