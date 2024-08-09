@@ -1022,7 +1022,7 @@ const App = () => {
   function daoDepositCircularProgressBarInfo() {
     return (
       <div className="deposit-circular-progress-bar">
-        <svg style={{ height: 0 }}>
+        <svg style={{ height: 0, width: "100%" }}>
           <defs>
             <linearGradient
               id="deposit_progress"
