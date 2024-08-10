@@ -67,6 +67,7 @@
       background-color: transparent;
       border: none;
       margin-bottom: 0;
+      padding: 0;
 
       transition: 0.4s;
 
@@ -123,7 +124,7 @@
       border-radius: 3.6rem;
       transition: box-shadow 0.5s;
 
-      --vertical-spacing: 3.6rem;
+      --vertical-spacing: 1.8rem;
 
       &:hover {
         transition: box-shadow 0.3s;
@@ -154,7 +155,7 @@
       border-radius: 2.4rem;
       transition: box-shadow 0.4s;
 
-      --vertical-spacing: 2.4rem;
+      --vertical-spacing: 1.2rem;
 
       &:hover {
         transition: box-shadow 0.4s;
@@ -173,6 +174,9 @@
       .btn-icon {
         height: 1.8rem;
       }
+      .explore-transaction {
+        --globe-size: 2.8rem;
+      }
     }
 
     &.small-size {
@@ -181,7 +185,7 @@
       border-radius: 1.2rem;
       transition: box-shadow 0.3s;
 
-      --vertical-spacing: 1.2rem;
+      --vertical-spacing: 0.6rem;
 
       &:hover {
         transition: box-shadow 0.3s;
@@ -202,7 +206,7 @@
         height: 1.2rem;
       }
       .explore-transaction {
-        --globe-size: 2.4rem;
+        --globe-size: 2rem;
       }
     }
 
