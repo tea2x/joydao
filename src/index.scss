@@ -201,7 +201,7 @@ aside {
       z-index: 1;
 
       @include txt-m-semibold;
-      transition: text-shadow 0.4s;
+      transition: text-shadow 0.2s;
 
       text-shadow: 0 0 0 #ffffff;
 
@@ -244,7 +244,7 @@ aside {
       opacity: 0.8;
 
       position: relative;
-      transition: 0.4s;
+      transition: 0.2s;
 
       &:hover {
         opacity: 1;
@@ -268,7 +268,7 @@ aside {
         border-radius: inherit;
         background: linear-gradient(105deg, #d7eded15 0%, #ccebeb00 130%);
         opacity: 0;
-        transition: 0.4s;
+        transition: 0.2s;
       }
 
       &:hover:before {
@@ -284,7 +284,7 @@ aside {
   .sidebar-control {
     align-self: center;
     opacity: 0.4;
-    transition: opacity 0.4s;
+    transition: opacity 0.2s;
     width: 100%;
 
     > .icon {
@@ -305,7 +305,7 @@ aside {
     width: 7.2rem;
 
     opacity: 0.6;
-    transition: opacity 0.3s;
+    transition: opacity 0.2s;
     &:hover {
       opacity: 1;
     }
@@ -385,13 +385,22 @@ aside {
   }
 }
 
+// ZOOMIN - ZOOMOUT
+
+body:has(aside.batching) .react-transform-component {
+  padding: 31.2rem 7.2rem 7.2rem !important;
+}
+
+body:not(:has(aside.batching)) .react-transform-component {
+  padding: 7.2rem !important;
+}
+
 .react-transform-wrapper {
   box-sizing: border-box;
   width: 100svw !important;
   height: 100svh !important;
 
   .react-transform-component {
-    padding: 7.2rem !important;
     box-sizing: border-box;
     height: 100%;
     min-width: 100%;
@@ -407,6 +416,30 @@ aside {
       height: 100%;
       width: max-content;
     }
+  }
+}
+
+#userinputpane {
+  overflow: hidden;
+
+  > div {
+    padding: 7.2rem !important;
+    box-sizing: border-box;
+    height: 100%;
+    min-width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .cell-diagram {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    height: 100%;
+    width: max-content;
   }
 }
 
@@ -570,7 +603,7 @@ aside {
 
     align-self: stretch;
 
-    transition: 0.3s;
+    transition: 0.2s;
 
     &.proceed {
       box-shadow: inset 0 0.8rem 1.2rem 0 rgba(255, 255, 255, 0.08),

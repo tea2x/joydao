@@ -1,6 +1,7 @@
 import React, { CSSProperties, MouseEventHandler } from "react";
 import styles from "./Cell.module.scss";
 import { cx } from "../../utils/classname";
+import { useMemo } from "react";
 
 const VALUE_THRESHOLD_1 = 50000;
 const VALUE_THRESHOLD_2 = 500000;
@@ -19,23 +20,22 @@ const Cell: React.FC<CellProps> = ({
   onExploringTransaction,
   ...rest
 }) => {
-  let size: "large" | "medium" | "small";
-  console.log(value);
-  switch (true) {
-    case value < VALUE_THRESHOLD_1: {
-      size = "small";
-      break;
+  const size = useMemo(() => {
+    switch (true) {
+      case value < VALUE_THRESHOLD_1: {
+        return "small";
+      }
+      case value < VALUE_THRESHOLD_2: {
+        return "medium";
+      }
+      default: {
+        return "large";
+      }
     }
-    case value < VALUE_THRESHOLD_2: {
-      size = "medium";
-      break;
-    }
-    default: {
-      size = "large";
-    }
-  }
+  }, [value]);
 
-  const isDeposit = type === "deposit";
+  const isDeposit = useMemo(() => type === "deposit", [type]);
+
   return (
     <div
       className={cx([
@@ -67,16 +67,6 @@ const Cell: React.FC<CellProps> = ({
       </button>
 
       <div className="amount">
-        {/* <img
-          src={
-            isDeposit
-              ? require("../../assets/icons/deposit-mine.svg").default
-              : require("../../assets/icons/withdraw-mine.svg").default
-          }
-          className="amount-icon"
-          draggable="false"
-          alt="mine"
-        /> */}
         <span>
           {value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")} CKB
         </span>
@@ -116,4 +106,4 @@ type CellProps = React.HTMLAttributes<HTMLDivElement> & {
   onExploringTransaction: MouseEventHandler<HTMLButtonElement>;
 };
 
-export default Cell;
+export default React.memo(Cell);

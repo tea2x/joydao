@@ -1128,20 +1128,26 @@ const App = () => {
   };
 
   React.useEffect(() => {
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
+    if (/Mobi|Android/i.test(window.navigator.userAgent)) {
+      window.addEventListener("mousedown", handleMouseDown);
+      window.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        window.removeEventListener("mousedown", handleMouseDown);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
   }, []);
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState<Boolean>(
     !!Number(localStorage.getItem("isSidebarCollapse"))
   );
 
-  const cells = [...depositCells, ...withdrawalCells].sort(
-    (a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
+  const cells = React.useMemo(
+    () =>
+      [...depositCells, ...withdrawalCells].sort(
+        (a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
+      ),
+    [depositCells, withdrawalCells]
   );
 
   const onExploringCell = (cell: any) => {
@@ -1198,7 +1204,17 @@ const App = () => {
   return (
     <>
       <div className="background">
-        <img src={require("./assets/videos/dynamic-bg.gif")} id="dynamicBg" />
+        <picture>
+          <source
+            media="(max-width:768px)"
+            srcSet={require("./assets/videos/dynamic-bg-mb.gif")}
+          />
+          <img
+            id="dynamicBg"
+            src={require("./assets/videos/dynamic-bg.gif")}
+            alt="background"
+          />
+        </picture>
       </div>
       {(isLoading || isDaoTransitMsgLoading) && (
         <div className="modal-loading-overlay">
@@ -1274,7 +1290,11 @@ const App = () => {
               </Button>
             </div>
           ) : (
-            <TransformWrapper>
+            <TransformWrapper
+              alignmentAnimation={{ animationType: "linear" }}
+              zoomAnimation={{ animationType: "linear" }}
+              velocityAnimation={{ animationType: "linear" }}
+            >
               <TransformComponent>
                 <div
                   className="cell-diagram"
@@ -1333,7 +1353,10 @@ const App = () => {
           )}
           <aside
             ref={sidebarRef}
-            className={isSidebarCollapsed ? "collapsed" : "expanded"}
+            className={cx([
+              isSidebarCollapsed ? "collapsed" : "expanded",
+              sidebarMode === 3 && "batching",
+            ])}
           >
             <header>
               <img
