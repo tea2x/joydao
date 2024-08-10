@@ -65,11 +65,6 @@ body {
   font-size: 1.6rem;
 }
 
-.notif {
-  z-index: 9999;
-  text-align: left;
-}
-
 .joyid-connect {
   background-color: #f8f8f8;
   color: #505050;
