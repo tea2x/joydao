@@ -6,121 +6,12 @@ body {
   min-height: 100%;
   border: none;
   border-radius: 1rem;
-  /* background-image: url("./images/plume-signin-background.png"); */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   overflow: auto;
   position: absolute;
-  /* text-align: center; */
-}
-
-.to-right-sign {
-  position: relative;
-  top: -11.5rem;
-  right: -18rem;
-  margin: 0;
-  opacity: 0.4;
-}
-
-.to-right-sign:hover {
-  opacity: 1;
-  cursor: pointer;
-}
-
-.to-left-sign {
-  position: relative;
-  top: -11.5rem;
-  left: -18rem;
-  margin: 0;
-  opacity: 0.4;
-}
-
-.to-left-sign:hover {
-  opacity: 1;
-  cursor: pointer;
-}
-
-.control-panel-text-box {
-  outline: none;
-  border-width: 0.5rem;
-  border-radius: 0.5rem;
-  background: transparent;
-  width: 30rem;
-  height: 2.5rem;
-  padding: 0.3rem 1rem 0.3rem 1rem;
-  position: relative;
-  font-size: medium;
-  font-family: sans-serif;
-  color: rgb(86, 43, 27);
-  margin: 0.5rem auto;
-}
-
-.control-panel-headline {
-  text-align: center;
-}
-
-.deposit-field {
-  font-size: 1.6rem;
-}
-
-.joyid-connect {
-  background-color: #f8f8f8;
-  color: #505050;
-  justify-content: left;
-  box-shadow: 0.2rem 0.2rem 0 #354f32, 0.4rem 0.4rem 0 #2b5328;
-  padding: 0.1rem 2rem;
-  background-image: url("./images/joyid-logo.png");
-  background-size: 3rem;
-  background-position: right 1rem center;
-  background-repeat: no-repeat;
-  top: 2.5rem;
-  margin: 0 auto 2rem auto;
-}
-
-.joyid-connect:hover {
-  background-color: #000;
-  color: #f8f8f8;
-}
-
-.other-wallet-connect {
-  background-color: #f8f8f8;
-  color: #505050;
-  box-shadow: 0.2rem 0.2rem 0 #81773c, 0.4rem 0.4rem 0 #694427;
-  margin-top: 10%;
-  top: 3rem;
-  margin: 2rem auto 1.2rem auto;
-}
-
-.other-wallet-connect:hover {
-  background-color: #000;
-  color: #f8f8f8;
-}
-
-.sign-out-button {
-  background-color: #f8f8f8;
-  color: #505050;
-  padding: 1rem 1rem 1rem 1rem;
-  border: 0.3rem solid #505050;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
-  transform: translateY(0.2rem);
-  font-size: 1.5rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: left;
-  width: 20rem;
-  height: 4rem;
-  background-size: 2.5rem;
-  background-position: right 1rem center;
-  background-repeat: no-repeat;
-  font-weight: bold;
-  position: relative;
-  box-shadow: 0.1rem 0.1rem 0 #555, 0.2rem 0.2rem 0 #333;
-  transition: transform 0.3s ease;
 }
 
 @keyframes rainbow {
@@ -141,39 +32,6 @@ body {
   }
 }
 
-.sign-out-button:hover {
-  transform: translateY(-0.3rem);
-  background-color: #000;
-  color: #a8e72f;
-}
-
-.sign-out-button {
-  background-color: #f8f8f8;
-  color: #505050;
-  padding: 0.5rem 1rem;
-  border: 0.1rem solid #505050;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
-  transform: translateY(0.2rem);
-  font-size: 1.5rem;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0.1rem 0.1rem 0 #555, 0.2rem 0.2rem 0 #333;
-  position: relative;
-  margin-right: 2rem;
-  width: 20rem;
-  height: 4rem;
-}
-
-.sign-out-button:hover {
-  background-color: #000;
-  color: #a8e72f;
-}
-
 @keyframes fadeIntro {
   0% {
     opacity: 0;
@@ -182,80 +40,6 @@ body {
     opacity: 1;
   }
 }
-
-.poly-morph-button {
-  background-color: #f8f8f8;
-  color: #505050;
-  padding: 1rem 2rem;
-  border: 0.1rem solid #505050;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transform: translateY(0.2rem);
-  font-size: 1.5rem;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-size: 2.5rem;
-  background-position: right 1rem center;
-  background-repeat: no-repeat;
-  font-weight: bold;
-  width: 20rem;
-  height: 4rem;
-  box-shadow: 0.1rem 0.1rem 0 #555, 0.2rem 0.2rem 0 #333;
-  transition: transform 0.3s ease;
-}
-
-.poly-morph-button:hover {
-  transform: translateY(-0.3rem);
-  background-color: #000;
-  color: #a8e72f;
-}
-
-/* .max-deposit {
-  position: relative;
-  left: -4rem;
-  cursor: pointer;
-  font-weight: bold;
-  color: #597415;
-}
-
-.max-deposit:hover {
-  opacity: 1;
-  animation: rainbow 5s linear infinite;
-} */
-
-.entrance-decor {
-  content: "";
-  position: relative;
-  left: 1.8%;
-  width: 100vh;
-  height: 60vh;
-  background-image: url("./images/poster.png");
-  background-size: 100vh;
-  background-position: top 10rem;
-  background-repeat: no-repeat;
-  z-index: inherit;
-  margin: 0 auto;
-}
-
-.deposit-amount-label {
-  color: textColor;
-  font-size: 1em;
-  position: absolute;
-  bottom: 35%;
-  cursor: pointer;
-}
-
-/* .cell-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  max-width: 80%;
-  grid-gap: 0;
-  margin: 0 auto 2rem auto;
-} */
 
 @keyframes blink {
   0% {
@@ -277,26 +61,6 @@ body {
   50% {
     transform: translateY(-1rem);
   }
-}
-
-.loading-overlay {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(224, 224, 224, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.loading-circle {
-  border: 0.5rem solid transparent;
-  border-radius: 50%;
-  width: 8rem;
-  height: 8rem;
-  animation: spin 1s linear infinite, loading-rainbow 5s linear infinite;
-  z-index: 999;
 }
 
 @keyframes loading-rainbow {
@@ -376,13 +140,6 @@ body {
   }
 }
 
-.tx-confirmation-message {
-  margin-top: 2rem;
-  font-size: 1.6rem;
-  font-weight: bold;
-  color: #333;
-}
-
 @keyframes blink {
   0% {
     opacity: 1;
@@ -393,133 +150,6 @@ body {
   100% {
     opacity: 1;
   }
-}
-
-.dao-cell {
-  border: 0.1rem solid var(--backgroundColor);
-  padding: 0.5rem;
-  margin: 0.5rem;
-  border-radius: 1rem;
-  width: var(--cellWidth);
-  height: var(--cellHeight);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--backgroundColor);
-  transform: perspective(100rem) rotateY(1deg);
-  backface-visibility: hidden;
-  transition: transform 0.3s ease-in-out;
-  animation: fadeIntro 0.5s ease-in-out;
-  font-size: 1.2em;
-  position: relative;
-  box-shadow: 0.1rem 0.1rem 0 #555, 0.2rem 0.2rem 0 #333;
-  cursor: pointer;
-}
-
-.dao-cell::after {
-  content: "";
-  position: absolute;
-  top: -0.5rem;
-  right: -0.5rem;
-  width: 1.8rem;
-  height: 1.8rem;
-  background-color: #e2e2e2;
-  border-radius: 50%;
-  border: 0.5rem solid #000;
-  opacity: var(--opacityCtrl, 0.2);
-  transition: opacity 0.3s ease-in-out;
-}
-
-.dao-cell:hover::after {
-  opacity: 1;
-}
-
-.checkmark-area {
-  /* display: none; */
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 1.8rem;
-  height: 1.8rem;
-  opacity: var(--opacityCtrl);
-  z-index: 1;
-}
-
-.checkmark-area:before {
-  position: absolute;
-  height: 0.8rem;
-  width: 0.4rem;
-  border-bottom: 0.2rem solid #000000;
-  border-right: 0.2rem solid #000000;
-  content: "";
-  transform: rotate(45deg);
-  left: 1rem;
-  top: -0.1rem;
-}
-
-.checkmark-area:hover {
-  opacity: 1;
-}
-
-.dao-cell:hover {
-  transform: translateY(-0.3rem);
-  color: textColor;
-  position: relative;
-}
-
-.dao-cell-button {
-  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.05), 0 0 2rem rgba(0, 0, 0, 0.1),
-    0 0 3rem rgba(0, 0, 0, 0.15);
-  background-color: var(--buttonColor);
-  color: var(--textColor);
-  border-width: 0.1rem;
-  border-radius: 0.2rem;
-  border-color: #000000;
-  cursor: pointer;
-  font-size: 0.8em;
-  position: absolute;
-  bottom: 0.5rem;
-  width: 11rem;
-  height: 3rem;
-  margin: 0 auto;
-  z-index: 1;
-  transition: transform 0.2s ease;
-}
-
-.dao-cell-button::before {
-  content: "";
-  position: absolute;
-  top: -1.5rem;
-  left: -1.5rem;
-  width: 0.3rem;
-  height: 0.3rem;
-  background-color: #fbff00;
-  border-radius: 50%;
-}
-
-.dao-cell-button.ripe {
-  animation: shake 0.8s;
-  animation-iteration-count: infinite;
-  animation-delay: var(--animationDelay);
-}
-
-.button-border-progress-bar {
-  /* display: none; */
-  width: 11rem;
-  height: 3rem;
-  border-radius: 0.2rem;
-  background: linear-gradient(to right, #fbff00 99.99%, transparent),
-    linear-gradient(to bottom, #fbff00 99.99%, transparent),
-    linear-gradient(to right, #fbff00 99.99%, transparent),
-    linear-gradient(to bottom, #fbff00 99.99%, transparent);
-  background-size: 100% 0.2rem, 0.2rem 100%, 100% 0.2rem, 0.2rem 100%;
-  background-repeat: no-repeat;
-  background-position: var(--backgroundPos);
-  position: relative;
-  top: 4.5rem;
-  z-index: 1;
-  cursor: pointer;
 }
 
 @keyframes spin {
@@ -565,31 +195,6 @@ body {
   100% {
     transform: translate(0.1rem, -0.2rem) rotate(-1deg);
   }
-}
-
-.dao-cell.ripe {
-  animation: shake 0.5s;
-  animation-iteration-count: infinite;
-}
-
-.connect-wallet {
-  font-size: 1.3em;
-  font-weight: bold;
-  width: 20rem;
-  text-align: center;
-  margin: 0 auto;
-}
-
-.main-wallet-option {
-  top: 2rem;
-  max-height: 20rem;
-  min-height: 17rem;
-}
-
-.headline-separation {
-  border-top: 0.1rem solid #000;
-  width: 100%;
-  margin: 0 auto 1rem auto;
 }
 
 @keyframes warningAnimation {

@@ -1229,7 +1229,6 @@ const App = () => {
               joyDAO.cc
             </h1>
             <p className="sub-title">Multi-chain Nervos DAO portal</p>
-            {/* <div className="entrance-decor"></div> */}
             <Button
               className="signin-button"
               onClick={() => {
