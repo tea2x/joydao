@@ -1188,7 +1188,8 @@ const App = () => {
   useOnClickOutside(sidebarRef, () => {
     const isFirstDeposit =
       !cells.length && !isSidebarCollapsed && sidebarMode === 2;
-    if (!isFirstDeposit && !modalIsOpen) {
+    const isBatching = sidebarMode === 3;
+    if (!isFirstDeposit && !modalIsOpen && !isBatching) {
       setSidebarMode(0);
       setIsSidebarCollapsed(true);
     }
