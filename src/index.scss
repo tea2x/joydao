@@ -594,12 +594,17 @@ aside {
 }
 
 // TOAST MESSAGE
+.notistack-Snackbar {
+  min-width: unset;
+}
+
 .notif {
   padding: 1.2rem 1.6rem;
   font-size: 1.3rem;
   font-weight: 500;
   line-height: 1.8rem;
   border-radius: 0.8rem;
+  word-break: break-all;
 
   &[class*="success"] {
     background-color: #242c32;
