@@ -1,0 +1,32 @@
+@import "/src/styles/typography.scss";
+
+.inputWrapper {
+  border-radius: 0.8rem;
+  border: solid 0.1rem #363a3d;
+  padding: 0.8rem;
+
+  display: flex;
+  align-items: center;
+
+  @include txt-l-semibold;
+
+  .baseInput {
+    background-color: transparent;
+    color: inherit;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: inherit;
+    width: 100%;
+    box-sizing: border-box;
+
+    @include txt-l-medium;
+
+    &:focus {
+      outline: none;
+    }
+    &::-webkit-search-cancel-button {
+      /* Hide the close button in the input field has type = "search" */
+      -webkit-appearance: none;
+    }
+  }
+}

@@ -1,53 +1,58 @@
-import * as React from "react";
-import { CKBTransaction } from "@joyid/ckb";
-import { buildTransfer } from "./basic-wallet";
 import { ccc } from "@ckb-ccc/connector-react";
-import { utils, blockchain } from "@ckb-lumos/base";
-import { initializeConfig, Config } from "@ckb-lumos/config-manager";
-import { ClientPublicTestnet, ClientPublicMainnet } from "@ckb-ccc/core";
+import { ClientPublicMainnet, ClientPublicTestnet } from "@ckb-ccc/core";
+import { blockchain, utils } from "@ckb-lumos/base";
+import { Config, initializeConfig } from "@ckb-lumos/config-manager";
+import { CKBTransaction } from "@joyid/ckb";
+import * as React from "react";
+import { buildTransfer } from "./basic-wallet";
 import {
-  waitForTransactionConfirmation,
-  queryBalance,
   Balance,
-  enrichDaoCellInfo,
   DaoCell,
-  getTipEpoch,
   SeededRandom,
+  enrichDaoCellInfo,
+  estimateReturn,
+  getTipEpoch,
+  isDefaultAddress,
   isJoyIdAddress,
   isOmnilockAddress,
-  isDefaultAddress,
-  estimateReturn,
+  queryBalance,
+  waitForTransactionConfirmation,
 } from "./lib/helpers";
 
 import {
-  NETWORK_CONFIG,
   CKB_SHANNON_RATIO,
+  DAO_MINIMUM_CAPACITY,
   EXPLORER_PREFIX,
   ISMAINNET,
-  DAO_MINIMUM_CAPACITY,
+  NETWORK_CONFIG,
 } from "./config";
 
 import {
+  batchDaoCells,
   buildDepositTransaction,
-  buildWithdrawTransaction,
   buildUnlockTransaction,
+  buildWithdrawTransaction,
   collectDeposits,
   collectWithdrawals,
-  batchDaoCells,
 } from "./joy-dao";
 
-import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { SnackbarProvider, useSnackbar } from "notistack";
+import { CircularProgressbarWithChildren } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import {
-  CircularProgressbarWithChildren,
-  buildStyles,
-} from "react-circular-progressbar";
-
 
 import Modal from "react-modal";
-Modal.setAppElement("#root");
 import "./App.css";
+import gradientLogo from "./assets/icons/logo.svg";
+import bgGuestLogin01 from "./assets/images/bg-login-01.jpeg";
+import { Button, Input } from "./components";
+import "./index.scss";
+
+Modal.setAppElement("#root");
+
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import Cell from "./components/Cell";
+import { useOnClickOutside } from "./hooks";
+import { cx } from "./utils/classname";
 
 const { ckbHash } = utils;
 
@@ -88,7 +93,6 @@ const App = () => {
     React.useState(false);
   const [compensation, setCompensation] = React.useState<number | null>(null);
   const [percentageLoading, setPercentageLoading] = React.useState<number>(0);
-  const [isMainPanel, setIsMainPanel] = React.useState(true);
 
   // basic wallet
   const [transferTo, setTransferTo] = React.useState<string>("");
@@ -97,8 +101,6 @@ const App = () => {
   const { open, disconnect, setClient } = ccc.useCcc();
   const signer = ccc.useSigner();
   const { enqueueSnackbar } = useSnackbar();
-  const onMainPanel = () => setIsMainPanel(true);
-  const onToTransferPanel = () => setIsMainPanel(false);
 
   initializeConfig(NETWORK_CONFIG as Config);
 
@@ -251,6 +253,8 @@ const App = () => {
       setPickedCells([]);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
+    } finally {
+      setSidebarMode(0);
     }
   };
 
@@ -314,6 +318,8 @@ const App = () => {
       setIsLoading(false);
     } catch (e: any) {
       enqueueSnackbar("Error: " + e.message, { variant: "error" });
+    } finally {
+      setSidebarMode(0);
     }
   };
 
@@ -731,212 +737,169 @@ const App = () => {
     return () => clearInterval(interval);
   }, [depositCells, withdrawalCells, tipEpoch, percentageLoading]);
 
-  /**
-   * Calculate background position for an overlay,
-   * showing cycle progress bar on top of each deposit
-   */
-  function calculateButtonBorderProgressBar(percentage: number) {
-    let backgroundPos = "";
-    const targetBtnSize = {
-      width: windowWidth <= 768 ? 90 : 110,
-      height: windowWidth <= 768 ? 30 : 30,
-    };
-    const deltaH = windowWidth <= 768 ? 1.5 : 2;
-    const deltaW = windowWidth <= 768 ? 1.5 : 2;
-    const totalLength = (targetBtnSize.width + targetBtnSize.height) * 2;
-    const borderLen = (percentage / 100) * totalLength;
-
-    if (borderLen <= targetBtnSize.width) {
-      backgroundPos =
-        "" +
-        (-targetBtnSize.width + borderLen) +
-        "px 0px, " +
-        (targetBtnSize.width - deltaW) +
-        "px -" +
-        targetBtnSize.height +
-        "px, " +
-        targetBtnSize.width +
-        "px " +
-        (targetBtnSize.height - deltaH) +
-        "px, 0px " +
-        targetBtnSize.height +
-        "px";
-    } else if (borderLen <= targetBtnSize.width + targetBtnSize.height) {
-      backgroundPos =
-        "0px 0px, " +
-        (targetBtnSize.width - deltaW) +
-        "px " +
-        (-targetBtnSize.height + (borderLen - targetBtnSize.width)) +
-        "px, " +
-        targetBtnSize.width +
-        "px " +
-        (targetBtnSize.height - deltaH) +
-        "px, 0px " +
-        targetBtnSize.height +
-        "px";
-    } else if (borderLen <= targetBtnSize.width * 2 + targetBtnSize.height) {
-      backgroundPos =
-        "0px 0px, " +
-        (targetBtnSize.width - deltaW) +
-        "px 0px, " +
-        (targetBtnSize.width -
-          (borderLen - targetBtnSize.width - targetBtnSize.height)) +
-        "px " +
-        (targetBtnSize.height - deltaH) +
-        "px, 0px " +
-        targetBtnSize.height +
-        "px";
-    } else {
-      backgroundPos =
-        "0px 0px, " +
-        (targetBtnSize.width - deltaW) +
-        "px 0px, 0px " +
-        (targetBtnSize.height - deltaH) +
-        "px, 0px " +
-        (targetBtnSize.height -
-          (borderLen - targetBtnSize.width * 2 - targetBtnSize.height)) +
-        "px";
-    }
-    return backgroundPos;
-  }
+  // Sidebar Mode
+  // 0. default
+  // 1. transfer
+  // 2. deposit
+  // 3. batch
+  const [sidebarMode, setSidebarMode] = React.useState(0);
 
   /**
    * joyDAO front information board UI
    */
-  function daoInfoBoard() {
+  const accountBalances = () => {
     return (
-      <div className="info-board">
-        <div className="control-panel-headline">
-          Account: {shortenAddress(ckbAddress)}
-          <span
-            className="copy-sign"
-            onClick={(e) => {
-              e.stopPropagation();
-              copyAddress(ckbAddress);
-            }}
-          >
-            ⧉
-          </span>
-        </div>
-        <h3 className="headline-separation"> </h3>
+      <div className="balances">
+        <div className="balance-background"></div>
+        {(sidebarMode === 1 || sidebarMode === 0) && (
+          <p className="balance-index free-balance">
+            <span>Free</span>
+            <span>
+              {balance
+                ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
+                    .toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+                : "Loading..."}
+            </span>
+          </p>
+        )}
+        {sidebarMode === 0 && (
+          <>
+            <p className="balance-index depositing-balance">
+              <span>Depositing</span>
+              <span>
+                {balance
+                  ? (sumDeposit() / CKB_SHANNON_RATIO)
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+                  : "Loading..."}
+              </span>
+            </p>
 
-        <div className="text-based-info">
-          • Free:{" "}
-          {balance
-            ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-            : "Loading..."}
-        </div>
-
-        <div className="text-based-info">
-          • Deposited:{" "}
-          {balance
-            ? (sumDeposit() / CKB_SHANNON_RATIO)
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-            : "Loading..."}
-        </div>
-
-        <div className="text-based-info">
-          • Withdrawing:{" "}
-          {balance
-            ? (sumLocked() / CKB_SHANNON_RATIO)
-                .toString()
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-            : "Loading..."}
-        </div>
-
-        <input
-          type="text"
-          className="control-panel-text-box"
-          value={depositAmount}
-          onChange={(e) => setDepositAmount(e.target.value)}
-          onKeyDown={handleDepositKeyDown}
-          placeholder="Enter amount to deposit!"
-        />
-      </div>
-    );
-  }
-
-  /**
-   * joyDAO basic wallet UI
-   */
-  function basicWallet() {
-    return (
-      <div className="info-board">
-        <div className="control-panel-headline">Transfer</div>
-        <h3 className="headline-separation"> </h3>
-
-        <div className="text-based-info">
-          • Transferable:{" "}
-          {balance
-            ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
-            : "Loading..."}
-        </div>
-
-        <input
-          className="control-panel-text-box"
-          type="text"
-          value={transferTo}
-          onInput={(e) => setTransferTo(e.currentTarget.value)}
-          placeholder="Enter address to transfer to!"
-        />
-
-        <input
-          className="control-panel-text-box"
-          type="text"
-          value={transferAmount}
-          onInput={(e) => setTransferAmount(e.currentTarget.value)}
-          placeholder="Enter amount to transfer!"
-        />
-      </div>
-    );
-  }
-
-  /**
-   * joyDAO front information board navigator UI
-   */
-  function tabNavigator() {
-    return (
-      <div>
-        {isMainPanel ? (
-          <svg
-            className="to-right-sign"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            id="angle-right"
-            width="30"
-            height="30"
-            onClick={onToTransferPanel}
-          >
-            <path
-              fill="#524540"
-              d="M14.83,11.29,10.59,7.05a1,1,0,0,0-1.42,0,1,1,0,0,0,0,1.41L12.71,12,9.17,15.54a1,1,0,0,0,0,1.41,1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29l4.24-4.24A1,1,0,0,0,14.83,11.29Z"
-            ></path>
-          </svg>
-        ) : (
-          <svg
-            className="to-left-sign"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            id="angle-left"
-            width="30"
-            height="30"
-            onClick={onMainPanel}
-          >
-            <path
-              fill="#524540"
-              d="M11.29,12l3.54-3.54a1,1,0,0,0,0-1.41,1,1,0,0,0-1.42,0L9.17,11.29a1,1,0,0,0,0,1.42L13.41,17a1,1,0,0,0,.71.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41Z"
-            ></path>
-          </svg>
+            <p className="balance-index withdrawing-balance">
+              <span>Withdrawing</span>
+              <span>
+                {balance
+                  ? (sumLocked() / CKB_SHANNON_RATIO)
+                      .toString()
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " CKB"
+                  : "Loading..."}
+              </span>
+            </p>
+          </>
         )}
       </div>
     );
-  }
+  };
+
+  const depositForm = () => {
+    return (
+      <div className="deposit-form">
+        <div className="form-header">
+          <Button
+            type="ghost"
+            icon={require("./assets/icons/back.svg").default}
+            onClick={() => setSidebarMode(0)}
+          />
+          <h3>
+            <span className="highlight-txt">Deposit CKB</span>
+            <span>to Nervos DAO</span>
+          </h3>
+        </div>
+        <Input
+          className="form-field"
+          htmlType="text"
+          value={depositAmount}
+          onChange={(e) => setDepositAmount(e.target.value)}
+          onKeyDown={handleDepositKeyDown}
+          placeholder="Deposit amount"
+          leadIcon={require("./assets/icons/zap.svg").default}
+        />
+        <Button className="submit" type="glass" onClick={() => onDeposit()}>
+          Execute
+        </Button>
+      </div>
+    );
+  };
+
+  const transferForm = () => {
+    return (
+      <div className="transfer-form">
+        <div className="form-header">
+          <Button
+            type="ghost"
+            icon={require("./assets/icons/back.svg").default}
+            onClick={() => setSidebarMode(0)}
+          />
+          <h3>
+            <span className="highlight-txt">Transfer</span>
+            <span>to destination address</span>
+          </h3>
+        </div>
+        <Input
+          className="form-field"
+          htmlType="text"
+          value={transferTo}
+          onInput={(e) => setTransferTo(e.currentTarget.value)}
+          placeholder="Destination address"
+          leadIcon={require("./assets/icons/user.svg").default}
+        />
+        <Input
+          className="form-field"
+          htmlType="text"
+          value={transferAmount}
+          onInput={(e) => setTransferAmount(e.currentTarget.value)}
+          placeholder="Amount of transfer"
+          leadIcon={require("./assets/icons/zap.svg").default}
+        />
+        <Button className="submit" type="glass" onClick={() => onTransfer()}>
+          Execute
+        </Button>
+      </div>
+    );
+  };
+
+  const batchForm = () => {
+    return (
+      <div className="transfer-form">
+        <div className="form-header">
+          <Button
+            type="ghost"
+            icon={require("./assets/icons/back.svg").default}
+            onClick={() => {
+              setPickedCells([]);
+              setSidebarMode(0);
+            }}
+          />
+          <h3>
+            <span className="highlight-txt">Batch</span>
+            <span>{`${pickedCells.length} ${
+              pickedCells.length > 1 ? " cells" : " cell"
+            }`}</span>
+          </h3>
+        </div>
+        {pickedCells.length === 0 && (
+          <p>
+            <i>Please select cells</i>
+          </p>
+        )}
+        {pickedCells.length === 1 && (
+          <p>
+            <i>Please select at least 2 cells</i>
+          </p>
+        )}
+        <Button
+          className="submit"
+          type="glass"
+          onClick={() => onBatch(pickedCells)}
+          disabled={pickedCells.length < 2}
+        >
+          Execute
+        </Button>
+      </div>
+    );
+  };
 
   /**
    * joyDAO deposit information UI
@@ -944,82 +907,133 @@ const App = () => {
   function daoDepositCircularProgressBarInfo() {
     return (
       <div className="deposit-circular-progress-bar">
+        <svg style={{ height: 0, width: "100%" }}>
+          <defs>
+            <linearGradient
+              id="deposit_progress"
+              x1="0.5"
+              y1="26.5"
+              x2="26.5"
+              y2="0.5"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop stop-color="#82DBF7" />
+              <stop offset="1" stop-color="#B6F09C" />
+            </linearGradient>
+          </defs>
+          <defs>
+            <linearGradient
+              id="withdraw_progress"
+              x1="0.5"
+              y1="26"
+              x2="26.5"
+              y2="-3.74348e-07"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop stop-color="#CA6100" />
+              <stop offset="1" stop-color="#FF9900" />
+            </linearGradient>
+          </defs>
+        </svg>
         <CircularProgressbarWithChildren
           value={pickedDaoCell?.currentCycleProgress!}
-          styles={buildStyles({
-            pathColor:
-              pickedDaoCell?.currentCycleProgress! < 93 ? "#99c824" : "#e58603",
-          })}
+          styles={{
+            path: {
+              stroke: `url(#${
+                pickedDaoCell?.currentCycleProgress! < 93
+                  ? "deposit_progress"
+                  : "withdraw_progress"
+              })`,
+              height: "100%",
+            },
+            trail: {
+              stroke: "#2e2e2e",
+            },
+          }}
         >
-          <p className="dao-transition-message">
-            Cycle{" "}
-            {pickedDaoCell
-              ? !pickedDaoCell?.isDeposit && pickedDaoCell?.ripe
-                ? pickedDaoCell?.completedCycles!
-                : pickedDaoCell?.completedCycles! + 1
-              : "~"}{" "}
-            | Progress:{" "}
-            {pickedDaoCell ? pickedDaoCell.currentCycleProgress! + "%" : "~"}
-          </p>
-
-          {!pickedDaoCell?.isDeposit && (
-            <p className="dao-transition-message">
-              Compensation:{" "}
-              {pickedDaoCell ? getCompensation(pickedDaoCell) : "~"}
-            </p>
-          )}
-
-          {!pickedDaoCell?.isDeposit &&
-            (!pickedDaoCell?.ripe ? (
-              <p className="dao-transition-message highlight">
-                Complete in:{" "}
+          {!isDaoTransitMsgLoading && (
+            <>
+              <p className="dao-transition-message">
+                Cycle{" "}
                 {pickedDaoCell
-                  ? (pickedDaoCell?.cycleEndInterval! + 1) / 6 > 2
-                    ? `${((pickedDaoCell?.cycleEndInterval! + 1) / 6).toFixed(
-                        2
-                      )}d`
-                    : `${(pickedDaoCell?.cycleEndInterval! + 1) * 4}h`
+                  ? !pickedDaoCell?.isDeposit && pickedDaoCell?.ripe
+                    ? pickedDaoCell?.completedCycles!
+                    : pickedDaoCell?.completedCycles! + 1
+                  : "~"}{" "}
+                | Progress:{" "}
+                {pickedDaoCell
+                  ? pickedDaoCell.currentCycleProgress! + "%"
                   : "~"}
               </p>
-            ) : (
-              <p className="dao-transition-message highlight">Complete now!</p>
-            ))}
 
-          {pickedDaoCell?.isDeposit && (
-            <p className="dao-transition-message">
-              Compensation:{" "}
-              {compensation != null ? `${compensation?.toFixed(2)} CKB` : "~"}
-            </p>
-          )}
+              {!pickedDaoCell?.isDeposit && (
+                <p className="dao-transition-message">
+                  Compensation:{" "}
+                  {pickedDaoCell ? getCompensation(pickedDaoCell) : "~"}
+                </p>
+              )}
 
-          {pickedDaoCell?.isDeposit && pickedDaoCell.ripe && (
-            <p className="dao-transition-message highlight">
-              New Lock Cycle in: {pickedDaoCell?.cycleEndInterval! * 4}h
-            </p>
-          )}
+              {!pickedDaoCell?.isDeposit &&
+                (!pickedDaoCell?.ripe ? (
+                  <p className="dao-transition-message highlight">
+                    Complete in:{" "}
+                    {pickedDaoCell
+                      ? (pickedDaoCell?.cycleEndInterval! + 1) / 6 > 2
+                        ? `${(
+                            (pickedDaoCell?.cycleEndInterval! + 1) /
+                            6
+                          ).toFixed(2)}d`
+                        : `${(pickedDaoCell?.cycleEndInterval! + 1) * 4}h`
+                      : "~"}
+                  </p>
+                ) : (
+                  <p className="dao-transition-message highlight">
+                    Complete now!
+                  </p>
+                ))}
 
-          {pickedDaoCell?.isDeposit &&
-            (!pickedDaoCell.ripe ? (
-              <p className="dao-transition-message highlight">
-                Max Reward in:{" "}
-                {pickedDaoCell?.cycleEndInterval! >= 12 &&
-                (pickedDaoCell?.cycleEndInterval! - 12) / 6 > 2
-                  ? `${((pickedDaoCell?.cycleEndInterval! - 12) / 6).toFixed(
-                      2
-                    )}d`
-                  : `${(pickedDaoCell?.cycleEndInterval! - 12) * 4}h`}
-              </p>
-            ) : (
-              <p className="dao-transition-message highlight">Withdraw now!</p>
-            ))}
+              {pickedDaoCell?.isDeposit && (
+                <p className="dao-transition-message">
+                  Compensation:{" "}
+                  {compensation != null
+                    ? `${compensation?.toFixed(2)} CKB`
+                    : "~"}
+                </p>
+              )}
 
-          {!(!pickedDaoCell?.isDeposit && !pickedDaoCell?.ripe) && (
-            <p className="dao-transition-message">
-              Tx fee:{" "}
-              {currentTx.fee
-                ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB`
-                : `${" ~ CKB"}`}
-            </p>
+              {pickedDaoCell?.isDeposit && pickedDaoCell.ripe && (
+                <p className="dao-transition-message highlight">
+                  New Lock Cycle in: {pickedDaoCell?.cycleEndInterval! * 4}h
+                </p>
+              )}
+
+              {pickedDaoCell?.isDeposit &&
+                (!pickedDaoCell.ripe ? (
+                  <p className="dao-transition-message highlight">
+                    Max Reward in:{" "}
+                    {pickedDaoCell?.cycleEndInterval! >= 12 &&
+                    (pickedDaoCell?.cycleEndInterval! - 12) / 6 > 2
+                      ? `${(
+                          (pickedDaoCell?.cycleEndInterval! - 12) /
+                          6
+                        ).toFixed(2)}d`
+                      : `${(pickedDaoCell?.cycleEndInterval! - 12) * 4}h`}
+                  </p>
+                ) : (
+                  <p className="dao-transition-message highlight">
+                    Withdraw now!
+                  </p>
+                ))}
+
+              {!(!pickedDaoCell?.isDeposit && !pickedDaoCell?.ripe) && (
+                <p className="dao-transition-message">
+                  Tx fee:{" "}
+                  {currentTx.fee
+                    ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB`
+                    : `${" ~ CKB"}`}
+                </p>
+              )}
+            </>
           )}
         </CircularProgressbarWithChildren>
       </div>
@@ -1031,22 +1045,23 @@ const App = () => {
    */
   function depositTransitionMessage() {
     return (
-      <div>
-        <p className="dao-transition-message headline">
-          Depositing {depositAmount} CKB
-        </p>
-        <h3 className="headline-separation"> </h3>
-        <p className="dao-transition-message deposit">
-          • Withdrawals can be initiated any time later on but each withdrawal
-          is only completed at the end of its 30-day cycle
-        </p>
-        {/* <p className="dao-transition-message-sample-image"></p> */}
-        <p className="dao-transition-message deposit">
-          • Tx fee:{" "}
-          {currentTx.fee
-            ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB`
-            : `${" ~ CKB"}`}
-        </p>
+      <div className="deposit-confirmation-modal">
+        <h2 className="highlight-txt">Depositing {depositAmount} CKB</h2>
+        <div className="description">
+          <p className="dao-transition-message deposit">
+            Withdrawals can be initiated any time later on but each withdrawal
+            is only completed at the end of its{" "}
+            <span className="highlight-txt">30-day</span> cycle
+          </p>
+          <p className="dao-transition-message deposit">
+            Tx fee:{" "}
+            <span className="highlight-txt">
+              {currentTx.fee
+                ? `${(currentTx.fee / CKB_SHANNON_RATIO).toFixed(8)} CKB`
+                : `${" ~ CKB"}`}
+            </span>
+          </p>
+        </div>
       </div>
     );
   }
@@ -1062,458 +1077,388 @@ const App = () => {
           setModalIsOpen(false);
           setPickedDaoCell(null);
         }}
+        shouldCloseOnOverlayClick
+        shouldCloseOnEsc
       >
-        {isDaoTransitMsgLoading && (
-          <div className="modal-loading-overlay">
-            <div className="modal-loading-circle"></div>
-          </div>
-        )}
-
         {daoMode == DaoFunction.depositing
           ? depositTransitionMessage()
           : daoDepositCircularProgressBarInfo()}
 
-        <div className="button">
-          <button
-            className="proceed"
-            disabled={
-              daoMode == DaoFunction.unlocking && pickedDaoCell
-                ? !pickedDaoCell.isDeposit && !pickedDaoCell.ripe
-                : false
-            }
-            onClick={() => {
-              if (daoMode == DaoFunction.withdrawing) {
-                onWithdrawProceed();
-              } else if (daoMode == DaoFunction.unlocking) {
-                onUnlockProceed();
-              } else if (daoMode == DaoFunction.depositing) {
-                onDepositProceed();
-              } else {
-                //nothing
+        {!isDaoTransitMsgLoading && (
+          <div className="modal-btns">
+            <button
+              className="proceed"
+              disabled={
+                daoMode == DaoFunction.unlocking && pickedDaoCell
+                  ? !pickedDaoCell.isDeposit && !pickedDaoCell.ripe
+                  : false
               }
-              setModalIsOpen(false);
-              setDaoMode(DaoFunction.none);
-            }}
-          >
-            Proceed
-          </button>
-
-          <button
-            className="cancel"
-            onClick={() => {
-              setModalIsOpen(false);
-              setPickedDaoCell(null);
-            }}
-          >
-            Cancel
-          </button>
-        </div>
+              onClick={() => {
+                if (daoMode == DaoFunction.withdrawing) {
+                  onWithdrawProceed();
+                } else if (daoMode == DaoFunction.unlocking) {
+                  onUnlockProceed();
+                } else if (daoMode == DaoFunction.depositing) {
+                  onDepositProceed();
+                } else {
+                  //nothing
+                }
+                setModalIsOpen(false);
+                setDaoMode(DaoFunction.none);
+              }}
+            >
+              Proceed
+            </button>
+          </div>
+        )}
       </Modal>
     );
   }
 
-  {
-    const daoCellNum = [...depositCells, ...withdrawalCells].length;
-    const smallScreenDeviceMinCellWidth = 110;
-    const largeScreenDeviceMinCellWidth = 120;
+  // in case there're too few deposit, fill up dummy cells
 
-    // fix cell heights and minimum cell width,
-    // ensuring the smallest deposit stays in square form
-    const cellHeight =
-      windowWidth <= 768
-        ? smallScreenDeviceMinCellWidth
-        : largeScreenDeviceMinCellWidth;
+  const [mouseDown, setMouseDown] = React.useState(false);
 
-    // in case there're too few deposit, fill up dummy cells
-    const fillerNum = windowWidth <= 768 ? 12 : 20;
-    const maxDummyCellWidth = 150;
-    const dummyCellWidthRandomizer = new SeededRandom(daoCellNum);
+  const handleMouseDown = () => {
+    setMouseDown(true);
+  };
 
-    return (
-      <>
-        {isLoading && (
-          <div className="loading-overlay">
-            <div className="loading-circle-container">
-              <div className="loading-circle"></div>
-              {isWaitingTxConfirm && (
-                <p className="tx-confirmation-message">
-                  Your transaction can take a few minutes to process!
-                </p>
-              )}
-            </div>
-          </div>
-        )}
+  const handleMouseUp = () => {
+    setMouseDown(false);
+  };
 
-        {!ckbAddress && (
-          <h1
-            className="title"
-            onClick={async () => {
-              await updateJoyDaoInfo("all");
-              window.location.reload();
-            }}
-          >
-            joyDAO
-          </h1>
-        )}
+  React.useEffect(() => {
+    if (/Mobi|Android/i.test(window.navigator.userAgent)) {
+      window.addEventListener("mousedown", handleMouseDown);
+      window.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        window.removeEventListener("mousedown", handleMouseDown);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, []);
 
-        {!ckbAddress && (
-          <div className="description">
-            <p>Multi-chain Nervos DAO portal</p>
-          </div>
-        )}
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState<Boolean>(
+    !!Number(localStorage.getItem("isSidebarCollapse"))
+  );
 
-        {!ckbAddress && <div className="entrance-decor"></div>}
+  const cells = React.useMemo(
+    () =>
+      [...depositCells, ...withdrawalCells].sort(
+        (a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
+      ),
+    [depositCells, withdrawalCells]
+  );
 
-        {ckbAddress &&
-          (isJoyIdAddress(ckbAddress) ? (
-            daoInfoBoard()
-          ) : (
-            <div>
-              <TransitionGroup>
-                <CSSTransition timeout={1000}>
-                  <div
-                    style={{
-                      marginBottom: "-30px",
-                    }}
-                  >
-                    {isMainPanel ? daoInfoBoard() : basicWallet()}
-                    {tabNavigator()}
-                  </div>
-                </CSSTransition>
-              </TransitionGroup>
-            </div>
-          ))}
+  const onExploringCell = (cell: any) => {
+    window.open(
+      EXPLORER_PREFIX + `${cell.outPoint?.txHash}`,
+      "_blank",
+      "noreferrer"
+    );
+  };
 
-        {!ckbAddress && (
-          <button
-            className="signin-button"
-            onClick={() => {
-              try {
-                open();
-              } catch (e: any) {
-                enqueueSnackbar("Error: " + e.message, {
-                  variant: "error",
-                });
-              }
-            }}
-          >
-            Connect
-          </button>
-        )}
+  const onSelectCell = (e: any, cell: any) => {
+    e.stopPropagation();
+    try {
+      if (isLoading)
+        throw new Error(
+          "Please wait a moment! joyDAO is fetching data for you."
+        );
 
-        <div className="main-buttons">
-          {ckbAddress && (
-            <>
-              <button className="sign-out-button" onClick={onSignOut}>
-                Sign Out
-              </button>
+      if (!pickedCells.includes(cell)) {
+        if (!cell.isDeposit && !cell.ripe)
+          throw new Error("Can not batch processing withdrawals");
 
-              <button
-                className="poly-morph-button"
-                onClick={(e) => {
-                  !isMainPanel
-                    ? onTransfer()
-                    : pickedCells.length >= 2
-                    ? onBatch(pickedCells)
-                    : onDeposit();
-                }}
-              >
-                {!isMainPanel
-                  ? "Transfer"
-                  : pickedCells.length >= 2
-                  ? "Batch"
-                  : "Deposit"}
-              </button>
-            </>
+        pickedCells.push(cell);
+        setPickedCells(pickedCells);
+        setRenderKick((prevRenderKick) => prevRenderKick + 1);
+      } else {
+        // remove cell if re-picked
+        const index = pickedCells.indexOf(cell);
+        if (index !== -1) {
+          pickedCells.splice(index, 1);
+          setPickedCells(pickedCells);
+          setRenderKick((prevRenderKick) => prevRenderKick + 1);
+        }
+      }
+    } catch (e: any) {
+      enqueueSnackbar("Error: " + e.message, {
+        variant: "error",
+      });
+    }
+  };
+
+  const sidebarRef = React.useRef(null);
+
+  useOnClickOutside(sidebarRef, () => {
+    const isFirstDeposit =
+      !cells.length && !isSidebarCollapsed && sidebarMode === 2;
+    const isBatching = sidebarMode === 3;
+    if (!isFirstDeposit && !modalIsOpen && !isBatching) {
+      setSidebarMode(0);
+      setIsSidebarCollapsed(true);
+    }
+  });
+
+  return (
+    <>
+      <div className="background">
+        <picture>
+          <source
+            media="(max-width:768px)"
+            srcSet={require("./assets/videos/dynamic-bg-mb.gif")}
+          />
+          <img
+            id="dynamicBg"
+            src={require("./assets/videos/dynamic-bg.gif")}
+            alt="background"
+          />
+        </picture>
+      </div>
+      {(isLoading || isDaoTransitMsgLoading) && (
+        <div className="modal-loading-overlay">
+          <div className="modal-loading-circle" />
+          {isWaitingTxConfirm && (
+            <p className="tx-confirmation-message highlight-txt">
+              Your transaction can take a few minutes to process!
+            </p>
           )}
         </div>
+      )}
 
-        {ckbAddress &&
-          (daoCellNum === 0 && isLoading == false ? (
+      {!ckbAddress && (
+        <div className="guest--screen">
+          <div className="guest--content">
+            <img
+              src={gradientLogo}
+              alt="joyDAO"
+              className="logo"
+              draggable={false}
+            />
+            <h1
+              className="title"
+              onClick={async () => {
+                await updateJoyDaoInfo("all");
+              }}
+            >
+              joyDAO.cc
+            </h1>
+            <p className="sub-title">Multi-chain Nervos DAO portal</p>
+            <Button
+              className="signin-button"
+              onClick={() => {
+                try {
+                  open();
+                } catch (e: any) {
+                  enqueueSnackbar("Error: " + e.message, {
+                    variant: "error",
+                  });
+                }
+              }}
+            >
+              Login Now
+            </Button>
+            <footer>
+              <p>
+                <span>joyDAO © 2024</span>
+                <span>
+                  Deposit to <span className="highlight-txt">Nervos DAO</span>{" "}
+                  today!
+                </span>
+              </p>
+            </footer>
+          </div>
+          <div className="guest--slider">
+            <img src={bgGuestLogin01} alt="blockchain-mountain" />
+          </div>
+        </div>
+      )}
+
+      {ckbAddress && (
+        <div className="auth--screen">
+          {cells.length === 0 && isLoading == false ? (
             <div className="no-deposit-message">
-              <h2>Whoops, no deposits found!</h2>
+              <h2 className="highlight-txt">You don't have any deposit yet</h2>
+              <Button
+                onClick={() => {
+                  setIsSidebarCollapsed(false);
+                  setSidebarMode(2);
+                }}
+              >
+                Deposit Now
+              </Button>
             </div>
           ) : (
-            <div className="cell-grid">
-              {[
-                ...depositCells.sort(
-                  (a, b) =>
-                    parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
-                ),
-                ...withdrawalCells.sort(
-                  (a, b) =>
-                    parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
-                ),
-              ].map((cell, index) => {
-                // dao deposit complete shaking rythm
-                const animationDelayRandomizer = new SeededRandom(
-                  parseInt(
-                    ckbHash(blockchain.OutPoint.pack(cell.outPoint!)).slice(-8),
-                    16
-                  )
-                );
-                const animationDelay = animationDelayRandomizer.next(0, 1);
+            <TransformWrapper
+              alignmentAnimation={{ animationType: "linear" }}
+              zoomAnimation={{ animationType: "linear" }}
+              velocityAnimation={{ animationType: "linear" }}
+            >
+              <TransformComponent>
+                <div
+                  className="cell-diagram"
+                  style={{ cursor: mouseDown ? "grabbing" : "grab" }}
+                >
+                  {cells.map((cell, index) => {
+                    // dao deposit complete shaking rythm
+                    const animationDelayRandomizer = new SeededRandom(
+                      parseInt(
+                        ckbHash(blockchain.OutPoint.pack(cell.outPoint!)).slice(
+                          -8
+                        ),
+                        16
+                      )
+                    );
 
-                const scalingStep = 3;
+                    const animationDelay = animationDelayRandomizer.next(0, 1);
 
-                let scaleFactorSmall;
-                if (daoCellNum >= scalingStep * 3) {
-                  scaleFactorSmall = 150;
-                } else if (daoCellNum >= scalingStep * 2) {
-                  scaleFactorSmall = 200;
-                } else if (daoCellNum >= scalingStep) {
-                  scaleFactorSmall = 250;
-                } else {
-                  scaleFactorSmall = 300;
-                }
+                    const capacity =
+                      parseInt(cell.cellOutput.capacity, 16) /
+                      CKB_SHANNON_RATIO;
 
-                let scaleFactorLarge;
-                if (daoCellNum >= scalingStep * 3) {
-                  scaleFactorLarge = 200;
-                } else if (daoCellNum >= scalingStep * 2) {
-                  scaleFactorLarge = 250;
-                } else if (daoCellNum >= scalingStep) {
-                  scaleFactorLarge = 300;
-                } else {
-                  scaleFactorLarge = 350;
-                }
+                    const isDeposit = depositCells.some(
+                      (c) => c.outPoint?.txHash === cell.outPoint?.txHash
+                    );
 
-                const capacity = parseInt(cell.cellOutput.capacity, 16);
-                const totalCapacity = [
-                  ...depositCells,
-                  ...withdrawalCells,
-                ].reduce(
-                  (sum, c) => sum + parseInt(c.cellOutput.capacity, 16),
-                  0
-                );
-
-                let scaleFactor;
-                scaleFactor =
-                  capacity < 100_000 * CKB_SHANNON_RATIO
-                    ? scaleFactorSmall
-                    : scaleFactorLarge;
-                const logScaledCellWidth =
-                  (Math.log(capacity + 1) / Math.log(totalCapacity + 1)) *
-                  scaleFactor;
-                let cellWidth =
-                  windowWidth <= 768
-                    ? smallScreenDeviceMinCellWidth
-                    : Math.max(
-                        largeScreenDeviceMinCellWidth,
-                        logScaledCellWidth
-                      );
-
-                const isDeposit = depositCells.some(
-                  (c) => c.outPoint?.txHash === cell.outPoint?.txHash
-                );
-                const backgroundColor = isDeposit ? "#ade129" : "#e58603";
-                const buttonColor = "#2d4858";
-
-                return (
-                  <div
-                    key={index}
-                    className="dao-cell"
-                    ref={(el) => {
-                      if (el) {
-                        el.style.setProperty("--cellWidth", `${cellWidth}px`);
-                        el.style.setProperty("--cellHeight", `${cellHeight}px`);
-                        el.style.setProperty(
-                          "--backgroundColor",
-                          backgroundColor
-                        );
-                        if (pickedCells.includes(cell))
-                          el.style.setProperty("--opacityCtrl", "1");
-                        else if (windowWidth > 768)
-                          el.style.setProperty("--opacityCtrl", "0");
-                        else if (windowWidth <= 768)
-                          el.style.setProperty("--opacityCtrl", "0.2");
-                      }
-                    }}
-                    onClick={(e) => {
-                      window.open(
-                        EXPLORER_PREFIX + `${cell.outPoint?.txHash}`,
-                        "_blank",
-                        "noreferrer"
-                      );
-                    }}
-                  >
-                    <p className="deposit-amount-label">
-                      {(capacity / CKB_SHANNON_RATIO)
-                        .toFixed(0)
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
-                      CKB
-                    </p>
-                    <button
-                      className={`dao-cell-button ${cell.ripe ? "ripe" : ""}`}
-                      ref={(el) => {
-                        if (el) {
-                          el.style.setProperty("--buttonColor", buttonColor);
-
-                          el.style.setProperty("--textColor", backgroundColor);
-
-                          el.style.setProperty(
-                            "--progressPercentage",
-                            `${cell.currentCycleProgress}%`
-                          );
-
-                          el.style.setProperty(
-                            "--animationDelay",
-                            `${animationDelay}s`
-                          );
-                        }
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        isDeposit ? onWithdraw(cell) : onUnlock(cell);
+                    return (
+                      <Cell
+                        key={cell.blockHash}
+                        type={isDeposit ? "deposit" : "withdraw"}
+                        progress={cell.currentCycleProgress}
+                        value={capacity}
+                        selected={pickedCells.includes(cell)}
+                        onSelectCell={(e) => {
+                          if (sidebarMode === 3) {
+                            e.stopPropagation();
+                            onSelectCell(e, cell);
+                          }
+                        }}
+                        onCellAction={(e: any) => {
+                          e.stopPropagation();
+                          isDeposit ? onWithdraw(cell) : onUnlock(cell);
+                        }}
+                        onExploringTransaction={(e: any) => {
+                          e.stopPropagation();
+                          onExploringCell(cell);
+                        }}
+                        className={cx([sidebarMode === 3 && "selectable"])}
+                        isRipe={cell.ripe}
+                        animationDelay={animationDelay}
+                      />
+                    );
+                  })}
+                </div>
+              </TransformComponent>
+            </TransformWrapper>
+          )}
+          <aside
+            ref={sidebarRef}
+            className={cx([
+              isSidebarCollapsed ? "collapsed" : "expanded",
+              sidebarMode === 3 && "batching",
+            ])}
+          >
+            <header>
+              <img
+                className="logo"
+                src={require("./assets/icons/logo.svg").default}
+                alt="joyDAO"
+                draggable={false}
+              />
+              <p className="address">{shortenAddress(ckbAddress)}</p>
+              <Button
+                type="ghost"
+                icon={require("./assets/icons/copy.svg").default}
+                className="copy"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  copyAddress(ckbAddress);
+                }}
+              />
+            </header>
+            {accountBalances()}
+            {sidebarMode === 0 && (
+              <>
+                <ul className="sidebar-menu">
+                  {!isJoyIdAddress(ckbAddress) && (
+                    <li
+                      className="sidebar-item"
+                      onClick={() => {
+                        setIsSidebarCollapsed(false);
+                        setSidebarMode(1);
                       }}
                     >
-                      {isDeposit
-                        ? "Withdraw"
-                        : cell.ripe
-                        ? "Complete"
-                        : "Processing ..."}
-                    </button>
-
-                    {/*placing a layer of progress bar over each deposit button*/}
-                    {cell.currentCycleProgress
-                      ? cell.currentCycleProgress > 0 && (
-                          <div
-                            className={`button-border-progress-bar ${
-                              cell.ripe ? "ripe" : ""
-                            }`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              isDeposit ? onWithdraw(cell) : onUnlock(cell);
-                            }}
-                            ref={(el) => {
-                              if (el) {
-                                el.style.setProperty(
-                                  "--backgroundPos",
-                                  calculateButtonBorderProgressBar(
-                                    cell.currentCycleProgress
-                                  )
-                                );
-
-                                el.style.setProperty(
-                                  "--animationDelay",
-                                  `${animationDelay}s`
-                                );
-                              }
-                            }}
-                          >
-                            {/* hello */}
-                          </div>
-                        )
-                      : cell.currentCycleProgress === undefined && (
-                          <div
-                            className="button-border-progress-bar"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              isDeposit ? onWithdraw(cell) : onUnlock(cell);
-                            }}
-                            ref={(el) => {
-                              if (el) {
-                                el.style.setProperty(
-                                  "--backgroundPos",
-                                  calculateButtonBorderProgressBar(
-                                    percentageLoading!
-                                  )
-                                );
-                              }
-                            }}
-                          >
-                            {/* hello */}
-                          </div>
-                        )}
-
-                    <span
-                      className="checkmark-area"
-                      ref={(el) => {
-                        if (el) {
-                          if (pickedCells.includes(cell))
-                            el.style.setProperty("--opacityCtrl", "1");
-                          else el.style.setProperty("--opacityCtrl", "0");
-                        }
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        try {
-                          if (isLoading)
-                            throw new Error(
-                              "Please wait a moment! joyDAO is fetching data for you."
-                            );
-
-                          if (!pickedCells.includes(cell)) {
-                            if (!cell.isDeposit && !cell.ripe)
-                              throw new Error(
-                                "Can not batch processing withdrawals"
-                              );
-
-                            pickedCells.push(cell);
-                            setPickedCells(pickedCells);
-                            setRenderKick(
-                              (prevRenderKick) => prevRenderKick + 1
-                            );
-                          } else {
-                            // remove cell if re-picked
-                            const index = pickedCells.indexOf(cell);
-                            if (index !== -1) {
-                              pickedCells.splice(index, 1);
-                              setPickedCells(pickedCells);
-                              setRenderKick(
-                                (prevRenderKick) => prevRenderKick + 1
-                              );
-                            }
-                          }
-                        } catch (e: any) {
-                          enqueueSnackbar("Error: " + e.message, {
-                            variant: "error",
-                          });
-                        }
-                      }}
-                    ></span>
-                  </div>
-                );
-              })}
-
-              {[...Array(Math.max(0, fillerNum - daoCellNum))].map(
-                (_, index) => {
-                  let cellWidth =
-                    windowWidth <= 768
-                      ? smallScreenDeviceMinCellWidth
-                      : Math.max(
-                          largeScreenDeviceMinCellWidth,
-                          Math.floor(
-                            dummyCellWidthRandomizer.next(
-                              largeScreenDeviceMinCellWidth,
-                              maxDummyCellWidth
-                            )
-                          )
-                        );
-
-                  return (
-                    <div
-                      key={`extra-${index}`}
-                      className="dao-cell-dummy"
-                      ref={(el) => {
-                        if (el) {
-                          el.style.setProperty("--cellWidth", `${cellWidth}px`);
-                          el.style.setProperty(
-                            "--cellHeight",
-                            `${cellHeight}px`
-                          );
-                        }
-                      }}
-                    ></div>
-                  );
-                }
-              )}
-            </div>
-          ))}
-        {daoTransitInfoModal()}
-      </>
-    );
-  }
+                      <img
+                        src={require("./assets/icons/transfer.svg").default}
+                        className="icon"
+                        draggable={false}
+                      />
+                      <span className="text">Transfer</span>
+                    </li>
+                  )}
+                  <li
+                    className="sidebar-item"
+                    onClick={() => {
+                      setIsSidebarCollapsed(false);
+                      setSidebarMode(2);
+                    }}
+                  >
+                    <img
+                      src={require("./assets/icons/deposit.svg").default}
+                      className="icon"
+                      draggable={false}
+                    />
+                    <span className="text">Deposit</span>
+                  </li>
+                  <li
+                    className="sidebar-item"
+                    onClick={() => {
+                      setIsSidebarCollapsed(false);
+                      setPickedCells([]);
+                      setSidebarMode(3);
+                    }}
+                  >
+                    <img
+                      src={require("./assets/icons/batch.svg").default}
+                      className="icon"
+                      draggable={false}
+                    />
+                    <span className="text">Batch</span>
+                  </li>
+                  <li className="sidebar-item sign-out" onClick={onSignOut}>
+                    <img
+                      src={require("./assets/icons/sign-out.svg").default}
+                      className="icon"
+                      draggable={false}
+                    />
+                    <span className="text">Sign Out</span>
+                  </li>
+                </ul>
+                <Button
+                  type="ghost"
+                  icon={require("./assets/icons/sidebar-control.svg").default}
+                  className="sidebar-control"
+                  onClick={() => {
+                    const newState = !isSidebarCollapsed;
+                    localStorage.setItem(
+                      "isSidebarCollapse",
+                      newState ? "1" : "0"
+                    );
+                    setIsSidebarCollapsed(newState);
+                  }}
+                />
+              </>
+            )}
+            {!isJoyIdAddress(ckbAddress) && sidebarMode === 1 && transferForm()}
+            {sidebarMode === 2 && depositForm()}
+            {sidebarMode === 3 && batchForm()}
+          </aside>
+        </div>
+      )}
+      {daoTransitInfoModal()}
+    </>
+  );
 };
 
 const cccWrappedApp = () => {
