@@ -1244,7 +1244,7 @@ const App = () => {
             >
               joyDAO.cc
             </h1>
-            <p className="sub-title">Multi-chain Nervos DAO portal</p>
+            <p className="sub-title">Universal Wallet-Interfaced Nervos DAO Portal</p>
             <Button
               className="signin-button"
               onClick={() => {
