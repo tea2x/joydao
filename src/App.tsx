@@ -1323,7 +1323,7 @@ const App = () => {
 
                     return (
                       <Cell
-                        key={cell.blockHash}
+                        key={ckbHash(blockchain.OutPoint.pack(cell.outPoint!))}
                         type={isDeposit ? "deposit" : "withdraw"}
                         progress={cell.currentCycleProgress}
                         value={capacity}

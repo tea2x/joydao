@@ -1,9 +1,7 @@
 import { RPC } from "@ckb-lumos/lumos";
 import {
-  Script,
   Address,
   Cell,
-  Transaction,
   since,
   blockchain,
   PackedDao,
