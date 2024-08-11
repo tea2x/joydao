@@ -85,6 +85,25 @@
       }
     }
 
+    &.selected {
+      box-shadow: inset 0 0 0.4rem 0.4rem #38effe, 0 0 0.4rem 0 #00ebff,
+        inset 0 0 6.4rem 0 #00ebff;
+
+      &::after {
+        --checkbox-size: 5rem;
+        content: "";
+        position: absolute;
+        top: -1rem;
+        right: -1rem;
+        display: block;
+        width: var(--checkbox-size);
+        height: var(--checkbox-size);
+        z-index: 1;
+        background: url("../../assets/icons/selected-deposit.svg")
+          center/var(--checkbox-size) var(--checkbox-size) no-repeat;
+      }
+    }
+
     &:hover {
       > .explore-transaction {
         margin-bottom: var(--vertical-spacing);
@@ -236,25 +255,6 @@
       &::after {
         ::after {
           --checkmark-size: 7.2rem;
-        }
-      }
-
-      &.selected {
-        box-shadow: inset 0 0 0.4rem 0.4rem #38effe, 0 0 0.4rem 0 #00ebff,
-          inset 0 0 6.4rem 0 #00ebff;
-
-        &::after {
-          --checkbox-size: 5rem;
-          content: "";
-          position: absolute;
-          top: -1rem;
-          right: -1rem;
-          display: block;
-          width: var(--checkbox-size);
-          height: var(--checkbox-size);
-          z-index: 1;
-          background: url("../../assets/icons/selected-deposit.svg")
-            center/var(--checkbox-size) var(--checkbox-size) no-repeat;
         }
       }
 

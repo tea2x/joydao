@@ -875,7 +875,7 @@ const App = () => {
           <h3>
             <span className="highlight-txt">Batch</span>
             <span>{`${pickedCells.length} ${
-              pickedCells.length > 1 ? " transactions" : " transaction"
+              pickedCells.length > 1 ? " cells" : " cell"
             }`}</span>
           </h3>
         </div>
