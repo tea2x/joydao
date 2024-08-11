@@ -1323,6 +1323,7 @@ const App = () => {
 
                     return (
                       <Cell
+                        key={cell.blockHash}
                         type={isDeposit ? "deposit" : "withdraw"}
                         progress={cell.currentCycleProgress}
                         value={capacity}
