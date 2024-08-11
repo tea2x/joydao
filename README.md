@@ -8,9 +8,9 @@ This project also support multiple other common wallet options like Metamask, Un
 # Demo
 https://joydao.vercel.app/
 
-<img width="1064" alt="Screenshot 2024-06-30 at 14 33 44" src="https://github.com/tea2x/nervos-dao-with-joyid/assets/70423834/007b392f-3110-4fec-9b41-60cadc2c193c">
+<img width="770" alt="Screenshot 2024-08-11 at 13 26 49" src="https://github.com/user-attachments/assets/4cc31bd5-dd65-49fd-826b-26ab8f1725be">
 
-withdraw/unlock buttons are equipped with cycle status for the deposits in DAO.
+withdraw/unlock buttons are equipped with cycle status bar wraping around the button itself.
 
 # In case you want to verify joyDao's integrity
 When we sign a transaction, we can check what it will trigger and whether it's malicious or not.
