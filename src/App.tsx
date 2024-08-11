@@ -1238,9 +1238,6 @@ const App = () => {
             />
             <h1
               className="title"
-              onClick={async () => {
-                await updateJoyDaoInfo("all");
-              }}
             >
               joyDAO.cc
             </h1>
