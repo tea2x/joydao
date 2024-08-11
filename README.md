@@ -13,17 +13,9 @@ https://joydao.vercel.app/
 withdraw/unlock buttons are equipped with cycle status bar wraping around the button itself.
 
 # In case you want to verify joyDao's integrity
-When we sign a transaction, we can check what it will trigger and whether it's malicious or not.
+All you need to verify is that the output cells - being created - has **your lock script** and the **Nervos DAO type script** on it (in deposit and withdrawal). And that's it. As long as that's ensured. Your funds will still be yours and there'll always be a way to spend it.
 
-This can get complicated in Ethereum account model because a transaction can trigger a series of other transactions, and to verify the entire chain actions we have to check every single of them, we have to read smart contract source code that receives the triggered calls too.
-
-With CKB eUTXO dubbed cell model, this is simple. Everything can be checked can verified in 1 single transaction that you're looking at joyID signing page because all it does in a transaction is 1) destroying cells in the inputs and 2) create new cells in the outputs.
-
-Every cell(UTXO) has an ownership lock called Lock Script. Every cell also has another smart contract script called Type Script.
-
-In this joyDAO application, all you need to verify is that the output cells - being created - has **your lock script** and the **Nervos DAO type script** on it (in deposit and withdrawal). And that's it. As long as that's ensured. Your funds will still be yours.
-
-#### deposit
+#### deposit transaction
 
 ```json
 {
@@ -65,7 +57,7 @@ In the above joyDAO example transaction that you can see in joyID signing page, 
 - step2: in tab Address To Script, paste your joyId address and you'll see a data structure {codeHash, hashType, Args}
 - step3: compare it to the trie in each output "lock". If matched, output cells are YOURS
 
-You'll notice that the second cell doesn't have a Type Script, that is because it a change in a UTXO transaction and it doesn't belong to any "type" of smart contract.
+You'll notice that the second cell doesn't have a Type Script, that is because it's a change in a UTXO transaction and it doesn't belong to any "type" of smart contract.
 
 #### withdraw
 
