@@ -3,10 +3,10 @@ import { CKBTransaction } from "@joyid/ckb";
 import { Indexer } from "@ckb-lumos/ckb-indexer";
 import { predefined } from "@ckb-lumos/config-manager";
 import { dao, common } from "@ckb-lumos/common-scripts";
+import { Address, Cell, Transaction } from "@ckb-lumos/base";
 import { unlock } from "./lumos-patcher"; // TODO to be replaced
 import { generateDefaultScriptInfos } from "@ckb-ccc/lumos-patches";
 import { INDEXER_URL, DAO_MINIMUM_CAPACITY, FEE_RATE } from "./config";
-import { Address, Cell, Transaction, WitnessArgs } from "@ckb-lumos/base";
 import { registerCustomLockScriptInfos } from "@ckb-lumos/common-scripts/lib/common";
 
 import {
@@ -15,7 +15,6 @@ import {
 } from "@ckb-lumos/helpers";
 import {
   ckbytesToShannons,
-  findDepositCellWith,
   insertJoyIdWithnessPlaceHolder,
   getFee,
   DaoCell,
