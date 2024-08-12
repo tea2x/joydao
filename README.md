@@ -13,7 +13,7 @@ https://joydao.vercel.app/
 withdraw/unlock buttons are equipped with cycle status bar wraping around the button itself.
 
 # In case you want to verify joyDao's integrity
-All you need to verify is that the output cells - being created - has **your lock script** and the **Nervos DAO type script** on it (in deposit and withdrawal). And that's it. As long as that's ensured. Your funds will still be yours and there'll always be a way to spend it.
+All you need to verify is that the output cells - being created - has **your lock script** and the **Nervos DAO type script** on it (in deposit and withdrawal). And that's it. As long as that's ensured, your funds will still be yours and there'll always be a way to spend it.
 
 #### deposit transaction
 
