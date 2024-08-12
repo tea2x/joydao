@@ -1207,7 +1207,7 @@ const App = () => {
         <picture>
           <source
             media="(max-width:768px)"
-            srcSet={require("./assets/videos/dynamic-bg-mb.gif")}
+            srcSet={require("./assets/videos/dynamic-bg.gif")}
           />
           <img
             id="dynamicBg"
@@ -1238,9 +1238,6 @@ const App = () => {
             />
             <h1
               className="title"
-              onClick={async () => {
-                await updateJoyDaoInfo("all");
-              }}
             >
               joyDAO.cc
             </h1>
