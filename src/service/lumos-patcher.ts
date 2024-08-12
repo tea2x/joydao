@@ -11,13 +11,13 @@ import {
 } from "@ckb-lumos/base";
 import { RPC } from "@ckb-lumos/rpc";
 import { BI, BIish } from "@ckb-lumos/bi";
-import { getBlockHash } from "./lib/helpers";
+import { getBlockHash } from "../lib/helpers";
 import { dao } from "@ckb-lumos/common-scripts";
 import { bytes, number } from "@ckb-lumos/codec";
-import { findDepositCellWith } from "./lib/helpers";
+import { findDepositCellWith } from "../lib/helpers";
 import { getConfig } from "@ckb-lumos/config-manager";
 import { Address, Cell, WitnessArgs } from "@ckb-lumos/base";
-import { NODE_URL, JOYID_CELLDEP, OMNILOCK_CELLDEP } from "./config";
+import { NODE_URL, JOYID_CELLDEP, OMNILOCK_CELLDEP } from "../config";
 import { addressToScript, TransactionSkeletonType } from "@ckb-lumos/helpers";
 
 const DAO_LOCK_PERIOD_EPOCHS_COMPATIBLE = BI.from(180);
