@@ -4,7 +4,7 @@ import { blockchain, utils } from "@ckb-lumos/base";
 import { Config, initializeConfig } from "@ckb-lumos/config-manager";
 import { CKBTransaction } from "@joyid/ckb";
 import * as React from "react";
-import { buildTransfer } from "./service/basic-wallet";
+import { buildTransfer } from "./services/basic-wallet";
 import {
   Balance,
   DaoCell,
@@ -34,7 +34,7 @@ import {
   buildWithdrawTransaction,
   collectDeposits,
   collectWithdrawals,
-} from "./service/joy-dao";
+} from "./services/joy-dao";
 
 import { SnackbarProvider, useSnackbar } from "notistack";
 import { CircularProgressbarWithChildren } from "react-circular-progressbar";
