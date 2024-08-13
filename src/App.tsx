@@ -540,11 +540,7 @@ const App = () => {
    */
   const shortenAddress = (address: string) => {
     if (!address) return "";
-    if (windowWidth <= 768) {
-      return `${address.slice(0, 7)}...${address.slice(-10)}`;
-    } else {
-      return `${address.slice(0, 7)}...${address.slice(-10)}`;
-    }
+    return `${address.slice(0, 7)}...${address.slice(-10)}`;
   };
 
   /**
