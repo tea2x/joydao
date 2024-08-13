@@ -70,7 +70,6 @@ const App = () => {
   const [withdrawalCells, setWithdrawalCells] = React.useState<DaoCell[]>([]);
   const depositCellsRef = React.useRef(depositCells);
   const withdrawalCellsRef = React.useRef(withdrawalCells);
-  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [renderKick, setRenderKick] = React.useState<number>(0);
   const [pickedCells, setPickedCells] = React.useState<DaoCell[]>([]);
 
@@ -92,7 +91,6 @@ const App = () => {
   const [isDaoTransitMsgLoading, setIsDaoTransitMsgLoading] =
     React.useState(false);
   const [compensation, setCompensation] = React.useState<number | null>(null);
-  const [percentageLoading, setPercentageLoading] = React.useState<number>(0);
 
   // basic wallet
   const [transferTo, setTransferTo] = React.useState<string>("");
@@ -649,15 +647,6 @@ const App = () => {
   }, []);
 
   /**
-   * Check device window width
-   */
-  React.useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  });
-
-  /**
    * Set CKB address
    */
   React.useEffect(() => {
@@ -704,34 +693,6 @@ const App = () => {
     };
     fetchData();
   }, [tipEpoch, pickedDaoCell]);
-
-  /**
-   * Creating a loading effect on deposit button
-   */
-  React.useEffect(() => {
-    if (!signer) {
-      return;
-    }
-
-    if (!tipEpoch || (!depositCells && !withdrawalCells)) {
-      return;
-    }
-
-    if (
-      depositCellsRef.current == depositCells ||
-      withdrawalCellsRef.current == withdrawalCells
-    ) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setPercentageLoading((prevPercentage) => {
-        return prevPercentage === 100 ? 1 : prevPercentage + 1;
-      });
-    }, 5);
-
-    return () => clearInterval(interval);
-  }, [depositCells, withdrawalCells, tipEpoch, percentageLoading]);
 
   // Sidebar Mode
   // 0. default
