@@ -1,6 +1,10 @@
 # Abstract
 
-To those who invest in CKB long term, wallet security is always the number 1 priority. Currently locking their CKB to the DAO with a hardware wallet seems best because it offers high security. Ledger stands out to be the only hardware wallet that supports Nervos but there was a big scandal about how they manage user's seed phrase shards. As we know CKB blockchain can support a very high locking standard called Passkeys SECP256r1 and [joyID has already leveraged that](https://discord.com/channels/1065112455170228314/1065116735797215332/1191939677440180335).
+Nervos DAO users currently have a few options to shelter their investments from CKB inflation via some of the common software, hardware and passkeys wallets.
+
+Neuron is the first generation wallet on CKB and probably the safest software wallet but it's a fullnode wallet so it's heavy. PW wallet offers Metamask compatibility but it's no longer's maintained. JoyID passkeys wallet stands out to have all the aspects well balanced and suited to be the standard locking system for protecting CKB in many decades ahead, yet didn't allow Nervos DAO users.
+
+With the help of all the awesome persons I met/talked with/to in CKB community, especially CCC - Common Chain Connector, a special software that allows for a 'wallet abstraction' happening on CKB, eventually a universal wallet-interfaced application on CKB for users from Metamask, Brave, OKX, Unisat, Fantom wallets... I want to build a convenient, versatile user interface and secure option for CKB users to use Nervos DAO.
 
 To those who are not familiar with Nervos DAO, check https://medium.com/nervosnetwork/understanding-the-nervos-dao-and-cell-model-d68f38272c24
 This project also support multiple other common wallet options like Metamask, Unisat, OKX, Brave ... via [CCC - Common chain wallet connector](https://github.com/ckb-ecofund/ccc) and [Omnilock](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0042-omnilock/0042-omnilock.md).

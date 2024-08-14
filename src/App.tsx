@@ -1196,7 +1196,7 @@ const App = () => {
             <h1
               className="title"
             >
-              joyDAO.cc
+              joyDAO
             </h1>
             <p className="sub-title">Universal Wallet-Interfaced Nervos DAO Portal</p>
             <Button

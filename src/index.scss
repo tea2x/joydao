@@ -42,7 +42,7 @@
 
     .title {
       @include txt-xl-medium;
-
+      font-weight: bold;
       color: $stem-green;
     }
 
