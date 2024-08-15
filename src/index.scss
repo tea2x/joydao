@@ -116,7 +116,7 @@ aside {
   top: 0.8rem;
   left: 0.8rem;
 
-  width: 31.2rem;
+  width: 30rem;
   box-sizing: border-box;
   padding: 0.8rem;
   border-radius: 1.6rem;
@@ -388,7 +388,12 @@ aside {
 // ZOOMIN - ZOOMOUT
 
 body:has(aside.batching) .react-transform-component {
-  padding: 31.2rem 7.2rem 7.2rem !important;
+  @media (min-width: 1024px) {
+    padding: 7.2rem 35.2rem 7.2rem !important;
+  }
+  @media (max-width: 1024px) {
+    padding: 31.2rem 7.2rem 7.2rem !important;
+  }
 }
 
 body:not(:has(aside.batching)) .react-transform-component {
