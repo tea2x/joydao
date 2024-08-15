@@ -1,6 +1,6 @@
 import { Signer } from "@ckb-ccc/core";
 import { CKBTransaction } from '@joyid/ckb';
-import { INDEXER_URL, FEE_RATE } from "./config";
+import { INDEXER_URL, FEE_RATE } from "../config";
 import { Indexer } from "@ckb-lumos/ckb-indexer";
 import { common } from "@ckb-lumos/common-scripts";
 import { predefined } from "@ckb-lumos/config-manager";

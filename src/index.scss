@@ -4,13 +4,17 @@
 /* Background Video */
 #dynamicBg {
   position: fixed;
-  top: 0;
-  left: 0;
-  /* width: 100vw; */
-  height: 100vh;
+  top: 50%;
+  left: 50%;
+  width: auto;
+  height: auto;
+  min-width: 100%;
+  min-height: 100%;
   z-index: -1;
-
   opacity: 0.4;
+
+  /* Center the image */
+  transform: translate(-50%, -50%);
 }
 
 /* Login page */
@@ -42,7 +46,7 @@
 
     .title {
       @include txt-xl-medium;
-
+      font-weight: bold;
       color: $stem-green;
     }
 
@@ -116,7 +120,7 @@ aside {
   top: 0.8rem;
   left: 0.8rem;
 
-  width: 31.2rem;
+  width: 30rem;
   box-sizing: border-box;
   padding: 0.8rem;
   border-radius: 1.6rem;
@@ -388,7 +392,12 @@ aside {
 // ZOOMIN - ZOOMOUT
 
 body:has(aside.batching) .react-transform-component {
-  padding: 31.2rem 7.2rem 7.2rem !important;
+  @media (min-width: 1024px) {
+    padding: 7.2rem 35.2rem 7.2rem !important;
+  }
+  @media (max-width: 1024px) {
+    padding: 31.2rem 7.2rem 7.2rem !important;
+  }
 }
 
 body:not(:has(aside.batching)) .react-transform-component {

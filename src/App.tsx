@@ -4,7 +4,7 @@ import { blockchain, utils } from "@ckb-lumos/base";
 import { Config, initializeConfig } from "@ckb-lumos/config-manager";
 import { CKBTransaction } from "@joyid/ckb";
 import * as React from "react";
-import { buildTransfer } from "./basic-wallet";
+import { buildTransfer } from "./services/basic-wallet";
 import {
   Balance,
   DaoCell,
@@ -34,7 +34,7 @@ import {
   buildWithdrawTransaction,
   collectDeposits,
   collectWithdrawals,
-} from "./joy-dao";
+} from "./services/joy-dao";
 
 import { SnackbarProvider, useSnackbar } from "notistack";
 import { CircularProgressbarWithChildren } from "react-circular-progressbar";
@@ -70,7 +70,6 @@ const App = () => {
   const [withdrawalCells, setWithdrawalCells] = React.useState<DaoCell[]>([]);
   const depositCellsRef = React.useRef(depositCells);
   const withdrawalCellsRef = React.useRef(withdrawalCells);
-  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
   const [renderKick, setRenderKick] = React.useState<number>(0);
   const [pickedCells, setPickedCells] = React.useState<DaoCell[]>([]);
 
@@ -92,7 +91,6 @@ const App = () => {
   const [isDaoTransitMsgLoading, setIsDaoTransitMsgLoading] =
     React.useState(false);
   const [compensation, setCompensation] = React.useState<number | null>(null);
-  const [percentageLoading, setPercentageLoading] = React.useState<number>(0);
 
   // basic wallet
   const [transferTo, setTransferTo] = React.useState<string>("");
@@ -540,11 +538,7 @@ const App = () => {
    */
   const shortenAddress = (address: string) => {
     if (!address) return "";
-    if (windowWidth <= 768) {
-      return `${address.slice(0, 7)}...${address.slice(-10)}`;
-    } else {
-      return `${address.slice(0, 7)}...${address.slice(-10)}`;
-    }
+    return `${address.slice(0, 8)}...${address.slice(-6)}`;
   };
 
   /**
@@ -653,15 +647,6 @@ const App = () => {
   }, []);
 
   /**
-   * Check device window width
-   */
-  React.useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  });
-
-  /**
    * Set CKB address
    */
   React.useEffect(() => {
@@ -708,34 +693,6 @@ const App = () => {
     };
     fetchData();
   }, [tipEpoch, pickedDaoCell]);
-
-  /**
-   * Creating a loading effect on deposit button
-   */
-  React.useEffect(() => {
-    if (!signer) {
-      return;
-    }
-
-    if (!tipEpoch || (!depositCells && !withdrawalCells)) {
-      return;
-    }
-
-    if (
-      depositCellsRef.current == depositCells ||
-      withdrawalCellsRef.current == withdrawalCells
-    ) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setPercentageLoading((prevPercentage) => {
-        return prevPercentage === 100 ? 1 : prevPercentage + 1;
-      });
-    }, 5);
-
-    return () => clearInterval(interval);
-  }, [depositCells, withdrawalCells, tipEpoch, percentageLoading]);
 
   // Sidebar Mode
   // 0. default
@@ -1205,10 +1162,6 @@ const App = () => {
     <>
       <div className="background">
         <picture>
-          <source
-            media="(max-width:768px)"
-            srcSet={require("./assets/videos/dynamic-bg.gif")}
-          />
           <img
             id="dynamicBg"
             src={require("./assets/videos/dynamic-bg.gif")}
@@ -1239,7 +1192,7 @@ const App = () => {
             <h1
               className="title"
             >
-              joyDAO.cc
+              joyDAO
             </h1>
             <p className="sub-title">Universal Wallet-Interfaced Nervos DAO Portal</p>
             <Button

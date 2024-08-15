@@ -6,7 +6,7 @@ import { dao, common } from "@ckb-lumos/common-scripts";
 import { Address, Cell, Transaction } from "@ckb-lumos/base";
 import { unlock } from "./lumos-patcher"; // TODO to be replaced
 import { generateDefaultScriptInfos } from "@ckb-ccc/lumos-patches";
-import { INDEXER_URL, DAO_MINIMUM_CAPACITY, FEE_RATE } from "./config";
+import { INDEXER_URL, DAO_MINIMUM_CAPACITY, FEE_RATE } from "../config";
 import { registerCustomLockScriptInfos } from "@ckb-lumos/common-scripts/lib/common";
 
 import {
@@ -20,7 +20,7 @@ import {
   DaoCell,
   hexToInt,
   isJoyIdAddress,
-} from "./lib/helpers";
+} from "../lib/helpers";
 
 const indexer = new Indexer(INDEXER_URL);
 registerCustomLockScriptInfos(generateDefaultScriptInfos());
