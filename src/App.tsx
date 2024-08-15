@@ -1162,10 +1162,6 @@ const App = () => {
     <>
       <div className="background">
         <picture>
-          <source
-            media="(max-width:768px)"
-            srcSet={require("./assets/videos/dynamic-bg.gif")}
-          />
           <img
             id="dynamicBg"
             src={require("./assets/videos/dynamic-bg.gif")}
