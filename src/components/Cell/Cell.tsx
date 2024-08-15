@@ -21,6 +21,10 @@ const Cell: React.FC<CellProps> = ({
   ...rest
 }) => {
   const size = useMemo(() => {
+    // if (window.innerWidth <= 1024) {
+    //   return "small";
+    // }
+    
     switch (true) {
       case value < VALUE_THRESHOLD_1: {
         return "small";
