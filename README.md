@@ -1,13 +1,12 @@
 # Abstract
 
-Nervos DAO users currently have a few options to shelter their investments from CKB inflation via some of the common software, hardware and passkeys wallets.
+Nervos DAO users have several options to protect their investments from CKB inflation through various software, hardware, and passkey wallets.
 
-Neuron is the first generation wallet on CKB and probably the safest software wallet but it's a fullnode wallet so it's heavy. PW wallet offers Metamask compatibility but it's no longer's maintained. JoyID passkeys wallet stands out to have all the aspects well balanced and suited to be the standard locking system for protecting CKB in many decades ahead, yet didn't allow Nervos DAO users.
+Neuron is the first-generation wallet on CKB and is considered the safest software wallet. However, it is a full-node wallet, making it quite heavy. PW Wallet offers MetaMask compatibility but is no longer maintained. JoyID passkey wallet stands out for its well-balanced features, making it a potential standard for protecting CKB for decades to come, although it currently does not support Nervos DAO users.
 
-With the help of all the awesome persons I met/talked with/to in CKB community, especially CCC - Common Chain Connector, a special software that allows for a 'wallet abstraction' happening on CKB, eventually a universal wallet-interfaced application on CKB for users from Metamask, Brave, OKX, Unisat, Fantom wallets... I want to build a convenient, versatile user interface and secure option for CKB users to use Nervos DAO.
+Thanks to the incredible support from the CKB community, especially the Common Chain Connector (CCC), a special software enabling ‘wallet abstraction’ on CKB, we can now envision a universal wallet-interfaced application. This application will cater to users from MetaMask, Brave, OKX, Unisat, Fantom wallets, and even passkey wallets like JoyID. My goal is to build a convenient, versatile user interface and a secure option for CKB users to utilize Nervos DAO.
 
 To those who are not familiar with Nervos DAO, check https://medium.com/nervosnetwork/understanding-the-nervos-dao-and-cell-model-d68f38272c24
-This project also support multiple other common wallet options like Metamask, Unisat, OKX, Brave ... via [CCC - Common chain wallet connector](https://github.com/ckb-ecofund/ccc) and [Omnilock](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0042-omnilock/0042-omnilock.md).
 
 # Demo
 https://joydao.vercel.app/
