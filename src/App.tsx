@@ -17,7 +17,7 @@ import {
   isOmnilockAddress,
   queryBalance,
   waitForTransactionConfirmation,
-} from "./lib/helpers";
+} from "./services/helpers";
 
 import {
   CKB_SHANNON_RATIO,
