@@ -28,13 +28,13 @@ import {
 } from "./config";
 
 import {
-  batchDaoCells,
-  buildDepositTransaction,
-  buildUnlockTransaction,
-  buildWithdrawTransaction,
   collectDeposits,
   collectWithdrawals,
-} from "./services/joy-dao";
+  buildDepositTransaction,
+  buildWithdrawTransaction,
+  buildUnlockTransaction,
+  batchDaoCells,
+} from "joy-dao";
 
 import { SnackbarProvider, useSnackbar } from "notistack";
 import { CircularProgressbarWithChildren } from "react-circular-progressbar";
@@ -233,7 +233,8 @@ const App = () => {
     try {
       if (!signer) throw new Error("Wallet disconnected. Reconnect!");
 
-      const batchTx = await batchDaoCells(signer, cells);
+      const fromAddresses = await signer.getAddresses();
+      const batchTx = await batchDaoCells(fromAddresses[0], cells);
 
       // might be over-cautious, but worth checking with utxo
       // TODO remove when fully support fee-rate configuration
@@ -325,8 +326,9 @@ const App = () => {
    * Built deposit transaction for tx submission in the next step.
    */
   const preBuildDeposit = async () => {
-    let daoTx: { tx: CKBTransaction | null; fee: number } =
-      await buildDepositTransaction(signer, BigInt(depositAmount));
+    const fromAddresses = await signer.getAddresses();
+    const daoTx: { tx: CKBTransaction | null; fee: number } =
+      await buildDepositTransaction(fromAddresses[0], BigInt(depositAmount));
 
     // might be over-cautious, but worth checking with utxo
     // TODO remove when fully support fee-rate configuration
@@ -340,8 +342,9 @@ const App = () => {
    * Built withdraw transaction for tx submission in the next step.
    */
   const preBuildWithdraw = async (depositCell: DaoCell) => {
-    let daoTx: { tx: CKBTransaction | null; fee: number } =
-      await buildWithdrawTransaction(signer, depositCell);
+    const fromAddresses = await signer.getAddresses();
+    const daoTx: { tx: CKBTransaction | null; fee: number } =
+      await buildWithdrawTransaction(fromAddresses[0], depositCell);
 
     // might be over-cautious, but worth checking with utxo
     // TODO remove when fully support fee-rate configuration
@@ -355,8 +358,9 @@ const App = () => {
    * Built unlock transaction for tx submission in the next step.
    */
   const preBuildUnlock = async (withdrawalCell: DaoCell) => {
-    let daoTx: { tx: CKBTransaction | null; fee: number } =
-      await buildUnlockTransaction(signer, withdrawalCell);
+    const fromAddresses = await signer.getAddresses();
+    const daoTx: { tx: CKBTransaction | null; fee: number } =
+      await buildUnlockTransaction(fromAddresses[0], withdrawalCell);
 
     // might be over-cautious, but worth checking with utxo
     // TODO remove when fully support fee-rate configuration
@@ -1189,12 +1193,10 @@ const App = () => {
               className="logo"
               draggable={false}
             />
-            <h1
-              className="title"
-            >
-              joyDAO
-            </h1>
-            <p className="sub-title">Universal Wallet-Interfaced Nervos DAO Portal</p>
+            <h1 className="title">joyDAO</h1>
+            <p className="sub-title">
+              Universal Wallet-Interfaced Nervos DAO Portal
+            </p>
             <Button
               className="signin-button"
               onClick={() => {
