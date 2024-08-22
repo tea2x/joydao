@@ -19,6 +19,7 @@
     "@types/react-dom": "^18.3.0",
     "@types/react-modal": "^3.16.3",
     "assert": "^2.1.0",
+    "joy-dao": "^0.0.5",
     "notistack": "^3.0.1",
     "react": "^18.3.1",
     "react-circular-progressbar": "^2.1.0",
