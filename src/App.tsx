@@ -355,9 +355,8 @@ const App = () => {
    * Built unlock transaction for tx submission in the next step.
    */
   const preBuildUnlock = async (withdrawalCell: DaoCell) => {
-    const fromAddresses = await signer.getAddresses();
     const daoTx: { tx: CKBTransaction | null; fee: number } =
-      await buildUnlockTransaction(fromAddresses[0], withdrawalCell);
+      await buildUnlockTransaction(signer, withdrawalCell);
 
     // might be over-cautious, but worth checking with utxo
     // TODO remove when fully support fee-rate configuration
