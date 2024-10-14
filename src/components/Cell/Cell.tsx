@@ -77,7 +77,7 @@ const Cell: React.FC<CellProps> = ({
       </div>
       <button className="dao-cell-btn" onClick={onCellAction}>
         <span className="btn-text">
-          {isRipe ? "Completed" : isDeposit ? "Withdraw" : "Processing"}
+          {isDeposit ? "Withdraw" : isRipe ? "Completed" : "Processing"}
         </span>
         <img
           src={
