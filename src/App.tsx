@@ -714,7 +714,7 @@ const App = () => {
         <div className="balance-background"></div>
         {(sidebarMode === 1 || sidebarMode === 0) && (
           <p className="balance-index free-balance">
-            <span>Free</span>
+            <span>Available</span>
             <span>
               {balance
                 ? (BigInt(balance.available) / BigInt(CKB_SHANNON_RATIO))
@@ -727,7 +727,7 @@ const App = () => {
         {sidebarMode === 0 && (
           <>
             <p className="balance-index depositing-balance">
-              <span>Depositing</span>
+              <span>Deposited</span>
               <span>
                 {balance
                   ? (sumDeposit() / CKB_SHANNON_RATIO)
@@ -834,21 +834,16 @@ const App = () => {
             }}
           />
           <h3>
-            <span className="highlight-txt">Batch</span>
-            <span>{`${pickedCells.length} ${
+            <span className="highlight-txt">Batching {`${pickedCells.length} ${
               pickedCells.length > 1 ? " cells" : " cell"
             }`}</span>
           </h3>
         </div>
         {pickedCells.length === 0 && (
-          <p>
             <i>Please select cells</i>
-          </p>
         )}
         {pickedCells.length === 1 && (
-          <p>
             <i>Please select at least 2 cells</i>
-          </p>
         )}
         <Button
           className="submit"
@@ -1106,7 +1101,8 @@ const App = () => {
   const cells = React.useMemo(
     () =>
       [...depositCells, ...withdrawalCells].sort(
-        (a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
+        // (a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
+        (a, b) => Number(BigInt(a.cellOutput.capacity) - BigInt(b.cellOutput.capacity))
       ),
     [depositCells, withdrawalCells]
   );
@@ -1280,7 +1276,7 @@ const App = () => {
             >
               <TransformComponent>
                 <div
-                  className="cell-diagram"
+                  className="cell-container"
                   style={{ cursor: mouseDown ? "grabbing" : "grab" }}
                 >
                   {cells.map((cell, index) => {

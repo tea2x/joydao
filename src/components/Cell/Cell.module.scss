@@ -9,6 +9,7 @@
   font-size: 1.2rem;
   position: relative;
   background-color: rgba(26, 29, 33, 0.5);
+  // flex-grow: 1 1 30%;
 
   &:global {
     &.ripe {
@@ -140,7 +141,7 @@
     &.large-size {
       width: 25.6rem;
       height: 25.6rem;
-      border-radius: 3.6rem;
+      border-radius: 1.2rem;
       transition: box-shadow 0.5s;
 
       --vertical-spacing: 1.8rem;
@@ -171,7 +172,7 @@
     &.medium-size {
       width: 19.6rem;
       height: 19.6rem;
-      border-radius: 2.4rem;
+      border-radius: 1.2rem;
       transition: box-shadow 0.4s;
 
       --vertical-spacing: 1.2rem;
@@ -245,10 +246,6 @@
             inset -0.2rem -0.2rem 0.8rem 0 rgba(207, 247, 211, 0.4);
         }
 
-        @media (max-width: 1440px) {
-          border: 1px solid #505050;
-        }
-
         background-color: #263520;
         --progress-color: #b6f09c;
       }
@@ -277,7 +274,7 @@
               inset -0.2rem -0.2rem 1.6rem 0 #38effe;
           }
 
-          @media (max-width: 1440px) {
+          @media (max-width: 1024px) {
             border: 1px solid #505050;
           }
 
@@ -300,7 +297,7 @@
               inset -0.2rem -0.2rem 0.8rem 0 rgba(56, 239, 254, 0.25);
           }
 
-          @media (max-width: 1440px) {
+          @media (max-width: 1024px) {
             border: 1px solid #505050;
           }
 
@@ -323,7 +320,7 @@
               inset 0 0 0.8rem 0 rgba(56, 239, 254, 0.25);
           }
 
-          @media (max-width: 1440px) {
+          @media (max-width: 1024px) {
             border: 1px solid #505050;
           }
 
@@ -352,10 +349,6 @@
             inset -0.2rem -0.2rem 0.8rem 0 rgba(247, 247, 207, 0.4);
         }
 
-        @media (max-width: 1440px) {
-          border: 1px solid #505050;
-        }
-
         background-color: #352520;
         --progress-color: #d46c00;
       }
@@ -377,7 +370,7 @@
             inset -0.2rem -0.2rem 1.6rem 0 #ffcd8d;
         }
 
-        @media (max-width: 1440px) {
+        @media (max-width: 1024px) {
           border: 1px solid #505050;
         }
 
@@ -399,7 +392,7 @@
             inset -0.2rem -0.2rem 0.8rem 0 rgba(255, 205, 141, 0.25);
         }
 
-        @media (max-width: 1440px) {
+        @media (max-width: 1024px) {
           border: 1px solid #505050;
         }
 
@@ -420,7 +413,7 @@
             inset 0 0 0.8rem 0 rgba(255, 205, 141, 0.25);
         }
 
-        @media (max-width: 1440px) {
+        @media (max-width: 1024px) {
           border: 1px solid #505050;
         }
 

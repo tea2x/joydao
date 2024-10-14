@@ -117,8 +117,9 @@
 
 aside {
   position: absolute;
-  top: 0.8rem;
   left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
 
   width: 30rem;
   box-sizing: border-box;
@@ -128,7 +129,7 @@ aside {
 
   display: flex;
   flex-direction: column;
-  gap: 1.6rem;
+  // gap: 1.6rem;
 
   @include txt-l-semibold;
   // color: $nokia-black;
@@ -279,7 +280,7 @@ aside {
         opacity: 1;
       }
 
-      + .sidebar-item {
+      .sidebar-item {
         margin: 0.8rem 0 0;
       }
     }
@@ -290,6 +291,7 @@ aside {
     opacity: 0.4;
     transition: opacity 0.2s;
     width: 100%;
+    border-top: solid 0.1rem rgba(255, 255, 255, 0.08) !important;
 
     > .icon {
       margin: 0 auto;
@@ -306,9 +308,14 @@ aside {
   }
 
   &.collapsed {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
     width: 7.2rem;
+    height: auto;
 
-    opacity: 0.6;
+    opacity: 0.8;
     transition: opacity 0.2s;
     &:hover {
       opacity: 1;
@@ -344,6 +351,35 @@ aside {
       }
     }
   }
+
+  @media (max-width: 1024px) {
+    top: 0.8rem;
+    left: 50%;
+    transform: translateX(-50%);
+
+    .sidebar-control {
+      .icon {
+        transform: rotate(90deg);
+      }
+    }
+
+    &.collapsed {
+      flex-direction: row;
+      height: 6.2rem;
+      width: auto;
+  
+      .sidebar-menu {
+        display: flex;
+      }
+
+      .sidebar-control {
+        width: auto;
+        .icon {
+          transform: rotate(270deg);
+        }
+      }
+    }
+  }
 }
 
 .auth--screen {
@@ -351,12 +387,12 @@ aside {
 
   .transfer-form,
   .deposit-form {
-    padding: 0.8rem;
+    // padding: 0.8rem;
 
     .form-header {
       display: flex;
       gap: 0.8rem;
-      margin: 0 0 3.6rem;
+      margin: 0 0 0.8rem;
 
       h3 {
         margin: 0;
@@ -396,7 +432,7 @@ body:has(aside.batching) .react-transform-component {
     padding: 7.2rem 35.2rem 7.2rem !important;
   }
   @media (max-width: 1024px) {
-    padding: 31.2rem 7.2rem 7.2rem !important;
+    padding: 23rem 7.2rem 7.2rem !important;
   }
 }
 
@@ -415,40 +451,24 @@ body:not(:has(aside.batching)) .react-transform-component {
     min-width: 100%;
     justify-content: center;
 
-    .cell-diagram {
+    .cell-container {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       justify-content: center;
       align-items: center;
-      gap: 1rem;
+      gap: 2rem;
       flex-wrap: wrap;
-      height: 100%;
-      width: max-content;
+      height: fit-content;
+      width: 80%;
+      margin: auto 0 auto 0;
     }
-  }
-}
 
-#userinputpane {
-  overflow: hidden;
-
-  > div {
-    padding: 7.2rem !important;
-    box-sizing: border-box;
-    height: 100%;
-    min-width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-
-  .cell-diagram {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-    height: 100%;
-    width: max-content;
+    @media (max-width: 1024px) {
+      .cell-container {
+        // margin: 3rem 0 auto 0;
+        width: fit-content;
+      }
+    }
   }
 }
 
