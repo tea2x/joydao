@@ -1,7 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,256,256" width="48px" height="48px" fill-rule="nonzero">
-    <g fill="#c6dfc2" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal">
-        <g transform="scale(10.66667,10.66667)">
-            <path d="M6,2c-0.13812,0 -0.27212,0.01438 -0.40234,0.04102c-0.91157,0.18642 -1.59766,0.99211 -1.59766,1.95898v18l8,-3l8,3v-18c0,-0.1375 -0.01426,-0.27246 -0.04102,-0.40234c-0.15978,-0.78135 -0.77529,-1.39686 -1.55664,-1.55664c-0.13022,-0.02663 -0.26422,-0.04102 -0.40234,-0.04102z"></path>
+<svg xml:space="preserve" viewBox="0 0 100 100" y="0" x="0" xmlns="http://www.w3.org/2000/svg" id="圖層_1" version="1.1" style="margin: initial; display: block; shape-rendering: auto; background: rgba(255, 255, 255, 0);" preserveAspectRatio="xMidYMid" width="200" height="200">
+  <g class="ldl-scale" style="transform-origin: 50% 50%;">
+    <animateTransform attributeType="XML" attributeName="transform" type="scale" values="0.9;1.1;0.9" dur="1s" repeatCount="indefinite" />
+    <g class="ldl-ani">
+      <g class="ldl-layer">
+        <g class="ldl-ani">
+          <g>
+            <g class="ldl-layer">
+              <g class="ldl-ani" style="transform-box: view-box; opacity: 1; transform-origin: 50px 50px;">
+                <path d="M39.273 82.965L7.5 46.115l6.603-6.604 25.17 21.318 48.682-43.794L92.5 21.58z" fill="#849b87" style="stroke-width: 1; fill: rgb(182, 240, 156);"></path>
+              </g>
+            </g>
+          </g>
         </g>
+      </g>
     </g>
+  </g>
 </svg>
