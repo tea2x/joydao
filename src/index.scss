@@ -643,6 +643,9 @@ body:not(:has(aside.batching)) .react-transform-component {
         color: #0c1132;
         font-weight: 800;
       }
+      &:disabled {
+        cursor: not-allowed;
+      }
     }
 
     &.cancel {
