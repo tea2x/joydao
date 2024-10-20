@@ -1310,12 +1310,16 @@ const App = () => {
                           }
                         }}
                         onCellAction={(e: any) => {
-                          e.stopPropagation();
-                          isDeposit ? onWithdraw(cell) : onUnlock(cell);
+                          if (sidebarMode !== 3) {
+                            e.stopPropagation();
+                            isDeposit ? onWithdraw(cell) : onUnlock(cell);
+                          }
                         }}
                         onExploringTransaction={(e: any) => {
-                          e.stopPropagation();
-                          onExploringCell(cell);
+                          if (sidebarMode !== 3) {
+                            e.stopPropagation();
+                            onExploringCell(cell);
+                          }
                         }}
                         className={cx([sidebarMode === 3 && "selectable"])}
                         isRipe={cell.ripe}
