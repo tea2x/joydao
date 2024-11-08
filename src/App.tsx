@@ -1097,8 +1097,8 @@ const App = () => {
   const cells = React.useMemo(
     () =>
       [...depositCells, ...withdrawalCells].sort(
-        // (a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
-        (a, b) => Number(BigInt(a.cellOutput.capacity) - BigInt(b.cellOutput.capacity))
+        (a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
+        // (a, b) => Number(BigInt(a.cellOutput.capacity) - BigInt(b.cellOutput.capacity))
       ),
     [depositCells, withdrawalCells]
   );
