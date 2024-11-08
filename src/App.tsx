@@ -236,7 +236,6 @@ const App = () => {
       const batchTx = await batchDaoCells(signer, cells);
 
       // might be over-cautious, but worth checking with utxo
-      // TODO remove when fully support fee-rate configuration
       if (batchTx!.fee > 1 * CKB_SHANNON_RATIO)
         throw new Error("Paying too much transaction fee");
 
@@ -329,7 +328,6 @@ const App = () => {
       await buildDepositTransaction(signer, BigInt(depositAmount));
 
     // might be over-cautious, but worth checking with utxo
-    // TODO remove when fully support fee-rate configuration
     if (daoTx!.fee > 1 * CKB_SHANNON_RATIO)
       throw new Error("Paying too much transaction fee");
 
@@ -344,7 +342,6 @@ const App = () => {
       await buildWithdrawTransaction(signer, depositCell);
 
     // might be over-cautious, but worth checking with utxo
-    // TODO remove when fully support fee-rate configuration
     if (daoTx!.fee > 1 * CKB_SHANNON_RATIO)
       throw new Error("Paying too much transaction fee");
 
@@ -359,7 +356,6 @@ const App = () => {
       await buildUnlockTransaction(signer, withdrawalCell);
 
     // might be over-cautious, but worth checking with utxo
-    // TODO remove when fully support fee-rate configuration
     if (daoTx!.fee > 1 * CKB_SHANNON_RATIO)
       throw new Error("Paying too much transaction fee");
 
@@ -1053,7 +1049,7 @@ const App = () => {
                 } else if (daoMode == DaoFunction.depositing) {
                   onDepositProceed();
                 } else {
-                  //nothing
+                  // nothing
                 }
                 setModalIsOpen(false);
                 setDaoMode(DaoFunction.none);
@@ -1066,8 +1062,6 @@ const App = () => {
       </Modal>
     );
   }
-
-  // in case there're too few deposit, fill up dummy cells
 
   const [mouseDown, setMouseDown] = React.useState(false);
 
@@ -1098,7 +1092,6 @@ const App = () => {
     () =>
       [...depositCells, ...withdrawalCells].sort(
         (a, b) => parseInt(b.blockNumber!, 16) - parseInt(a.blockNumber!, 16)
-        // (a, b) => Number(BigInt(a.cellOutput.capacity) - BigInt(b.cellOutput.capacity))
       ),
     [depositCells, withdrawalCells]
   );
