@@ -392,6 +392,10 @@ const App = () => {
         throw new Error("Minimum joyDAO deposit is 104 CKB.");
       }
 
+      if (parseInt(depositAmount) == DAO_MINIMUM_CAPACITY) {
+        throw new Error("At 104 CKB your compensation will always be zero. Please try a larger amount!");
+      }
+
       setDaoMode(DaoFunction.depositing);
       setModalIsOpen(true);
       setIsDaoTransitMsgLoading(true);
@@ -436,9 +440,9 @@ const App = () => {
         );
 
       setDaoMode(DaoFunction.withdrawing);
+      await preBuildWithdraw(cell);
       setModalIsOpen(true);
       setIsDaoTransitMsgLoading(true);
-      await preBuildWithdraw(cell);
       setPickedDaoCell(cell);
       setIsDaoTransitMsgLoading(false);
     } catch (e: any) {
@@ -480,9 +484,9 @@ const App = () => {
         );
 
       setDaoMode(DaoFunction.unlocking);
+      if (cell.ripe) await preBuildUnlock(cell);
       setModalIsOpen(true);
       setIsDaoTransitMsgLoading(true);
-      if (cell.ripe) await preBuildUnlock(cell);
       setPickedDaoCell(cell);
       setIsDaoTransitMsgLoading(false);
     } catch (e: any) {
